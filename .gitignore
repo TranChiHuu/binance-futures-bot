@@ -11,3 +11,8 @@ last_run.json
 pos_state.json
 hourly_log.jsonl
 .telegram_chat_id
+# quant research: raw market/account data and caches stay local
+quant/data/
+quant/results/*.pkl
+quant/results/live_history.json
+quant/*.log

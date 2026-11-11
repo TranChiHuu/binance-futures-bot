@@ -1,0 +1,96 @@
+{
+  "generated": "2026-11-11T10:45+07:00",
+  "source": "/workspace/trade/quant/REPORT.md (backtest 2024-11-11..2026-11-11, 19 coin, 1h+15m, phi 0.055%/chieu, truot gia 0.05% lenh market, funding that)",
+  "verdict": "Luat live hien tai KHONG co edge: -0.19R/lenh (n=11837, CI95 [-0.21,-0.17]); danh muc mo phong tu 45 USDT chay ve <5 USDT sau 2 thang. RETEST am o moi nhom (diem, tuoi break, chieu, coin, quy). Chi BREAKOUT voi SL >= 1 ATR la quanh hoa von/duong nhe (+0.05R, CI95 [-0.00,+0.11]) - chua du chung minh co edge.",
+  "A_tighten_only_safe_to_auto_apply": [
+    {
+      "id": "A1",
+      "change": "Chan setup RETEST o ca 2 book",
+      "how": "lessons.json adjust.score_penalty.RETEST = 99 (code hien tai da ho tro, khong can sua script)",
+      "evidence": "RETEST n=9876 avgR -0.230 (CI95 -0.252..-0.208); am trong 25/25 thang, moi muc diem, moi tuoi break, moi muc SL/ATR; OOS walk-forward van -0.26R (HIGH) / -0.18R (CORE)",
+      "expected_impact": "Danh muc kich thuoc co dinh 2 nam: -1515 USDT -> +73 USDT; so lenh 1975 -> ~530 (khoang 5 lenh/tuan)",
+      "confidence": "cao"
+    },
+    {
+      "id": "A2",
+      "change": "Chan setup MOMENTUM (MAO HIEM)",
+      "how": "lessons.json adjust.score_penalty.MOMENTUM = 99",
+      "evidence": "n=6 avgR -0.45 voi luat hien tai; n=53 avgR -0.18 khi bo lessons. Mau nho nhung khong co dau hieu duong.",
+      "expected_impact": "Rat it lenh bi anh huong; giam rui ro",
+      "confidence": "trung binh"
+    },
+    {
+      "id": "A3",
+      "change": "Bo qua lenh co SL < 1.0 x ATR(1h,14)",
+      "how": "Can them 1 bo loc trong run_hourly.py (key moi adjust.min_sl_atr = 1.0, chi loai lenh, khong noi luat nao)",
+      "evidence": "Ca 4 lenh thua that co SL 0.41-0.70 ATR. Backtest: BREAKOUT SL<1 ATR avgR -0.45..-0.83; BREAKOUT + SL>=1 ATR avgR +0.052 (n=2128), duong o ca nam 1 (+0.051) va nam 2 (+0.054).",
+      "expected_impact": "Ket hop A1: +73 -> +140 USDT/2 nam (kich thuoc co dinh), maxDD 29R -> 21R",
+      "confidence": "trung binh"
+    },
+    {
+      "id": "A4",
+      "change": "Giam rui ro moi lenh: ca 2 book toi da 1% vi (~0.45 USDT voi vi 45) thay cho CORE 2 USDT / MAO HIEM 15% vi",
+      "how": "Can sua hang so CORE_RISK / HIGH_RISK_PCT (hoac them adjust.risk_scale) trong run_hourly.py",
+      "evidence": "Ngay ca phuong an tot nhat cung co maxDD ~21R. Voi 2 USDT/6.75 USDT moi R, 21R = 40-140 USDT > ca vi. Mo phong lai kep luat live: vi 45 -> 4.7 USDT ngay 2025-01-15 (sau 173 lenh). 13/18 bien the thu nghiem chay ve <5 USDT; ban bo RETEST khong chay ve 0 nhung van con 6.3 USDT.",
+      "expected_impact": "Khong doi R/lenh; giam ~4-15 lan muc lo toi da, tranh chay tai khoan trong luc chua chung minh edge",
+      "confidence": "cao"
+    },
+    {
+      "id": "A5",
+      "change": "Khong vao lai cung 1 muc gia (cung coin, cung chieu, cung level) lan 2",
+      "how": "Can them bo loc trong run_hourly.py (doc pos_state/journal)",
+      "evidence": "Lenh BTC thu 2 (11/11 01:05) vao lai muc 73368 va thua. Nhung o quy mo lon, avgR gan nhu khong doi (-0.183 vs -0.187); neu A1 duoc ap dung thi gan nhu khong con tac dung.",
+      "expected_impact": "Nho",
+      "confidence": "thap (vo hai, chi la an toan)"
+    }
+  ],
+  "A_optional_low_confidence": [
+    {
+      "id": "A6",
+      "change": "Them tran SL <= 2.0 x ATR cho BREAKOUT",
+      "evidence": "Nhom SL 1-2 ATR tot nhat (+0.098R, n=1498) nhung nguong nay duoc chon SAU khi nhin du lieu; nam 2 chi +0.051R (CI95 -0.05..+0.15). Ve mat chinh sach la luat chat hon, nhung bang chung yeu.",
+      "expected_impact": "+140 -> +236 USDT/2 nam (kich thuoc co dinh) neu khong phai do may man"
+    },
+    {
+      "id": "A7",
+      "change": "Ha daily stop tu -7.5 xuong -3 x rui ro moi lenh (vd -1.5 USDT neu A4)",
+      "evidence": "Chua backtest rieng; chi la ty le thuan voi A4."
+    }
+  ],
+  "B_needs_user_approval": [
+    {
+      "id": "B1",
+      "change": "Tam dung giao dich that (hoac chay paper/--dry-run) cho toi khi bo luat A1+A3 cho ket qua duong tren >= 50 lenh",
+      "why_approval": "Thay doi hanh vi lon: user muon bot tu giao dich",
+      "evidence": "Ngay ca bo luat tot nhat chi +0.04..+0.05R/lenh voi CI95 chua 0; walk-forward OOS -0.001R (n=1597)."
+    },
+    {
+      "id": "B2",
+      "change": "Noi tran TP1 tu 1.5R len 2.0R",
+      "why_approval": "Noi long 1 bai hoc trong lessons.json",
+      "evidence": "Walk-forward chon 2.0R o 8/9 cua so, nhung tac dong trung binh ~0 (tong R -494 vs -494). Khong dang doi.",
+      "recommend": false
+    },
+    {
+      "id": "B3",
+      "change": "Doi tham so quet theo walk-forward (atr_buf 0.3, lookback 3, diem +0.5..+1.0)",
+      "why_approval": "Doi hanh vi",
+      "evidence": "OOS ~0R; chu yeu anh huong RETEST (da bi chan o A1).",
+      "recommend": false
+    },
+    {
+      "id": "B4",
+      "change": "Luat tuong quan dong (khong mo 2 lenh cung chieu neu tuong quan 30 ngay > 0.8)",
+      "why_approval": "Doi hanh vi",
+      "evidence": "Da thu: khong cai thien (live -0.236R -> -0.243R; breakout+SL1ATR +0.041R -> +0.027R). 19 coin tuong quan trung binh 0.72 nen 2 lenh cung chieu gan nhu la 1 lenh gap doi; nen kiem soat bang A4 (rui ro nho) thay vi nguong 0.8.",
+      "recommend": false
+    },
+    {
+      "id": "B5",
+      "change": "Nghien cuu them: vao BREAKOUT bang lenh limit (maker 0.02%) thay vi market (taker 0.05%)",
+      "why_approval": "Doi cach vao lenh; chua backtest",
+      "evidence": "Phi + truot gia chiem ~0.15-0.30R/lenh voi SL hep; giam phi la don bay lon nhat con lai."
+    }
+  ],
+  "lessons_json_patch_for_A1_A2": {"adjust": {"score_penalty": {"RETEST": 99, "MOMENTUM": 99, "*": 0.25}}}
+}

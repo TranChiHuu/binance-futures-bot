@@ -1,0 +1,150 @@
+{
+ "mean_pairwise_rolling": 0.724,
+ "min_pairwise": [
+  [
+   "XRPUSDT",
+   "WLDUSDT",
+   0.634,
+   0.017
+  ],
+  [
+   "BNBUSDT",
+   "INJUSDT",
+   0.631,
+   0.014
+  ],
+  [
+   "BTCUSDT",
+   "TIAUSDT",
+   0.63,
+   0.0
+  ],
+  [
+   "BTCUSDT",
+   "WLDUSDT",
+   0.603,
+   0.003
+  ],
+  [
+   "BNBUSDT",
+   "WLDUSDT",
+   0.601,
+   0.0
+  ]
+ ],
+ "top_pairs": [
+  [
+   "ETHUSDT",
+   "LINKUSDT",
+   0.842,
+   0.746
+  ],
+  [
+   "ARBUSDT",
+   "OPUSDT",
+   0.839,
+   0.723
+  ],
+  [
+   "BTCUSDT",
+   "ETHUSDT",
+   0.838,
+   0.72
+  ],
+  [
+   "LINKUSDT",
+   "AVAXUSDT",
+   0.821,
+   0.709
+  ],
+  [
+   "DOGEUSDT",
+   "1000PEPEUSDT",
+   0.821,
+   0.664
+  ],
+  [
+   "ETHUSDT",
+   "SOLUSDT",
+   0.815,
+   0.647
+  ],
+  [
+   "LINKUSDT",
+   "DOGEUSDT",
+   0.812,
+   0.604
+  ],
+  [
+   "XRPUSDT",
+   "DOGEUSDT",
+   0.804,
+   0.581
+  ],
+  [
+   "SOLUSDT",
+   "DOGEUSDT",
+   0.802,
+   0.533
+  ],
+  [
+   "ETHUSDT",
+   "DOGEUSDT",
+   0.801,
+   0.557
+  ],
+  [
+   "SOLUSDT",
+   "LINKUSDT",
+   0.801,
+   0.62
+  ],
+  [
+   "BTCUSDT",
+   "SOLUSDT",
+   0.795,
+   0.524
+  ],
+  [
+   "1000PEPEUSDT",
+   "WIFUSDT",
+   0.792,
+   0.564
+  ],
+  [
+   "LINKUSDT",
+   "ARBUSDT",
+   0.788,
+   0.583
+  ],
+  [
+   "DOGEUSDT",
+   "AVAXUSDT",
+   0.787,
+   0.524
+  ]
+ ],
+ "btc_corr": {
+  "BTCUSDT": 1.0,
+  "ETHUSDT": 0.82,
+  "SOLUSDT": 0.77,
+  "BNBUSDT": 0.71,
+  "XRPUSDT": 0.69,
+  "LINKUSDT": 0.74,
+  "DOGEUSDT": 0.75,
+  "SUIUSDT": 0.71,
+  "AVAXUSDT": 0.72,
+  "1000PEPEUSDT": 0.67,
+  "WIFUSDT": 0.62,
+  "NEARUSDT": 0.63,
+  "APTUSDT": 0.64,
+  "INJUSDT": 0.64,
+  "TIAUSDT": 0.6,
+  "SEIUSDT": 0.65,
+  "WLDUSDT": 0.57,
+  "ARBUSDT": 0.65,
+  "OPUSDT": 0.64
+ },
+ "share_of_pairs_above_08": 0.307,
+ "mean_pair_corr_last_day": 0.722
+}
