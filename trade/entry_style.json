@@ -1,0 +1,14 @@
+{
+  "updated": "2026-11-10T15:30+07:00",
+  "rule": "Prefer MARKET entries. LIMIT only within 0.8% of mark (never >1.5%); cancel unfilled limit + its SL/TP algos after ~2h or at US-data blackout, not after one scan.",
+  "setups": {
+    "RETEST (CORE + MAO HIEM)": "One of last 8 closed 1h candles closed beyond prior 20h high/low; price ran >=0.5 ATR, then mark came back within 0.8% of the broken level on the breakout side, with no close back through it by >0.3%. Entry MARKET if within 0.3% of level, else LIMIT at the level (+/-0.05%). SL beyond min/max(retest swing, level) + 0.4xATR(1h,14). TP1 ~1.5R or break-candle extreme (if 1-2R). TP2 = next structure (hi48/lo48 or measured move = range height), capped 4R. Score: 2.5 base, +1 4h-trend aligned (CORE -0.5 if counter-trend), +0.5 break vol>=1.5x, +0.5 clean hold, +0.3 at level.",
+    "BREAKOUT": "Last closed 1h beyond prior 20h range. MARKET. SL beyond level/3-bar swing + 0.4xATR. TP2 = next structure (not the old range edge). CORE: skip chase if range pos >0.88/<0.12. MAO HIEM: skip only if >1.5xATR past level.",
+    "MOMENTUM (MAO HIEM only)": "No break needed: 4h trend aligned, last 1h vol >=1.5x avg, mom3 >0.5% in trend direction. SL beyond 5-bar swing + 0.3xATR; TP2 = hi20/hi48 (lo20/lo48)."
+  },
+  "score_min": {"CORE": 3.5, "MAO HIEM": 2.5},
+  "hard_rules": "R:R to TP2 >= 2.0; CORE risk <=2.0 USDT <=10x isolated; MAO HIEM risk <=15% walletBalance <=20x isolated (lev auto-lowered so liq is beyond SL); 1 pos per book, 2 total; daily stop -7.5 USDT realized (Saigon day); no entries in US-data windows (weekday 19:30-21:00, 21:30-22:30 Saigon); 2 TPs 50/50 via Algo API MARK_PRICE reduceOnly.",
+  "script": "/workspace/trade/run_hourly.py places orders itself when run plain; --dry-run simulates all writes (no orders, no Telegram, output -> _dry_run.json).",
+  "telegram": "Plain Vietnamese, no emoji, UTF-8 via tg_trade.py. Labels: CORE or MAO HIEM.",
+  "reason": "User 2026-11-10: filter too strict, nothing filled since Nov 7; approved retest entries and a more aggressive MAO HIEM book ('that mao hiem luon cung dc')."
+}

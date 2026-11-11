@@ -1,0 +1,41 @@
+{
+  "updated": "2026-11-11T08:30:45+07:00",
+  "trades": 6,
+  "wins": 2,
+  "losses": 4,
+  "net_pnl": -8.5855,
+  "adjust": {
+    "score_penalty": {
+      "RETEST": 0.5,
+      "*": 0.25
+    },
+    "max_sl_pct": {},
+    "fee_rate": 0.00055,
+    "tp1_max_r": 1.5
+  },
+  "lessons": [
+    {
+      "rule": "setup_losing_streak",
+      "setup": "RETEST",
+      "streak": 2,
+      "adjust": "score -0.5 for RETEST"
+    },
+    {
+      "rule": "overall_losing_streak",
+      "streak": 2,
+      "adjust": "score -0.25 all setups"
+    },
+    {
+      "rule": "measured_fee_rate",
+      "adjust": "FEE_RATE per side 0.00055 (was 0.0004)"
+    },
+    {
+      "rule": "gave_back_before_tp1",
+      "trades": [
+        "ARBUSDT mfe 1.69R tp1 plan 2.0R"
+      ],
+      "adjust": "TP1 at most 1.5R"
+    }
+  ],
+  "last_change": "score -0.5 for RETEST; score -0.25 all setups; FEE_RATE per side 0.00055 (was 0.0004); TP1 at most 1.5R"
+}

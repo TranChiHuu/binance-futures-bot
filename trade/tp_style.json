@@ -1,0 +1,11 @@
+{
+  "updated": "2026-11-06T12:06+07:00",
+  "default": "2-level",
+  "split": "50/50",
+  "tp1_rr": "1.5-2.0R (prefer clear micro swing / round level between entry and TP2)",
+  "tp2": "original full target (structure / ~3-4R)",
+  "after_tp1": "move SL to breakeven (entry), keep remaining qty for TP2",
+  "orders": "Algo CONDITIONAL TAKE_PROFIT_MARKET MARK_PRICE reduceOnly partial qty; SL STOP_MARKET closePosition",
+  "telegram": "Plain Vietnamese, no emoji, UTF-8 via tg_trade.py. Labels: CORE or MAO HIEM.",
+  "reason": "User 2026-11-06: thuong dung TP 2 nac; ARB converted from single TP 0.1726"
+}

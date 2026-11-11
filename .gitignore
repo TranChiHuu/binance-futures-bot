@@ -1,0 +1,13 @@
+.env
+*.log
+*.out
+*.pid
+*.lock
+__pycache__/
+*.bak_*
+_dry_run.json
+_scan_now.json
+last_run.json
+pos_state.json
+hourly_log.jsonl
+.telegram_chat_id
