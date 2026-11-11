@@ -166,7 +166,8 @@ def symbol_level(syms, sigs_by_sym, p=LIVE, tp1_cap=None, filt=None, sim_kw=None
     return trades
 
 def portfolio(syms, sigs_by_sym, p=LIVE, wallet0=45.0, filt=None, corr_rule='groups', corr_fn=None,
-              sim_kw=None, cache=None, tp1_cap=None, daily_stop=-7.5, core_risk=2.0, high_pct=0.15, high_fixed=None):
+              sim_kw=None, cache=None, tp1_cap=None, daily_stop=-7.5, core_risk=2.0, high_pct=0.15, high_fixed=None,
+              risk_pct_both=None, daily_mult=None, filters=None):
     """Full live-rules portfolio replay. Returns (trades, equity list)."""
     tp1_cap = p.tp1_max_r if tp1_cap is None else tp1_cap
     sim_kw = sim_kw or {}
@@ -189,16 +190,21 @@ def portfolio(syms, sigs_by_sym, p=LIVE, wallet0=45.0, filt=None, corr_rule='gro
                 del open_[bk]
         if wallet < 5: break
         rt = realized.get(saigon_day(ts), 0.0)
-        if rt <= daily_stop or len(open_) >= 2 or in_blackout(ts): continue
-        room = max(0.0, abs(daily_stop) + rt)
+        ds = daily_stop if not daily_mult else max(daily_stop, -daily_mult * wallet * risk_pct_both)
+        if rt <= ds or len(open_) >= 2 or in_blackout(ts): continue
+        room = max(0.0, abs(ds) + rt)
         cands = sorted(by_ts[ts], key=lambda s: -final_score(s, p))
         for s in cands:
             bk = s['book']
             if bk in open_: continue
             if filt and not filt(s, traded_levels): continue
-            budget = core_risk if bk == 'CORE' else (high_fixed if high_fixed else wallet * high_pct)
-            if bk == 'HIGH' and room < budget: continue
-            if bk == 'CORE' and room < core_risk: continue
+            if risk_pct_both:
+                budget = wallet * risk_pct_both
+                if room < budget: continue
+            else:
+                budget = core_risk if bk == 'CORE' else (high_fixed if high_fixed else wallet * high_pct)
+                if bk == 'HIGH' and room < budget: continue
+                if bk == 'CORE' and room < core_risk: continue
             blocked = False
             for t in open_.values():
                 if t['side'] != s['side']: continue
@@ -217,7 +223,11 @@ def portfolio(syms, sigs_by_sym, p=LIVE, wallet0=45.0, filt=None, corr_rule='gro
             qty = budget / (rpu + fee_buf)
             avail = wallet - sum(t['margin'] for t in open_.values())
             qty = min(qty, max(0, avail * 0.85 * lev / e))
-            if qty * e < 5: continue
+            if filters and s['sym'] in filters:
+                stp, mq, mn = filters[s['sym']]
+                qty = np.floor(qty / stp + 1e-9) * stp
+                if qty < mq or qty * e < mn or np.floor(qty / 2 / stp + 1e-9) < 1: continue
+            elif qty * e < 5: continue
             liq = e * (1 - 1/lev + 0.01) if s['side'] == 'LONG' else e * (1 + 1/lev - 0.01)
             if (s['side'] == 'LONG' and liq >= s['sl']) or (s['side'] == 'SHORT' and liq <= s['sl']): continue
             key = (s['sym'], s['j'], s['entry'], s['sl'], tp1_cap, p.fee, tuple(sorted(sim_kw.items())))

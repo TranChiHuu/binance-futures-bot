@@ -13,9 +13,11 @@ NOW = datetime.datetime.now(SAIGON)
 TS = NOW.strftime('%Y-%m-%dT%H:%M+07:00')
 DAY = NOW.strftime('%Y-%m-%d')
 DAY_MS = int(datetime.datetime(NOW.year, NOW.month, NOW.day, tzinfo=SAIGON).timestamp()*1000)
-DAILY_STOP = -7.5
-CORE_RISK = 2.0
-HIGH_RISK_PCT = 0.15
+DAILY_STOP_HARD = -7.5     # hard cap (USDT realized, Saigon day)
+DAILY_STOP = DAILY_STOP_HARD  # tightened below once wallet is known (A7)
+RISK_PCT = 0.01            # A4 2026-11-11: risk per trade = 1% of live walletBalance, BOTH books
+DAILY_STOP_RISK_MULT = 3.0 # A7: daily stop = max(-7.5, -3 x per-trade risk)
+MIN_SL_ATR = 1.0           # A3: skip candidates whose SL distance < 1.0 x ATR(14,1h)
 FEE_RATE = 0.0004  # est taker round-trip buffer for SL loss
 # --- 2026-11-10: retest mode + looser HIGH-RISK filter ---
 CORE_SCORE_MIN = 3.5
@@ -164,7 +166,9 @@ comm = safe_call('/fapi/v1/income', {'incomeType':'COMMISSION','startTime':DAY_M
 realized = sum(fnum(i.get('income')) for i in inc) if isinstance(inc, list) else 0.0
 commission = sum(fnum(i.get('income')) for i in comm) if isinstance(comm, list) else 0.0
 
-high_budget = wallet * HIGH_RISK_PCT
+risk_budget_trade = wallet * RISK_PCT          # A4: same for CORE and HIGH
+high_budget = risk_budget_trade                 # kept name for logging/back-compat
+DAILY_STOP = max(DAILY_STOP_HARD, -DAILY_STOP_RISK_MULT * risk_budget_trade)  # A7 (tightening only)
 remaining_daily = DAILY_STOP - realized  # e.g. -7.5 - 0 = -7.5; usable risk = 7.5 + realized if realized negative
 # daily stop if realized <= -7.5
 blocked_daily = realized <= DAILY_STOP
@@ -188,8 +192,8 @@ slots_ok = pos_used < 2
 if _pend_syms: skips.append(f"Pending entries occupy slots: {sorted(_pend_syms)}")
 
 skips.append(f"Book: {len(positions)} pos, {len(orders)} orders, {len(algos)} algo; wallet={wallet:.8f} avail={avail:.8f}")
-skips.append(f"Saigon day {DAY} realizedPnL_today={realized:.4f} commission={commission:.4f} — daily stop {'HIT' if blocked_daily else 'OK'} (limit -7.5, room={room:.2f})")
-skips.append(f"HIGH risk budget 15%={high_budget:.4f} USDT; CORE risk cap {CORE_RISK}")
+skips.append(f"Saigon day {DAY} realizedPnL_today={realized:.4f} commission={commission:.4f} — daily stop {'HIT' if blocked_daily else 'OK'} (limit {DAILY_STOP:.2f}, room={room:.2f})")
+skips.append(f"Risk per trade 1% wallet={risk_budget_trade:.4f} USDT (CORE+HIGH); daily stop={DAILY_STOP:.4f} (hard cap {DAILY_STOP_HARD}); min SL {MIN_SL_ATR}xATR")
 
 # --- Fix SL/TP / stale pendings ---
 # exchangeInfo for filters
@@ -315,6 +319,13 @@ def ema(arr, n):
     for x in arr[n:]:
         e = x*k + e*(1-k)
     return e
+
+def floor_step(q, step):
+    """Round quantity DOWN to stepSize exactly (Decimal, no float round-up)."""
+    from decimal import Decimal, ROUND_FLOOR
+    if step <= 0 or q <= 0: return max(q, 0.0)
+    d = Decimal(str(step))
+    return float((Decimal(repr(q)) / d).to_integral_value(rounding=ROUND_FLOOR) * d)
 
 def round_step(q, step):
     if step <= 0: return q
@@ -548,6 +559,14 @@ for s_ in scan_results:
     cap_ = _maxsl.get(s_['port'])
     if cap_ and s_.get('plan') and s_['decision'] == 'CANDIDATE' and s_['plan']['risk_pct'] > float(cap_):
         s_['decision'] = 'SKIP_sl_wide_lesson'
+# --- A3 (2026-11-11, approved): SL distance must be >= MIN_SL_ATR x ATR(14,1h), all setups/books ---
+for s_ in scan_results:
+    pl_ = s_.get('plan')
+    if s_['decision'] == 'CANDIDATE' and pl_ and s_.get('atr'):
+        sl_atr_ = abs(pl_['entry'] - pl_['sl']) / s_['atr']
+        if sl_atr_ < MIN_SL_ATR:
+            s_['decision'] = 'SKIP_sl_lt_1atr'
+            s_['note'] = (s_.get('note') or '') + f' sl={sl_atr_:.2f}ATR'
 scan_results.sort(key=lambda x: -x['score'])
 top = scan_results[:8]
 max_score = top[0]['score'] if top else 0
@@ -570,7 +589,7 @@ elif not slots_ok:
 elif within_30_us:
     skips.append("Within 30min major US data — no new entry")
 elif not candidates:
-    skips.append("No CANDIDATE (setups RETEST/BREAKOUT/MOMENTUM-high; need R:R>=2 to TP2, score>=3.5 CORE / >=2.5 HIGH)")
+    skips.append("No CANDIDATE (BREAKOUT only while RETEST/MOMENTUM locked; need R:R>=2 to TP2, score>=3.5 CORE / >=2.5 HIGH, SL>=1xATR)")
 else:
     # pick best candidate respecting portfolio slots and correlation
     for cand in candidates:
@@ -579,16 +598,16 @@ else:
             continue
         if port == 'HIGH' and not high_free:
             continue
-        risk_budget = CORE_RISK if port == 'CORE' else high_budget
+        risk_budget = risk_budget_trade  # A4: 1% of live wallet for both books
         if port == 'HIGH' and room < risk_budget:
             # don't shrink below meaningful — skip if remaining daily < planned risk
-            if room < 1.0:
+            if room < risk_budget:
                 skips.append(f"{cand['sym']} HIGH skipped: remaining daily room {room:.2f} < meaningful")
                 continue
             # if room between 1 and risk_budget, still skip per rules (don't shrink)
             skips.append(f"{cand['sym']} HIGH skipped: remaining daily budget {room:.2f} < planned risk {risk_budget:.2f}")
             continue
-        if room < (CORE_RISK if port=='CORE' else min(risk_budget, 1.0)):
+        if room < risk_budget:
             skips.append(f"{cand['sym']} skipped: daily room {room:.2f} too small")
             continue
         # correlation: avoid same-direction correlated with open
@@ -643,18 +662,20 @@ else:
         lev = max(1, min(lev_max, lev_liq))
 
         fee_buf = entry_px * FEE_RATE * 2
-        qty = risk_budget / (risk_per_unit + fee_buf)
+        qty_raw = risk_budget / (risk_per_unit + fee_buf)
         # cap by margin available (risk may be below cap, never above)
         max_qty_margin = (avail * 0.85 * lev) / entry_px if entry_px else 0
-        if qty > max_qty_margin:
-            qty = max_qty_margin
-        qty = round_step(qty, step)
+        if qty_raw > max_qty_margin:
+            qty_raw = max_qty_margin
+        qty = floor_step(qty_raw, step)   # A4: always round DOWN, never upsize
         qp = info.get('quantityPrecision')
-        if qp is not None:
-            qty = float(f"{qty:.{qp}f}")
+        while qty > 0 and qty * (risk_per_unit + fee_buf) > risk_budget * (1 + 1e-9):
+            qty = floor_step(qty - step, step)
         notional = qty * entry_px
-        if qty <= 0 or notional < min_n:
-            skips.append(f"{cand['sym']} qty too small notional={notional:.2f} < min {min_n}")
+        min_q = info.get('minQty', 0) or 0
+        if qty <= 0 or qty < min_q or notional < min_n:
+            skips.append(f"{cand['sym']} SKIP_min_notional qty={qty} (minQty {min_q}) notional={notional:.2f} < min {min_n} at risk {risk_budget:.4f}")
+            cand['decision'] = 'SKIP_min_notional'
             continue
         margin_needed = notional / lev
         if margin_needed > avail * 0.9:
@@ -681,12 +702,9 @@ else:
 
         sl_p = fmt_p(sl); tp1_p = fmt_p(tp1); tp2_p = fmt_p(tp2)
 
-        half = round_step(qty/2, step)
-        if qp is not None:
-            half = float(f"{half:.{qp}f}")
-        half2 = qty - half
-        if qp is not None:
-            half2 = float(f"{half2:.{qp}f}")
+        half = floor_step(qty/2, step)
+        half2 = floor_step(qty - half + step*1e-6, step)   # exact remainder on the step grid
+        if half + half2 > qty + step*1e-6: half2 = floor_step(qty - half, step)
         if half <= 0 or half2 <= 0:
             skips.append(f"{cand['sym']} cannot split 50/50 stepSize — skip")
             continue

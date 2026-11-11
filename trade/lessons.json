@@ -1,12 +1,13 @@
 {
-  "updated": "2026-11-11T08:30:45+07:00",
-  "trades": 6,
-  "wins": 2,
+  "updated": "2026-11-11T10:12:32+07:00",
+  "trades": 7,
+  "wins": 3,
   "losses": 4,
-  "net_pnl": -8.5855,
+  "net_pnl": -4.2965,
   "adjust": {
     "score_penalty": {
-      "RETEST": 0.5,
+      "RETEST": 99.0,
+      "MOMENTUM": 99.0,
       "*": 0.25
     },
     "max_sl_pct": {},
@@ -21,11 +22,6 @@
       "adjust": "score -0.5 for RETEST"
     },
     {
-      "rule": "overall_losing_streak",
-      "streak": 2,
-      "adjust": "score -0.25 all setups"
-    },
-    {
       "rule": "measured_fee_rate",
       "adjust": "FEE_RATE per side 0.00055 (was 0.0004)"
     },
@@ -37,5 +33,5 @@
       "adjust": "TP1 at most 1.5R"
     }
   ],
-  "last_change": "score -0.5 for RETEST; score -0.25 all setups; FEE_RATE per side 0.00055 (was 0.0004); TP1 at most 1.5R"
+  "last_change": "score -0.5 for RETEST; FEE_RATE per side 0.00055 (was 0.0004); TP1 at most 1.5R"
 }

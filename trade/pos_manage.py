@@ -284,6 +284,19 @@ def update_lessons():
                         'note': 'SL trades never reached 0.5R: entries late/at extremes; prefer RETEST over chase',
                         'adjust': 'BREAKOUT +0.25 penalty' })
         adj['score_penalty']['BREAKOUT'] = adj['score_penalty'].get('BREAKOUT', 0) + 0.25
+    # ratchet: lessons may only tighten -> merge with previous adjust and locked overrides
+    srcs = [old.get('adjust') or {}]
+    try: srcs.append(json.load(open(f'{D}/lessons_locked.json')).get('adjust', {}) or {})
+    except Exception: pass
+    for o in srcs:
+        for k, v in (o.get('score_penalty') or {}).items():
+            adj['score_penalty'][k] = max(float(v), float(adj['score_penalty'].get(k, 0)))
+        for k, v in (o.get('max_sl_pct') or {}).items():
+            adj['max_sl_pct'][k] = min(float(v), float(adj['max_sl_pct'].get(k, 99)))
+        if o.get('fee_rate'):
+            adj['fee_rate'] = max(float(o['fee_rate']), float(adj.get('fee_rate') or 0))
+        if o.get('tp1_max_r'):
+            adj['tp1_max_r'] = min(float(o['tp1_max_r']), float(adj.get('tp1_max_r') or 99))
     prev = json.dumps(old.get('adjust'), sort_keys=True)
     out = {'updated': now_s(), 'trades': len(J),
            'wins': sum(1 for r in J if r['pnl_net'] > 0), 'losses': sum(1 for r in J if r['pnl_net'] < 0),

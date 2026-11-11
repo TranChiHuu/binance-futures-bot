@@ -1,0 +1,4 @@
+{
+  "note": "Locked tightening from 2-year backtest 2026-11-11 (quant/REPORT.md): RETEST and MOMENTUM have negative expectancy in-sample and out-of-sample -> blocked.",
+  "adjust": {"score_penalty": {"RETEST": 99, "MOMENTUM": 99, "*": 0.25}}
+}
