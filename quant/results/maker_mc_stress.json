@@ -1,0 +1,86 @@
+{
+ "maker|mean0.039|1%": {
+  "median": 52.8,
+  "p5": 32.1,
+  "end_lt20": 0.0,
+  "ever_lt20": 0.1,
+  "end_lt45": 30.4
+ },
+ "maker|mean0.039|2%": {
+  "median": 56.5,
+  "p5": 20.9,
+  "end_lt20": 4.2,
+  "ever_lt20": 10.3,
+  "end_lt45": 36.6
+ },
+ "maker|mean0.039|3%": {
+  "median": 55.0,
+  "p5": 12.4,
+  "end_lt20": 14.0,
+  "ever_lt20": 30.1,
+  "end_lt45": 42.3
+ },
+ "maker|mean0.0|1%": {
+  "median": 42.2,
+  "p5": 25.6,
+  "end_lt20": 0.7,
+  "ever_lt20": 0.9,
+  "end_lt45": 57.2
+ },
+ "maker|mean0.0|2%": {
+  "median": 36.1,
+  "p5": 13.3,
+  "end_lt20": 16.4,
+  "ever_lt20": 28.6,
+  "end_lt45": 63.5
+ },
+ "maker|mean0.0|3%": {
+  "median": 28.1,
+  "p5": 6.3,
+  "end_lt20": 36.7,
+  "ever_lt20": 55.2,
+  "end_lt45": 69.1
+ },
+ "market|mean0.017|1%": {
+  "median": 47.1,
+  "p5": 27.6,
+  "end_lt20": 0.3,
+  "ever_lt20": 0.6,
+  "end_lt45": 45.0
+ },
+ "market|mean0.017|2%": {
+  "median": 44.9,
+  "p5": 15.4,
+  "end_lt20": 9.5,
+  "ever_lt20": 18.3,
+  "end_lt45": 50.2
+ },
+ "market|mean0.017|3%": {
+  "median": 39.0,
+  "p5": 7.9,
+  "end_lt20": 24.7,
+  "ever_lt20": 43.9,
+  "end_lt45": 56.0
+ },
+ "market|mean0.0|1%": {
+  "median": 42.7,
+  "p5": 25.0,
+  "end_lt20": 0.5,
+  "ever_lt20": 1.3,
+  "end_lt45": 56.3
+ },
+ "market|mean0.0|2%": {
+  "median": 36.9,
+  "p5": 12.7,
+  "end_lt20": 15.4,
+  "ever_lt20": 28.2,
+  "end_lt45": 62.1
+ },
+ "market|mean0.0|3%": {
+  "median": 29.0,
+  "p5": 5.9,
+  "end_lt20": 34.6,
+  "ever_lt20": 55.6,
+  "end_lt45": 69.2
+ }
+}

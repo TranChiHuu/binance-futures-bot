@@ -193,3 +193,95 @@ Biểu đồ: `results/correlation_heatmap.png`, `results/correlation_over_time.
 
 - Bot hiện tại thua là do cấu trúc luật, không phải do xui. Cơ chế "học" hiện tại (trừ điểm sau chuỗi thua) không sửa được một setup có kỳ vọng âm.
 - Phiên bản tốt nhất tìm được (chỉ BREAKOUT, SL ≥ 1×ATR) chỉ quanh hòa vốn đến dương nhẹ, chưa đủ để gọi là edge. Nếu tiếp tục chạy thật, nên chạy với rủi ro rất nhỏ (A4) và coi đó là giai đoạn thu dữ liệu.
+
+## 10. Nghiên cứu B5: vào lệnh bằng limit (maker) thay vì market (11/11/2026)
+
+**Cấu hình được thử:** đúng cấu hình đang chạy live, tức chỉ BREAKOUT, SL ≥ 1×ATR, TP1 1.5R chốt 50% rồi dời SL về hòa vốn, phần còn lại chạy tới TP2. Phí thật: taker 0.050%, maker 0.020%.
+
+**Cách mô phỏng:**
+- Vào market: trượt giá 0.05%.
+- Vào limit: chỉ tính là khớp nếu một nến 15m sau đó **đi xuyên qua** giá limit ít nhất 0.01%. Nếu sau N nến 15m vẫn chưa khớp thì hủy và coi như mất lệnh.
+- Vị trí đặt limit:
+  - "level": đặt đúng mức vừa bị phá.
+  - "pbX": đặt cách giá đóng nến breakout X%, với X = 0, 0.1, 0.2, 0.3%.
+  - Không bao giờ đặt ở phía sai của giá hiện tại (post-only).
+- SL và TP được tính lại theo giá vào thật, và vẫn phải qua A3 cùng điều kiện R:R ≥ 2.
+- TP có hai cách: TAKE_PROFIT_MARKET (taker), hoặc lệnh limit reduce-only (maker, cũng phải đi xuyên qua giá 0.01%).
+- SL và BE luôn là lệnh taker, trượt thêm 0.02%.
+
+### 10a. Từng coin độc lập, 2 năm (in-sample)
+
+| Biến thể | Tỉ lệ khớp | Lệnh | TB R | Khoảng tin cậy 95% | PF | R của market trên các lệnh bị lỡ |
+|---|---|---|---|---|---|---|
+| Market (đang chạy) | 100% | 2.128 | +0.056 | +0.001..+0.110 | 1.10 | – |
+| level, N=4 | 74% | 1.786 | +0.073 | +0.013..+0.134 | 1.13 | +0.24 |
+| level, N=8, TP maker | 81% | 1.858 | +0.081 | +0.021..+0.140 | 1.14 | +0.38 |
+| **pb0, N=4 (1h), TP maker** | **91%** | 2.004 | **+0.081** | +0.024..+0.137 | 1.15 | +0.40 |
+| pb0.1, N=8, TP maker | 92% | 2.010 | +0.079 | +0.023..+0.136 | 1.14 | +0.58 |
+| pb0.2, N=8, TP maker | 88% | 1.955 | +0.073 | +0.016..+0.131 | 1.13 | +0.52 |
+| pb0.3, N=4, TP maker | 79% | 1.848 | +0.085 | +0.025..+0.145 | 1.15 | +0.28 |
+
+- Cả 30 biến thể maker đều nằm trong khoảng +0.066..+0.085R, đều cao hơn market (+0.056R) khoảng +0.01..+0.03R. Cải thiện này đến từ phí rẻ hơn và giá vào tốt hơn.
+- **Có chọn lọc bất lợi rõ rệt:** những lệnh limit không khớp đều là lệnh thắng chạy luôn. Nếu vào market, các lệnh đó trung bình được +0.24 đến +0.67R. Ngược lại, những lệnh limit khớp được thì nếu vào market chỉ quanh 0R.
+- Phí và giá vào tốt hơn bù được phần bị lỡ, nhưng chỉ dư ra một chút.
+- TP maker thêm khoảng +0.003R mỗi lệnh. Rất nhỏ.
+
+### 10b. Walk-forward
+
+Dùng đúng 9 cửa sổ như mục 4: mỗi cửa sổ chọn biến thể maker tốt nhất trên 6 tháng train, rồi kiểm tra trên 2 tháng sau.
+
+| | Lệnh | TB R | Khoảng tin cậy 95% |
+|---|---|---|---|
+| Maker, in-sample | 4.409 | +0.114 | +0.076..+0.153 |
+| **Maker, out-of-sample** | 1.333 | **+0.039** | −0.028..+0.106 |
+| Market, in-sample (cùng cửa sổ) | 4.947 | +0.065 | +0.029..+0.100 |
+| Market, out-of-sample (cùng cửa sổ) | 1.497 | +0.017 | −0.046..+0.080 |
+
+- Biến thể được chọn thay đổi theo từng cửa sổ (pb0.3/N4 được chọn 3 lần, level 2 lần, các loại khác 1 lần), nghĩa là không có tham số nào thật sự nổi trội.
+- Out-of-sample, maker hơn market khoảng **+0.02R mỗi lệnh**. Cả hai khoảng tin cậy vẫn chứa 0.
+
+### 10c. Danh mục lãi kép từ 45 USDT
+
+Mô phỏng có daily stop A7 và áp đúng minQty/MIN_NOTIONAL thật của sàn. Maker ở đây là "pb0, N4, TP maker": đặt limit tại giá đóng nến breakout, hủy sau 1h.
+
+| Biến thể / rủi ro | Ví cuối | Max DD | Lệnh/tuần | MC: ví cuối trung vị (5%..95%) | MC: % kết thúc < 20 | MC: % từng chạm < 20 |
+|---|---|---|---|---|---|---|
+| Market 1% | 49.6 | 12.0 USDT (19.7%) | 5.7 | 51.6 (30.8..86.5) | 0% | 0% |
+| Market 2% | 49.4 | 26.4 (35.6%) | 5.8 | 52.0 (19.1..140) | 5.6% | 11.4% |
+| Market 3% | 37.0 | 43.3 (55.2%) | 5.8 | 37.0 (8.9..174) | 23.4% | 43.3% |
+| **Maker 1%** | **63.2** | **9.5 (14.6%)** | 5.4 | 64.7 (39.6..107) | 0% | 0% |
+| Maker 2% | 76.0 | 22.1 (28.9%) | 5.5 | 78.0 (30.5..226) | 0.6% | 3.7% |
+| Maker 3% | 84.4 | 39.9 (43.2%) | 5.5 | 85.7 (19.9..386) | 5.1% | 14.5% |
+
+- MC là bootstrap 1.000 đường, lấy mẫu lại có hoàn lại từ chính các lệnh trong backtest. Vì vậy nó **giả định edge trong backtest là thật**.
+- Kiểm tra căng hơn: dùng cùng độ biến động nhưng gán kỳ vọng bằng mức out-of-sample (+0.039R), hoặc bằng 0.
+
+| Kỳ vọng | Rủi ro | % kết thúc < 20 USDT | % từng chạm < 20 USDT | Ví cuối trung vị |
+|---|---|---|---|---|
+| OOS +0.039R | 1% | 0% | 0.1% | 52.8 |
+| OOS +0.039R | 2% | 4% | 10% | 56.5 |
+| OOS +0.039R | 3% | 14% | 30% | 55.0 |
+| 0R | 1% | 0.7% | 0.9% | 42.2 |
+| 0R | 2% | 16% | 29% | 36.1 |
+| 0R | 3% | 37% | 55% | 28.1 |
+
+**Bị bỏ vì không đủ min-notional** (2 năm, maker):
+- Rủi ro 1%: AVAX 35 lần (stepSize 1, khó chia đôi TP), BTC 11, ETH 8, LINK 5, NEAR 4, các coin khác 1–2.
+- Rủi ro 2%: AVAX 20, BTC 8, ETH 1.
+- Rủi ro 3%: AVAX 11, BTC 7.
+- Bản market cũng tương tự.
+- Hiện tại BTC cần rủi ro ít nhất khoảng 0.51 USDT mỗi lệnh với SL 1×ATR, tức ví khoảng 51 USDT ở mức 1%.
+
+### 10d. Kết luận B5
+
+- **Vào lệnh bằng limit maker là cải thiện thật nhưng nhỏ:** khoảng +0.02R mỗi lệnh, ổn định ở mọi biến thể và vẫn giữ được ở out-of-sample. Nó chưa biến chiến lược thành có edge chắc chắn, vì OOS +0.04R với khoảng tin cậy vẫn chứa 0.
+- Nếu áp dụng thì nên chọn cách đơn giản và khớp nhiều: limit post-only tại giá đóng nến breakout, hủy sau 1h, TP đặt bằng limit reduce-only. Mất khoảng 9% số lệnh, phần lớn là lệnh thắng chạy luôn.
+- **Mức rủi ro: giữ 1%.**
+  - Ở 1%, xác suất ví từng xuống dưới 20 USDT gần như bằng 0, kể cả khi chiến lược không có edge.
+  - Ở 2%, nếu edge thật chỉ bằng mức OOS thì khoảng 10% khả năng ví từng chạm 20 USDT. Nếu không có edge thì khoảng 29%.
+  - Ở 3%, rủi ro này lên 30–55%.
+- **Có nên áp dụng luật này với ví lớn hơn không?** Ví lớn giúp ở hai điểm:
+  - Bỏ được giới hạn min-notional, nên trade được BTC, AVAX, ETH/LINK khi SL rộng.
+  - Lệnh dễ chia đôi TP hơn.
+
+  Nhưng ví lớn **không làm edge lớn hơn**, vì R mỗi lệnh tính theo phần trăm là như nhau. Nên tăng vốn chỉ sau khi có khoảng 100 lệnh thật cho kết quả giống backtest, và giữ rủi ro theo phần trăm (1%), không tăng theo số tiền.

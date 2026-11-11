@@ -60,7 +60,8 @@ class Sym:
         return out
 
     def sim_exit(self, sig, tp1_cap=1.5, fee=0.00055, slip_mkt=0.0005, slip_sl=0.0002,
-                 limit_bars=8, be_buf=0.0010, max_bars=96*45):
+                 limit_bars=8, be_buf=0.0010, max_bars=96*45,
+                 fee_in=None, fee_tp=None, fee_out=None, tp_through=0.0, lim_through=0.0002):
         """Returns trade dict in R units (1R = planned risk incl. 2x fee buffer, as live sizing)."""
         side = sig['side']; sgn = 1 if side == 'LONG' else -1
         k0 = sig['k0']; n = len(self.H)
@@ -69,6 +70,7 @@ class Sym:
         tp1 = sig['tp1']
         if abs(tp1 - e_plan) / rpu > tp1_cap: tp1 = e_plan + sgn * tp1_cap * rpu
         H, L = self.H, self.L
+        fee_in = fee if fee_in is None else fee_in; fee_tp = fee if fee_tp is None else fee_tp; fee_out = fee if fee_out is None else fee_out
         if sig['entry_type'] == 'MARKET':
             fill = e_plan * (1 + sgn * slip_mkt); kf = k0 + 1; start_tp = kf
         else:
@@ -76,7 +78,7 @@ class Sym:
                 return None  # live guard: mark already past TP1 for pending limit
             kf = None
             for k in range(k0 + 1, min(k0 + 1 + limit_bars, n)):
-                if (side == 'SHORT' and H[k] >= e_plan * 1.0002) or (side == 'LONG' and L[k] <= e_plan * 0.9998):
+                if (side == 'SHORT' and H[k] >= e_plan * (1 + lim_through)) or (side == 'LONG' and L[k] <= e_plan * (1 - lim_through)):
                     kf = k; break
             if kf is None:
                 return dict(outcome='NOFILL', t_free=int(self.ot15[min(k0 + limit_bars, n-1)] + M15))
@@ -85,9 +87,9 @@ class Sym:
         end = min(n, kf + max_bars)
         hs, ls = H[kf:end], L[kf:end]
         if side == 'LONG':
-            sl_hit = ls <= sl; tp1_hit = hs >= tp1; tp2_hit = hs >= tp2
+            sl_hit = ls <= sl; tp1_hit = hs >= tp1 * (1 + tp_through); tp2_hit = hs >= tp2 * (1 + tp_through)
         else:
-            sl_hit = hs >= sl; tp1_hit = ls <= tp1; tp2_hit = ls <= tp2
+            sl_hit = hs >= sl; tp1_hit = ls <= tp1 * (1 - tp_through); tp2_hit = ls <= tp2 * (1 - tp_through)
         tp1_hit = tp1_hit.copy(); tp2_hit = tp2_hit.copy()
         off = start_tp - kf
         tp1_hit[:off] = False; tp2_hit[:off] = False
@@ -98,7 +100,7 @@ class Sym:
             # parts: list of (frac, price, t_ms)
             t_fill = int(self.ot15[kf]); t_exit = int(self.ot15[min(kx, n-1)] + M15)
             gross = sum(fr * sgn * (px - fill) for fr, px, _ in parts)
-            fees = fill * fee + sum(fr * px * fee for fr, px, _ in parts)
+            fees = fill * fee_in + sum(fr * px * (fee_tp if (px == tp1 or px == tp2) else fee_out) for fr, px, _ in parts)
             fund = 0.0; last = t_fill; rem = 1.0
             for fr, px, tt in sorted(parts, key=lambda x: x[2]):
                 fund += -sgn * rem * self.funding_sum(last, tt) * fill; rem -= fr; last = tt
@@ -119,9 +121,9 @@ class Sym:
         t_tp1 = int(self.ot15[kb] + M15)
         hs2, ls2 = H[kb:end], L[kb:end]
         if side == 'LONG':
-            be_hit = ls2 <= be; t2 = hs2 >= tp2
+            be_hit = ls2 <= be; t2 = hs2 >= tp2 * (1 + tp_through)
         else:
-            be_hit = hs2 >= be; t2 = ls2 <= tp2
+            be_hit = hs2 >= be; t2 = ls2 <= tp2 * (1 - tp_through)
         be_hit = be_hit.copy(); be_hit[0] = False
         c_ = np.argmax(be_hit) if be_hit.any() else 10**9
         d_ = np.argmax(t2) if t2.any() else 10**9
@@ -167,7 +169,7 @@ def symbol_level(syms, sigs_by_sym, p=LIVE, tp1_cap=None, filt=None, sim_kw=None
 
 def portfolio(syms, sigs_by_sym, p=LIVE, wallet0=45.0, filt=None, corr_rule='groups', corr_fn=None,
               sim_kw=None, cache=None, tp1_cap=None, daily_stop=-7.5, core_risk=2.0, high_pct=0.15, high_fixed=None,
-              risk_pct_both=None, daily_mult=None, filters=None):
+              risk_pct_both=None, daily_mult=None, filters=None, skip_log=None):
     """Full live-rules portfolio replay. Returns (trades, equity list)."""
     tp1_cap = p.tp1_max_r if tp1_cap is None else tp1_cap
     sim_kw = sim_kw or {}
@@ -226,7 +228,9 @@ def portfolio(syms, sigs_by_sym, p=LIVE, wallet0=45.0, filt=None, corr_rule='gro
             if filters and s['sym'] in filters:
                 stp, mq, mn = filters[s['sym']]
                 qty = np.floor(qty / stp + 1e-9) * stp
-                if qty < mq or qty * e < mn or np.floor(qty / 2 / stp + 1e-9) < 1: continue
+                if qty < mq or qty * e < mn or np.floor(qty / 2 / stp + 1e-9) < 1:
+                    if skip_log is not None: skip_log[s['sym']] = skip_log.get(s['sym'], 0) + 1
+                    continue
             elif qty * e < 5: continue
             liq = e * (1 - 1/lev + 0.01) if s['side'] == 'LONG' else e * (1 + 1/lev - 0.01)
             if (s['side'] == 'LONG' and liq >= s['sl']) or (s['side'] == 'SHORT' and liq <= s['sl']): continue
