@@ -15,7 +15,7 @@ DAY = NOW.strftime('%Y-%m-%d')
 DAY_MS = int(datetime.datetime(NOW.year, NOW.month, NOW.day, tzinfo=SAIGON).timestamp()*1000)
 DAILY_STOP_HARD = -7.5     # hard cap (USDT realized, Saigon day)
 DAILY_STOP = DAILY_STOP_HARD  # tightened below once wallet is known (A7)
-RISK_PCT = 0.01            # A4 2026-11-11: risk per trade = 1% of live walletBalance, BOTH books
+RISK_PCT = 0.01            # overwritten by risk_tier.compute; small wallet is per-book (CORE 2.5%, HIGH 4%)
 DAILY_STOP_RISK_MULT = 3.0 # A7: daily stop = max(-7.5, -3 x per-trade risk)
 MIN_SL_ATR = 1.0           # A3: skip candidates whose SL distance < 1.0 x ATR(14,1h)
 # --- 2026-11-11 (t50u): maker entries + wallet-adaptive risk ---
@@ -175,9 +175,13 @@ import risk_tier as _rt
 RISK_STATE = _rt.compute(wallet, _rt.load_state())   # adaptive tier (DD from peak, scale-up after >=100/200 trades)
 if not DRY:
     _rt.save(RISK_STATE)
-RISK_PCT = RISK_STATE['risk_pct']
-risk_budget_trade = wallet * RISK_PCT          # same % for CORE and HIGH (per-book old caps applied at sizing)
-high_budget = risk_budget_trade                 # kept name for logging/back-compat
+RISK_PCT_CORE = RISK_STATE['risk_pct_core']
+RISK_PCT_HIGH = RISK_STATE['risk_pct_high']
+RISK_PCT = RISK_STATE['risk_pct']              # larger book (HIGH on the small-wallet tier) for daily stop / back-compat
+risk_budget_core = _rt.book_cap('CORE', wallet, rs=RISK_STATE)
+risk_budget_high = _rt.book_cap('HIGH', wallet, rs=RISK_STATE)
+risk_budget_trade = max(risk_budget_core, risk_budget_high)  # daily stop uses the larger book's per-trade risk
+high_budget = risk_budget_high
 DAILY_STOP = max(DAILY_STOP_HARD, -DAILY_STOP_RISK_MULT * risk_budget_trade)  # A7 (tightening only)
 remaining_daily = DAILY_STOP - realized  # e.g. -7.5 - 0 = -7.5; usable risk = 7.5 + realized if realized negative
 # daily stop if realized <= -7.5
@@ -203,7 +207,7 @@ if _pend_syms: skips.append(f"Pending entries occupy slots: {sorted(_pend_syms)}
 
 skips.append(f"Book: {len(positions)} pos, {len(orders)} orders, {len(algos)} algo; wallet={wallet:.8f} avail={avail:.8f}")
 skips.append(f"Saigon day {DAY} realizedPnL_today={realized:.4f} commission={commission:.4f} — daily stop {'HIT' if blocked_daily else 'OK'} (limit {DAILY_STOP:.2f}, room={room:.2f})")
-skips.append(f"Risk tier {RISK_STATE['tier']}: {RISK_PCT*100:.2f}% wallet={risk_budget_trade:.4f} USDT (peak {RISK_STATE['peak']:.2f}, DD {RISK_STATE['dd']*100:.1f}%, post-change trades {RISK_STATE['journal']['n']}); daily stop={DAILY_STOP:.4f} (hard cap {DAILY_STOP_HARD}); min SL {MIN_SL_ATR}xATR; maker entry {'ON' if MAKER_ENTRY else 'OFF'}")
+skips.append(f"Risk tier {RISK_STATE['tier']}: CORE {RISK_PCT_CORE*100:.2f}%={risk_budget_core:.4f} USDT, HIGH {RISK_PCT_HIGH*100:.2f}%={risk_budget_high:.4f} USDT (peak {RISK_STATE['peak']:.2f}, DD {RISK_STATE['dd']*100:.1f}%, post-change trades {RISK_STATE['journal']['n']}); daily stop={DAILY_STOP:.4f} from larger book (hard cap {DAILY_STOP_HARD}); min SL {MIN_SL_ATR}xATR; maker entry {'ON' if MAKER_ENTRY else 'OFF'}")
 
 # --- Fix SL/TP / stale pendings ---
 # exchangeInfo for filters
@@ -638,7 +642,7 @@ else:
             continue
         if port == 'HIGH' and not high_free:
             continue
-        risk_budget = _rt.book_cap(port, wallet, risk_budget_trade)  # adaptive tier, never above old book caps
+        risk_budget = _rt.book_cap(port, wallet, rs=RISK_STATE)  # per-book adaptive tier, never above old book caps
         if port == 'HIGH' and room < risk_budget:
             # don't shrink below meaningful — skip if remaining daily < planned risk
             if room < risk_budget:
@@ -846,7 +850,7 @@ else:
                     'entry': entry_px, 'sl': sl_p, 'tp1': tp1_p, 'tp2': tp2_p, 'qty': qty, 'lev': lev,
                     'score': cand['score'], 'rr': round(rr_check, 2), 'opened_ms': int(time.time()*1000),
                     'risk_usdt': round(risk_usdt, 4), 'pending_limit': not use_market, 'note': cand.get('note'),
-                    'maker': plan['entry_type'] == 'LIMIT_GTX', 'risk_tier': RISK_STATE['tier'], 'risk_pct': RISK_PCT,
+                    'maker': plan['entry_type'] == 'LIMIT_GTX', 'risk_tier': RISK_STATE['tier'], 'risk_pct': RISK_PCT_CORE if port == 'CORE' else RISK_PCT_HIGH,
                     **({'expire_ms': int(time.time()*1000) + MAKER_EXPIRE_MIN*60000, 'entry_order_id': order.get('orderId')} if plan['entry_type'] == 'LIMIT_GTX' else {})}
                 pm.save_state(st_)
                 if not subprocess.run(['pgrep','-f','/workspace/trade/pos_watch.py'], capture_output=True).stdout.strip():
@@ -958,6 +962,7 @@ result = {
     'telegram_error': telegram_error,
     'auth_error': auth_error,
     'us_data_status': us_data,
+    'core_risk_budget_usdt': round(risk_budget_core, 4),
     'high_risk_budget_usdt': round(high_budget, 4),
     'risk_state': RISK_STATE,
     'scan_top': [
