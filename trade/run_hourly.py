@@ -18,6 +18,11 @@ DAILY_STOP = DAILY_STOP_HARD  # tightened below once wallet is known (A7)
 RISK_PCT = 0.01            # A4 2026-11-11: risk per trade = 1% of live walletBalance, BOTH books
 DAILY_STOP_RISK_MULT = 3.0 # A7: daily stop = max(-7.5, -3 x per-trade risk)
 MIN_SL_ATR = 1.0           # A3: skip candidates whose SL distance < 1.0 x ATR(14,1h)
+# --- 2026-11-11 (t50u): maker entries + wallet-adaptive risk ---
+MAKER_ENTRY = True         # BREAKOUT: post-only (GTX) limit at the breakout candle close; never chase with market
+MAKER_FEE = 0.0002         # measured maker fee (entry)
+TAKER_FEE = 0.0005         # measured taker fee (SL / TP market)
+MAKER_EXPIRE_MIN = 60      # cancel unfilled maker entry (+ its SL/TP) after 60 min (pos_manage/pos_watch enforce)
 FEE_RATE = 0.0004  # est taker round-trip buffer for SL loss
 # --- 2026-11-10: retest mode + looser HIGH-RISK filter ---
 CORE_SCORE_MIN = 3.5
@@ -166,7 +171,12 @@ comm = safe_call('/fapi/v1/income', {'incomeType':'COMMISSION','startTime':DAY_M
 realized = sum(fnum(i.get('income')) for i in inc) if isinstance(inc, list) else 0.0
 commission = sum(fnum(i.get('income')) for i in comm) if isinstance(comm, list) else 0.0
 
-risk_budget_trade = wallet * RISK_PCT          # A4: same for CORE and HIGH
+import risk_tier as _rt
+RISK_STATE = _rt.compute(wallet, _rt.load_state())   # adaptive tier (DD from peak, scale-up after >=100/200 trades)
+if not DRY:
+    _rt.save(RISK_STATE)
+RISK_PCT = RISK_STATE['risk_pct']
+risk_budget_trade = wallet * RISK_PCT          # same % for CORE and HIGH (per-book old caps applied at sizing)
 high_budget = risk_budget_trade                 # kept name for logging/back-compat
 DAILY_STOP = max(DAILY_STOP_HARD, -DAILY_STOP_RISK_MULT * risk_budget_trade)  # A7 (tightening only)
 remaining_daily = DAILY_STOP - realized  # e.g. -7.5 - 0 = -7.5; usable risk = 7.5 + realized if realized negative
@@ -193,7 +203,7 @@ if _pend_syms: skips.append(f"Pending entries occupy slots: {sorted(_pend_syms)}
 
 skips.append(f"Book: {len(positions)} pos, {len(orders)} orders, {len(algos)} algo; wallet={wallet:.8f} avail={avail:.8f}")
 skips.append(f"Saigon day {DAY} realizedPnL_today={realized:.4f} commission={commission:.4f} — daily stop {'HIT' if blocked_daily else 'OK'} (limit {DAILY_STOP:.2f}, room={room:.2f})")
-skips.append(f"Risk per trade 1% wallet={risk_budget_trade:.4f} USDT (CORE+HIGH); daily stop={DAILY_STOP:.4f} (hard cap {DAILY_STOP_HARD}); min SL {MIN_SL_ATR}xATR")
+skips.append(f"Risk tier {RISK_STATE['tier']}: {RISK_PCT*100:.2f}% wallet={risk_budget_trade:.4f} USDT (peak {RISK_STATE['peak']:.2f}, DD {RISK_STATE['dd']*100:.1f}%, post-change trades {RISK_STATE['journal']['n']}); daily stop={DAILY_STOP:.4f} (hard cap {DAILY_STOP_HARD}); min SL {MIN_SL_ATR}xATR; maker entry {'ON' if MAKER_ENTRY else 'OFF'}")
 
 # --- Fix SL/TP / stale pendings ---
 # exchangeInfo for filters
@@ -266,9 +276,9 @@ for o in orders:
             r = safe_call('/fapi/v1/order', {'symbol':sym,'orderId':o['orderId']}, 'DELETE')
             actions.append({'action':'cancel_stale_limit_far','sym':sym,'dist_pct':round(dist,2),'orderId':o['orderId'],'res':str(r)[:120]})
             changed = True
-        elif age_h > 2 or within_30_us:
+        elif age_h > 2 or within_30_us or (o.get('timeInForce') == 'GTX' and age_h * 60 >= MAKER_EXPIRE_MIN):
             r = safe_call('/fapi/v1/order', {'symbol':sym,'orderId':o['orderId']}, 'DELETE')
-            actions.append({'action':'cancel_stale_limit_2h' if age_h > 2 else 'cancel_limit_us_data','sym':sym,'age_h':round(age_h,2),'orderId':o['orderId'],'res':str(r)[:120]})
+            actions.append({'action':('cancel_maker_60m' if o.get('timeInForce') == 'GTX' and not within_30_us else ('cancel_stale_limit_2h' if age_h > 2 else 'cancel_limit_us_data')),'sym':sym,'age_h':round(age_h,2),'orderId':o['orderId'],'res':str(r)[:120]})
             changed = True
         else:
             continue
@@ -559,6 +569,36 @@ for s_ in scan_results:
     cap_ = _maxsl.get(s_['port'])
     if cap_ and s_.get('plan') and s_['decision'] == 'CANDIDATE' and s_['plan']['risk_pct'] > float(cap_):
         s_['decision'] = 'SKIP_sl_wide_lesson'
+# --- maker entry (2026-11-11, t50u): BREAKOUT -> post-only limit at the breakout candle close ---
+for s_ in scan_results:
+    pl_ = s_.get('plan')
+    if not (MAKER_ENTRY and s_['decision'] == 'CANDIDATE' and pl_ and s_.get('setup') == 'BREAKOUT'):
+        continue
+    side_ = pl_['side']; sg_ = 1 if side_ == 'LONG' else -1
+    lim_ = float(s_['last_closed']); mk_ = float(s_['mark']); sl0_ = pl_['sl']
+    if (side_ == 'LONG' and lim_ >= mk_) or (side_ == 'SHORT' and lim_ <= mk_):
+        s_['decision'] = 'SKIP_maker_would_cross'   # price already back through the close: post-only would take; never chase
+        continue
+    risk_ = sg_ * (lim_ - sl0_)
+    if risk_ <= 0:
+        s_['decision'] = 'SKIP_maker_bad_risk'; continue
+    tp1_ = lim_ + sg_ * 1.5 * risk_
+    t1cap_ = (LESSON_ADJ or {}).get('tp1_max_r')
+    if t1cap_ and 1.5 > float(t1cap_): tp1_ = lim_ + sg_ * float(t1cap_) * risk_
+    cap4_ = lim_ + sg_ * 4.0 * risk_
+    tp2_ = min(pl_['tp2'], cap4_) if side_ == 'LONG' else max(pl_['tp2'], cap4_)
+    if sg_ * (tp2_ - tp1_) <= 0:
+        s_['decision'] = 'SKIP_maker_tp2_inside_tp1'; continue
+    # R:R after fees: maker entry, taker exits
+    rew_ = sg_ * (tp2_ - lim_) - lim_ * MAKER_FEE - tp2_ * TAKER_FEE
+    rsk_ = risk_ + lim_ * MAKER_FEE + sl0_ * TAKER_FEE
+    rr_net_ = rew_ / rsk_ if rsk_ > 0 else 0
+    pl_.update({'entry': lim_, 'entry_type': 'LIMIT_GTX', 'tp1': tp1_, 'tp2': tp2_, 'risk_pct': round(risk_/lim_*100, 3),
+                'rr': round(sg_ * (tp2_ - lim_) / risk_, 2), 'rr_net': round(rr_net_, 2), 'mark_at_scan': mk_})
+    s_['rr'] = pl_['rr']
+    s_['note'] = (s_.get('note') or '') + f' maker@{lim_:.6g} rr_net={rr_net_:.2f}'
+    if rr_net_ < 2.0:
+        s_['decision'] = 'SKIP_maker_rr_net_lt2'
 # --- A3 (2026-11-11, approved): SL distance must be >= MIN_SL_ATR x ATR(14,1h), all setups/books ---
 for s_ in scan_results:
     pl_ = s_.get('plan')
@@ -598,7 +638,7 @@ else:
             continue
         if port == 'HIGH' and not high_free:
             continue
-        risk_budget = risk_budget_trade  # A4: 1% of live wallet for both books
+        risk_budget = _rt.book_cap(port, wallet, risk_budget_trade)  # adaptive tier, never above old book caps
         if port == 'HIGH' and room < risk_budget:
             # don't shrink below meaningful — skip if remaining daily < planned risk
             if room < risk_budget:
@@ -716,10 +756,16 @@ else:
             }, 'POST')
         else:
             lim = entry_px
+            is_gtx = plan['entry_type'] == 'LIMIT_GTX'
             order = safe_call('/fapi/v1/order', {
                 'symbol': cand['sym'], 'side': entry_side, 'type': 'LIMIT',
-                'timeInForce': 'GTC', 'price': lim, 'quantity': qty,
+                'timeInForce': 'GTX' if is_gtx else 'GTC', 'price': lim, 'quantity': qty,
             }, 'POST')
+            if is_gtx and isinstance(order, dict) and ('-5022' in str(order.get('code', '')) + str(order.get('err', '')) or order.get('status') == 'EXPIRED'):
+                # post-only rejected (would have crossed): skip, never chase with market
+                skips.append(f"{cand['sym']} SKIP_maker_rejected GTX would cross: {str(order)[:120]}")
+                actions.append({'action': 'maker_rejected', 'sym': cand['sym'], 'res': str(order)[:160]})
+                continue
 
         if isinstance(order, dict) and (order.get('orderId') or order.get('status') in ('NEW','FILLED','PARTIALLY_FILLED')):
             changed = True
@@ -773,9 +819,19 @@ else:
                     skips.append(f"{cand['sym']} SL/TP placement failed -> limit entry cancelled: sl={str(sl_order)[:120]} tp1={str(tp1_o)[:120]}")
                     actions.append({'action':'cancel_unprotected','sym':cand['sym'],'port':port,'reason':'SL/TP placement failed'})
                     continue
+            if (not use_market) and plan['entry_type'] == 'LIMIT_GTX' and not DRY and order.get('orderId'):
+                chk = safe_call('/fapi/v1/order', {'symbol': cand['sym'], 'orderId': order['orderId']})
+                if isinstance(chk, dict) and chk.get('status') == 'EXPIRED':
+                    for o_ in (tp1_o, tp2_o, sl_order):
+                        if isinstance(o_, dict) and o_.get('algoId'):
+                            safe_call('/fapi/v1/algoOrder', {'symbol': cand['sym'], 'algoId': o_['algoId']}, 'DELETE')
+                    skips.append(f"{cand['sym']} SKIP_maker_rejected (GTX expired right after placement) -> SL/TP removed")
+                    actions.append({'action': 'maker_rejected', 'sym': cand['sym'], 'res': 'EXPIRED'})
+                    continue
             risk_usdt = qty * risk_per_unit + qty * entry_px * FEE_RATE * 2
             entered = {
-                'sym': cand['sym'], 'port': port, 'side': side, 'entry': 'MARKET' if use_market else 'LIMIT',
+                'sym': cand['sym'], 'port': port, 'side': side, 'entry': 'MARKET' if use_market else plan['entry_type'],
+                'risk_tier': RISK_STATE['tier'],
                 'qty': qty, 'mark': mark, 'entry_px': entry_px, 'setup': cand.get('setup'), 'sl': sl_p, 'tp1': tp1_p, 'tp2': tp2_p,
                 'lev': lev, 'risk_usdt': round(risk_usdt, 4),
                 'risk_pct_wallet': round(risk_usdt/wallet*100, 2) if wallet else None,
@@ -789,7 +845,9 @@ else:
                 st_[cand['sym']] = {'symbol': cand['sym'], 'book': port, 'setup': cand.get('setup'), 'side': side,
                     'entry': entry_px, 'sl': sl_p, 'tp1': tp1_p, 'tp2': tp2_p, 'qty': qty, 'lev': lev,
                     'score': cand['score'], 'rr': round(rr_check, 2), 'opened_ms': int(time.time()*1000),
-                    'risk_usdt': round(risk_usdt, 4), 'pending_limit': not use_market, 'note': cand.get('note')}
+                    'risk_usdt': round(risk_usdt, 4), 'pending_limit': not use_market, 'note': cand.get('note'),
+                    'maker': plan['entry_type'] == 'LIMIT_GTX', 'risk_tier': RISK_STATE['tier'], 'risk_pct': RISK_PCT,
+                    **({'expire_ms': int(time.time()*1000) + MAKER_EXPIRE_MIN*60000, 'entry_order_id': order.get('orderId')} if plan['entry_type'] == 'LIMIT_GTX' else {})}
                 pm.save_state(st_)
                 if not subprocess.run(['pgrep','-f','/workspace/trade/pos_watch.py'], capture_output=True).stdout.strip():
                     subprocess.Popen(['nohup','python3','/workspace/trade/pos_watch.py'], stdout=open('/workspace/trade/pos_watch.out','a'),
@@ -835,7 +893,7 @@ if changed:
     if entered:
         label = 'CORE' if entered['port']=='CORE' else 'MAO HIEM'
         lines.append(f"VAO LENH {label}")
-        lines.append(f"{entered['sym']} {entered['side']} {entered['entry']}")
+        lines.append(f"{entered['sym']} {entered['side']} {'LIMIT maker (huy sau 60 phut neu chua khop)' if entered['entry']=='LIMIT_GTX' else entered['entry']}")
         lines.append(f"qty={entered['qty']} lev={entered['lev']}x isolated")
         lines.append(f"entry~{entered['mark']} SL={entered['sl']} TP1={entered['tp1']} TP2={entered['tp2']}")
         lines.append(f"risk={entered['risk_usdt']} USDT ({entered['risk_pct_wallet']}% vi) R:R={entered['rr']}")
@@ -901,6 +959,7 @@ result = {
     'auth_error': auth_error,
     'us_data_status': us_data,
     'high_risk_budget_usdt': round(high_budget, 4),
+    'risk_state': RISK_STATE,
     'scan_top': [
         {k: t.get(k) for k in ('sym','port','setup','score','thr','side','vr','form_vr','brkUP','brkDN','rng_pos','rr','mom3','t4','decision','note','plan')}
         for t in top[:6]

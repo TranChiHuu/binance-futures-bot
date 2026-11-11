@@ -93,6 +93,46 @@ def manage_positions(sc, dry=False, log=print):
     algos = sc('/fapi/v1/openAlgoOrders', {}, 'GET')
     algos = algos if isinstance(algos, list) else []
     open_pos = {p['symbol']: p for p in pr if fnum(p.get('positionAmt')) != 0}
+    # --- maker entries (2026-11-11): cancel unfilled entry + its SL/TP after expire_ms, or if mark passed TP1 before fill ---
+    now_ms = int(time.time()*1000)
+    for sym in list(st.keys()):
+        s = st[sym]
+        if not (s.get('maker') and s.get('expire_ms')) or s.get('expiry_done'):
+            continue
+        why = None
+        if s.get('expire_ms') and now_ms >= s['expire_ms']:
+            why = 'expired_60m'
+        elif sym not in open_pos and s.get('tp1'):
+            try:
+                mk = fnum(pub('/fapi/v1/premiumIndex', {'symbol': sym}).get('markPrice'))
+            except Exception:
+                mk = 0
+            if mk and ((s['side'] == 'LONG' and mk >= s['tp1']) or (s['side'] == 'SHORT' and mk <= s['tp1'])):
+                why = 'mark_passed_tp1'
+        if not why:
+            continue
+        oo = sc('/fapi/v1/openOrders', {'symbol': sym}, 'GET')
+        ents = [o for o in (oo if isinstance(oo, list) else []) if o.get('type') == 'LIMIT' and not o.get('reduceOnly')]
+        for o in ents:
+            sc('/fapi/v1/order', {'symbol': sym, 'orderId': o['orderId']}, 'DELETE')
+        if sym in open_pos and not ents:
+            s['expiry_done'] = True   # fully filled before expiry: nothing to cancel
+            continue
+        if sym in open_pos:
+            # partial fill: keep SL/TPs (reduceOnly, capped by position), stop treating as pending
+            s.pop('pending_limit', None); s['partial_fill'] = True; s['expiry_done'] = True; s['qty'] = abs(fnum(open_pos[sym]['positionAmt']))
+            events.append({'event': 'MAKER_PARTIAL_' + why, 'sym': sym, 'filled': s['qty'], 'cancelled': len(ents)})
+            continue
+        for a_ in [a_ for a_ in algos if a_.get('symbol') == sym]:
+            sc('/fapi/v1/algoOrder', {'symbol': sym, 'algoId': a_['algoId']}, 'DELETE')
+        # filled-and-closed already? leave journal path to handle; otherwise drop meta
+        tr = sc('/fapi/v1/userTrades', {'symbol': sym, 'startTime': max(0, s.get('opened_ms', 0) - 60000), 'limit': 50}, 'GET')
+        if isinstance(tr, list) and tr:
+            s.pop('pending_limit', None)
+            continue
+        events.append({'event': 'MAKER_CANCELLED_' + why, 'sym': sym, 'cancelled_entry': len(ents)})
+        tg(f"{label(sym)} {sym}: huy lenh limit maker chua khop ({'qua 60 phut' if why == 'expired_60m' else 'gia da vuot TP1'}), da huy SL/TP kem theo.", dry)
+        del st[sym]
     for sym, p in open_pos.items():
         amt = fnum(p['positionAmt']); entry = fnum(p['entryPrice']); mark = fnum(p['markPrice'])
         long_ = amt > 0

@@ -16,3 +16,4 @@ quant/data/
 quant/results/*.pkl
 quant/results/live_history.json
 quant/*.log
+trade/risk_state.json
