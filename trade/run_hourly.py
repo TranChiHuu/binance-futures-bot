@@ -37,6 +37,10 @@ HIGH_CHASE_ATR = 1.5       # HIGH: skip breakout only if > 1.5 ATR past level
 DRY = '--dry-run' in sys.argv
 sys.path.insert(0, '/workspace/trade')
 import pos_manage as pm
+import slots as _slots
+MAX_CORE_SLOTS = _slots.MAX_CORE_SLOTS
+MAX_HIGH_SLOTS = _slots.MAX_HIGH_SLOTS
+MAX_TOTAL_SLOTS = _slots.MAX_TOTAL_SLOTS
 _LOCK = pm.Lock(blocking=True, timeout=240)
 if not _LOCK.__enter__():
     print(json.dumps({'ok': False, 'err': 'pos lock busy >240s'})); sys.exit(2)
@@ -192,18 +196,20 @@ if room < 0: room = 0
 
 core_pos = [p for p in positions if p['port']=='CORE']
 high_pos = [p for p in positions if p['port']=='HIGH']
-core_free = len(core_pos) == 0
-high_free = len(high_pos) == 0
-pos_used = len([p for p in positions if p['port'] in ('CORE','HIGH')])
-slots_ok = pos_used < 2
-# fix 2026-11-11: a pending (non-reduceOnly) entry LIMIT occupies its book's slot, so no duplicate entries
-_pend_syms = {o.get('symbol') for o in orders if o.get('type')=='LIMIT' and not o.get('reduceOnly') and o.get('symbol') not in {p['symbol'] for p in positions}}
-for _s in _pend_syms:
-    if _s in CORE: core_free = False
-    elif _s in HIGH: high_free = False
-pos_used += len([_s for _s in _pend_syms if _s in CORE or _s in HIGH])
-slots_ok = pos_used < 2
+_open_syms = {p['symbol'] for p in positions}
+_pend_list = _slots.pending_entries(orders, _open_syms, CORE, HIGH)
+_pend_syms = {p['symbol'] for p in _pend_list}
+_slot = _slots.count_slots(positions, _pend_list, CORE, HIGH)
+core_used = _slot['core_used']
+high_used = _slot['high_used']
+pos_used = _slot['total_used']
+core_free = _slot['core_free']
+high_free = _slot['high_free']
+slots_ok = _slot['slots_ok']
+# pending (non-reduceOnly) entry LIMIT occupies a slot on its book
 if _pend_syms: skips.append(f"Pending entries occupy slots: {sorted(_pend_syms)}")
+skips.append(f"Slots: CORE {core_used}/{MAX_CORE_SLOTS}, HIGH {high_used}/{MAX_HIGH_SLOTS}, total {pos_used}/{MAX_TOTAL_SLOTS} (pending counts as a slot)")
+held_for_corr = list(positions) + list(_pend_list)
 
 skips.append(f"Book: {len(positions)} pos, {len(orders)} orders, {len(algos)} algo; wallet={wallet:.8f} avail={avail:.8f}")
 skips.append(f"Saigon day {DAY} realizedPnL_today={realized:.4f} commission={commission:.4f} — daily stop {'HIT' if blocked_daily else 'OK'} (limit {DAILY_STOP:.2f}, room={room:.2f})")
@@ -626,10 +632,11 @@ for t in top[:5]:
 
 # Prefer quality; Sunday stricter
 entered = None
+entered_list = []
 if blocked_daily:
     skips.append("Daily stop hit — NO new trades")
 elif not slots_ok:
-    skips.append(f"Max positions {pos_used}/2 — no new entry")
+    skips.append(f"Slots full: CORE {core_used}/{MAX_CORE_SLOTS}, HIGH {high_used}/{MAX_HIGH_SLOTS}, total {pos_used}/{MAX_TOTAL_SLOTS} — no new entry")
 elif within_30_us:
     skips.append("Within 30min major US data — no new entry")
 elif not candidates:
@@ -641,6 +648,9 @@ else:
         if port == 'CORE' and not core_free:
             continue
         if port == 'HIGH' and not high_free:
+            continue
+        if _slots.already_held(cand['sym'], held_for_corr):
+            skips.append(f"{cand['sym']} skip: already open or pending")
             continue
         risk_budget = _rt.book_cap(port, wallet, rs=RISK_STATE)  # per-book adaptive tier, never above old book caps
         if port == 'HIGH' and room < risk_budget:
@@ -654,22 +664,9 @@ else:
         if room < risk_budget:
             skips.append(f"{cand['sym']} skipped: daily room {room:.2f} too small")
             continue
-        # correlation: avoid same-direction correlated with open
-        corr_groups = [
-            {'BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT'},
-            {'ARBUSDT','OPUSDT'},
-            {'DOGEUSDT','1000PEPEUSDT','WIFUSDT'},
-        ]
-        blocked_corr = False
-        for op in positions:
-            if cand['side'] and (
-                (cand['side']=='LONG' and op['amt']>0) or (cand['side']=='SHORT' and op['amt']<0)
-            ):
-                for g in corr_groups:
-                    if cand['sym'] in g and op['symbol'] in g:
-                        blocked_corr = True
-        if blocked_corr:
-            skips.append(f"{cand['sym']} skip correlated same-dir with open pos")
+        # correlation: skip same-direction highly correlated pairs (open or pending)
+        if _slots.is_correlated(cand['sym'], cand['side'], held_for_corr):
+            skips.append(f"{cand['sym']} skip correlated same-dir with open or pending")
             continue
 
         # SIZE + PLACE (uses the plan computed in scan_sym)
@@ -844,6 +841,21 @@ else:
                 'sl_res': str(sl_order)[:200], 'tp1_res': str(tp1_o)[:200], 'tp2_res': str(tp2_o)[:200],
             }
             actions.append({'action':'enter', **entered})
+            entered_list.append(entered)
+            held_for_corr.append({
+                'symbol': cand['sym'], 'port': port, 'side': side,
+                'amt': qty if side == 'LONG' else -qty,
+            })
+            if port == 'CORE':
+                core_used += 1
+            else:
+                high_used += 1
+            pos_used = core_used + high_used
+            core_free = core_used < MAX_CORE_SLOTS and pos_used < MAX_TOTAL_SLOTS
+            high_free = high_used < MAX_HIGH_SLOTS and pos_used < MAX_TOTAL_SLOTS
+            slots_ok = core_free or high_free
+            room = max(0.0, room - risk_usdt)
+            avail = max(0.0, avail - margin_needed)
             if not DRY:
                 st_ = pm.load_state()
                 st_[cand['sym']] = {'symbol': cand['sym'], 'book': port, 'setup': cand.get('setup'), 'side': side,
@@ -857,8 +869,9 @@ else:
                     subprocess.Popen(['nohup','python3','/workspace/trade/pos_watch.py'], stdout=open('/workspace/trade/pos_watch.out','a'),
                                      stderr=subprocess.STDOUT, start_new_session=True)
                     entered['watcher'] = 'started'
-            # only one new entry per run typically
-            break
+            # more entries allowed this run until per-book / combined caps are full
+            if not slots_ok:
+                break
         else:
             actions.append({'action':'enter_failed', 'sym': cand['sym'], 'res': str(order)[:300]})
             skips.append(f"Entry order failed {cand['sym']}: {str(order)[:200]}")
@@ -866,9 +879,9 @@ else:
             if isinstance(order, dict) and ('api' in str(order).lower() or order.get('http')==401):
                 auth_error = str(order)
 
-if entered is None and candidates:
+if not entered_list and candidates:
     skips.append("Candidates existed but blocked by slot/budget/corr/size")
-elif entered is None:
+elif not entered_list:
     skips.append("No HQ entry this run; quality over slots")
 
 # refresh counts after actions
@@ -877,7 +890,7 @@ if not isinstance(orders2, list): orders2 = orders
 algos2 = safe_call('/fapi/v1/openAlgoOrders')
 if not isinstance(algos2, list): algos2 = algos
 pos2 = positions
-if entered:
+if entered_list:
     pr = safe_call('/fapi/v2/positionRisk')
     if isinstance(pr, list):
         pos2 = []
@@ -894,7 +907,7 @@ if entered:
 # Telegram
 if changed:
     lines = []
-    if entered:
+    for entered in entered_list:
         label = 'CORE' if entered['port']=='CORE' else 'MAO HIEM'
         lines.append(f"VAO LENH {label}")
         lines.append(f"{entered['sym']} {entered['side']} {'LIMIT maker (huy sau 60 phut neu chua khop)' if entered['entry']=='LIMIT_GTX' else entered['entry']}")
@@ -927,7 +940,7 @@ if changed:
 
 skip_summary = (
     f"Flat; max sc{max_score} {max_sym}; " +
-    (f"ENTERED {entered['sym']}" if entered else "no HQ entry") +
+    (f"ENTERED {','.join(e['sym'] for e in entered_list)}" if entered_list else "no HQ entry") +
     ("; Telegram sent" if telegram_sent else "; Telegram silent")
 )
 if positions:
@@ -970,10 +983,17 @@ result = {
         for t in top[:6]
     ],
     'slots': {
-        'core_free': core_free and (entered is None or entered.get('port')!='CORE'),
-        'high_risk_free': high_free and (entered is None or entered.get('port')!='HIGH'),
-        'positions_used': len(pos2),
-        'max': 2,
+        'core_used': core_used,
+        'high_used': high_used,
+        'core_free': core_free,
+        'high_risk_free': high_free,
+        'core_slots_free': (max(0, MAX_CORE_SLOTS - core_used) if pos_used < MAX_TOTAL_SLOTS else 0),
+        'high_slots_free': (max(0, MAX_HIGH_SLOTS - high_used) if pos_used < MAX_TOTAL_SLOTS else 0),
+        'positions_used': pos_used,
+        'open_positions': len(pos2),
+        'max_core': MAX_CORE_SLOTS,
+        'max_high': MAX_HIGH_SLOTS,
+        'max': MAX_TOTAL_SLOTS,
         'blocked_by_daily_stop': blocked_daily,
         'high_blocked_by_remaining_budget': room < high_budget,
     },
