@@ -1,4 +1,10 @@
 {
-  "note": "Locked tightening from 2-year backtest 2026-11-11 (quant/REPORT.md): RETEST and MOMENTUM have negative expectancy in-sample and out-of-sample -> blocked.",
-  "adjust": {"score_penalty": {"RETEST": 99, "MOMENTUM": 99, "*": 0.25}}
+  "note": "Locked tightening from 2-year backtest 2026-11-11 (quant/REPORT.md): RETEST and MOMENTUM have negative expectancy in-sample and out-of-sample -> blocked. 2026-11-12 after AVAX (past 0.38ATR) and TIA (past 0.64ATR) BREAKOUT SL vs winning ARB (0.99ATR): skip BREAKOUT if the break candle is shallower than 0.75 x ATR(14,1h); flatten a filled BREAKOUT (and cancel an unfilled maker entry) if a closed 1h candle closes back through the breakout level. Code: breakout_rules.py, run_hourly.py, pos_manage.py. Lessons may only tighten.",
+  "adjust": {
+    "score_penalty": {
+      "RETEST": 99,
+      "MOMENTUM": 99,
+      "*": 0.25
+    }
+  }
 }

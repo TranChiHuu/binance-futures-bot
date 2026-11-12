@@ -3,10 +3,13 @@
 - pos_state.json: per-symbol trade meta (written at entry)
 - SL->breakeven after TP1, never moves SL farther away
 - journal + lessons on close
+- BREAKOUT: flatten if a closed 1h candle closes back through the breakout level
 """
 import os, sys, json, time, math, fcntl, datetime, subprocess
 sys.path.insert(0, '/workspace')
+sys.path.insert(0, '/workspace/trade')
 from bn import call, pub, BASE
+import breakout_rules as br
 
 D = '/workspace/trade'
 STATE = f'{D}/pos_state.json'
@@ -83,6 +86,38 @@ def sym_filters(sym):
     return 0.0, 0.0, 3
 
 # ---------------- breakeven ----------------
+def last_closed_1h(sym):
+    """Return close of the last *closed* 1h candle, or None."""
+    try:
+        k = pub('/fapi/v1/klines', {'symbol': sym, 'interval': '1h', 'limit': 3})
+        if isinstance(k, list) and len(k) >= 2:
+            return fnum(k[-2][4])
+    except Exception:
+        return None
+    return None
+
+
+def _flatten_market(sc, sym, amt, dry=False):
+    """Reduce-only market close of the current position size."""
+    tick, step, qp = sym_filters(sym)
+    qty = abs(amt)
+    if step and step > 0:
+        qty = math.floor(qty / step + 1e-9) * step
+        qty = round(qty, int(qp) if qp is not None else 8)
+    if qty <= 0:
+        return {'err': 'qty_zero'}
+    if dry:
+        return {'status': 'DRY_RUN', 'symbol': sym, 'qty': qty}
+    return sc('/fapi/v1/order', {
+        'symbol': sym, 'side': 'SELL' if amt > 0 else 'BUY',
+        'type': 'MARKET', 'quantity': qty, 'reduceOnly': 'true',
+    }, 'POST')
+
+
+def _breakout_lvl_of(s):
+    return s.get('breakout_lvl') or br.parse_level(s.get('note'))
+
+
 def manage_positions(sc, dry=False, log=print):
     """sc = signed call fn(path, params, method). Returns list of event dicts. Caller holds Lock."""
     events = []
@@ -179,6 +214,72 @@ def manage_positions(sc, dry=False, log=print):
                     tg(f"{label(sym)} {sym}: SL da doi ve hoa von {be} cho {abs(amt)} con lai.", dry)
                 else:
                     events.append({'event': 'BE_failed', 'sym': sym, 'res': str(r)[:200]})
+    # BREAKOUT invalidation: closed 1h back through the breakout level (2026-11-12, AVAX/TIA)
+    for sym, p in list(open_pos.items()):
+        s = st.get(sym) or {}
+        if s.get('setup') and s.get('setup') != 'BREAKOUT':
+            continue
+        if s.get('tp1_done') or s.get('be_done') or s.get('invalidating'):
+            continue
+        lvl = _breakout_lvl_of(s)
+        if not lvl:
+            continue
+        # setup missing: only treat as breakout when the entry note recorded past=ATR
+        if not s.get('setup') and 'past=' not in str(s.get('note') or ''):
+            continue
+        last_c = last_closed_1h(sym)
+        if last_c is None:
+            continue
+        side = s.get('side') or ('LONG' if fnum(p['positionAmt']) > 0 else 'SHORT')
+        if not br.level_invalidated(side, last_c, lvl, atr=s.get('atr')):
+            continue
+        amt = fnum(p['positionAmt'])
+        r = _flatten_market(sc, sym, amt, dry)
+        if _err(r) and not dry:
+            events.append({'event': 'INVALID_LEVEL_FAILED', 'sym': sym, 'lvl': lvl, 'close': last_c, 'res': str(r)[:200]})
+            continue
+        for a in [a for a in algos if a.get('symbol') == sym]:
+            sc('/fapi/v1/algoOrder', {'symbol': sym, 'algoId': a['algoId']}, 'DELETE')
+        s['exit_hint'] = 'INVALID_LEVEL'
+        s['invalidating'] = True
+        events.append({'event': 'INVALID_LEVEL', 'sym': sym, 'lvl': lvl, 'close': last_c, 'side': side})
+        # fills usually appear immediately; journal this cycle when possible
+        if not dry:
+            time.sleep(0.8)
+            ev = close_trade(sc, s, dry, log)
+            if ev:
+                events.append(ev)
+                if sym in st:
+                    del st[sym]
+                open_pos.pop(sym, None)
+            else:
+                st[sym] = s
+        else:
+            st[sym] = s
+
+    # pending BREAKOUT maker: cancel if the last closed 1h already invalidated the level
+    for sym in list(st.keys()):
+        if sym in open_pos:
+            continue
+        s = st[sym]
+        if not (s.get('pending_limit') and s.get('setup') == 'BREAKOUT' and s.get('maker') and not s.get('expiry_done')):
+            continue
+        lvl = _breakout_lvl_of(s)
+        if not lvl:
+            continue
+        last_c = last_closed_1h(sym)
+        if last_c is None or not br.level_invalidated(s.get('side'), last_c, lvl, atr=s.get('atr')):
+            continue
+        oo = sc('/fapi/v1/openOrders', {'symbol': sym}, 'GET')
+        ents = [o for o in (oo if isinstance(oo, list) else []) if o.get('type') == 'LIMIT' and not o.get('reduceOnly')]
+        for o in ents:
+            sc('/fapi/v1/order', {'symbol': sym, 'orderId': o['orderId']}, 'DELETE')
+        for a_ in [a_ for a_ in algos if a_.get('symbol') == sym]:
+            sc('/fapi/v1/algoOrder', {'symbol': sym, 'algoId': a_['algoId']}, 'DELETE')
+        events.append({'event': 'MAKER_CANCELLED_invalid_level', 'sym': sym, 'lvl': lvl, 'close': last_c, 'cancelled_entry': len(ents)})
+        tg(f"{label(sym)} {sym}: huy lenh limit maker vi nen 1h da dong thung moc break {lvl}.", dry)
+        del st[sym]
+
     # closed trades
     for sym in list(st.keys()):
         if sym in open_pos: continue
@@ -240,8 +341,8 @@ def build_record(s, tr):
     t0 = min(t['time'] for t in ins) if ins else s.get('opened_ms'); t1 = max(t['time'] for t in outs) if outs else int(time.time()*1000)
     mae, mfe = excursions(sym, side, entry, t0, t1)
     sl = s.get('sl'); risk = abs(entry - sl) if sl else None
-    reason = 'CLOSE'
-    if exitp and sl:
+    reason = s.get('exit_hint') or 'CLOSE'
+    if reason == 'CLOSE' and exitp and sl:
         if s.get('be_done') and s.get('sl_be') and abs(exitp - s['sl_be'])/entry < 0.003: reason = 'BE'
         elif abs(exitp - sl)/entry < 0.003: reason = 'SL'
         elif s.get('tp2') and abs(exitp - s['tp2'])/entry < 0.004: reason = 'TP2'

@@ -34,10 +34,13 @@ MARKET_ZONE = 0.003        # market entry if within 0.3% of level, else limit at
 MAX_LIMIT_DIST = 0.008     # limit never more than 0.8% from mark (hard cap 1.5% for stale cancel)
 RETEST_ATR_BUF = 0.4       # SL buffer beyond swing/level, x ATR(1h,14)
 HIGH_CHASE_ATR = 1.5       # HIGH: skip breakout only if > 1.5 ATR past level
+MIN_BREAKOUT_PAST_ATR = 0.75  # 2026-11-12: skip BREAKOUT shallower than 0.75 ATR (AVAX 0.38, TIA 0.64; ARB win 0.99)
 DRY = '--dry-run' in sys.argv
 sys.path.insert(0, '/workspace/trade')
 import pos_manage as pm
 import slots as _slots
+import breakout_rules as _br
+assert _br.MIN_BREAKOUT_PAST_ATR == MIN_BREAKOUT_PAST_ATR
 MAX_CORE_SLOTS = _slots.MAX_CORE_SLOTS
 MAX_HIGH_SLOTS = _slots.MAX_HIGH_SLOTS
 MAX_TOTAL_SLOTS = _slots.MAX_TOTAL_SLOTS
@@ -213,7 +216,7 @@ held_for_corr = list(positions) + list(_pend_list)
 
 skips.append(f"Book: {len(positions)} pos, {len(orders)} orders, {len(algos)} algo; wallet={wallet:.8f} avail={avail:.8f}")
 skips.append(f"Saigon day {DAY} realizedPnL_today={realized:.4f} commission={commission:.4f} — daily stop {'HIT' if blocked_daily else 'OK'} (limit {DAILY_STOP:.2f}, room={room:.2f})")
-skips.append(f"Risk tier {RISK_STATE['tier']}: CORE {RISK_PCT_CORE*100:.2f}%={risk_budget_core:.4f} USDT, HIGH {RISK_PCT_HIGH*100:.2f}%={risk_budget_high:.4f} USDT (peak {RISK_STATE['peak']:.2f}, DD {RISK_STATE['dd']*100:.1f}%, post-change trades {RISK_STATE['journal']['n']}); daily stop={DAILY_STOP:.4f} from larger book (hard cap {DAILY_STOP_HARD}); min SL {MIN_SL_ATR}xATR; maker entry {'ON' if MAKER_ENTRY else 'OFF'}")
+skips.append(f"Risk tier {RISK_STATE['tier']}: CORE {RISK_PCT_CORE*100:.2f}%={risk_budget_core:.4f} USDT, HIGH {RISK_PCT_HIGH*100:.2f}%={risk_budget_high:.4f} USDT (peak {RISK_STATE['peak']:.2f}, DD {RISK_STATE['dd']*100:.1f}%, post-change trades {RISK_STATE['journal']['n']}); daily stop={DAILY_STOP:.4f} from larger book (hard cap {DAILY_STOP_HARD}); min SL {MIN_SL_ATR}xATR; min breakout {MIN_BREAKOUT_PAST_ATR}xATR; maker entry {'ON' if MAKER_ENTRY else 'OFF'}")
 
 # --- Fix SL/TP / stale pendings ---
 # exchangeInfo for filters
@@ -426,6 +429,7 @@ def scan_sym(sym, port):
             brks.append({'side':'SHORT','level':pl,'idx':i,'rng_h':ph,'rng_l':pl,'bvr':bvr})
 
     score = 0.0; side = None; setup = None; plan = None; decision = 'SKIP'; note = ''
+    breakout_lvl = None; past_atr_v = None
     alignDN = t4=='DN' and mom3 < 0 and rng_pos < 0.45
     alignUP = t4=='UP' and mom3 > 0 and rng_pos > 0.55
 
@@ -496,7 +500,10 @@ def scan_sym(sym, port):
         elif vr >= 1.0: score += 0.5
         if abs(mom3) >= 1.5: score += 0.7
         elif abs(mom3) >= 0.8: score += 0.3
-        past = (mark - L) if side=='LONG' else (L - mark)
+        # Measure the closed break candle vs the 20h level (not the live mark).
+        past = (last - L) if side=='LONG' else (L - last)
+        past_atr_v = (past / atr) if atr else 0
+        breakout_lvl = L
         mm = L + (phi-plo) if side=='LONG' else L - (phi-plo)
         if side == 'LONG':
             sl = min(L, min(l[-3:])) - RETEST_ATR_BUF*atr
@@ -504,8 +511,10 @@ def scan_sym(sym, port):
         else:
             sl = max(L, max(h[-3:])) + RETEST_ATR_BUF*atr
             plan, why = mk_plan('SHORT', mark, sl, None, [lo48, mm], 'MARKET', l[-1])
-        note = f"lvl={L:.6g} past={past/atr if atr else 0:.2f}ATR"
+        note = f"lvl={L:.6g} past={past_atr_v:.2f}ATR"
         if plan is None: decision = f'SKIP_{why}'
+        elif _br.is_shallow_breakout(past, atr):
+            decision = 'SKIP_breakout_shallow'
         elif is_high:
             if past > HIGH_CHASE_ATR*atr: decision = 'SKIP_chase_atr'
         else:
@@ -552,6 +561,7 @@ def scan_sym(sym, port):
         'mark': mark, 'hi20': hi20, 'lo20': lo20, 'hi48': hi48, 'lo48': lo48, 'phi': phi, 'plo': plo,
         'mom3': round(mom3, 3), 't4': t4, 'funding': funding, 'last_closed': last,
         'atr': atr, 'plan': plan, 'note': note, 'thr': thr,
+        'breakout_lvl': breakout_lvl, 'past_atr': (round(past_atr_v, 2) if past_atr_v is not None else None),
     })
     return out
 
@@ -863,6 +873,8 @@ else:
                     'score': cand['score'], 'rr': round(rr_check, 2), 'opened_ms': int(time.time()*1000),
                     'risk_usdt': round(risk_usdt, 4), 'pending_limit': not use_market, 'note': cand.get('note'),
                     'maker': plan['entry_type'] == 'LIMIT_GTX', 'risk_tier': RISK_STATE['tier'], 'risk_pct': RISK_PCT_CORE if port == 'CORE' else RISK_PCT_HIGH,
+                    'breakout_lvl': cand.get('breakout_lvl') or _br.parse_level(cand.get('note')),
+                    'past_atr': cand.get('past_atr'), 'atr': cand.get('atr'),
                     **({'expire_ms': int(time.time()*1000) + MAKER_EXPIRE_MIN*60000, 'entry_order_id': order.get('orderId')} if plan['entry_type'] == 'LIMIT_GTX' else {})}
                 pm.save_state(st_)
                 if not subprocess.run(['pgrep','-f','/workspace/trade/pos_watch.py'], capture_output=True).stdout.strip():
