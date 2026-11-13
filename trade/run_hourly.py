@@ -40,6 +40,7 @@ sys.path.insert(0, '/workspace/trade')
 import pos_manage as pm
 import slots as _slots
 import breakout_rules as _br
+import ip_ban as _ipban
 assert _br.MIN_BREAKOUT_PAST_ATR == MIN_BREAKOUT_PAST_ATR
 MAX_CORE_SLOTS = _slots.MAX_CORE_SLOTS
 MAX_HIGH_SLOTS = _slots.MAX_HIGH_SLOTS
@@ -47,18 +48,23 @@ MAX_TOTAL_SLOTS = _slots.MAX_TOTAL_SLOTS
 _LOCK = pm.Lock(blocking=True, timeout=240)
 if not _LOCK.__enter__():
     print(json.dumps({'ok': False, 'err': 'pos lock busy >240s'})); sys.exit(2)
+import atexit
+atexit.register(lambda: _LOCK.__exit__(None, None, None))
 LESSON_ADJ = pm.load_adjust()
 if LESSON_ADJ.get('fee_rate'):
     FEE_RATE = max(FEE_RATE, float(LESSON_ADJ['fee_rate']))
 dry_writes = []
 
 _rate_limited = False
+_ban_until = None
 
 def _is_ban(r):
-    if not isinstance(r, dict):
-        return False
-    blob = str(r)
-    return r.get('http') == 418 or 'banned until' in blob or 'Way too many requests' in blob or r.get('code') == -1003
+    return _ipban.is_ban(r)
+
+def _mark_ban(r):
+    global _rate_limited, _ban_until
+    _rate_limited = True
+    _ban_until = _ipban.mark(r)
 
 def safe_call(path, params=None, method='GET'):
     global _rate_limited
@@ -71,7 +77,7 @@ def safe_call(path, params=None, method='GET'):
         time.sleep(0.12)
         r = call(BASE, path, params or {}, method)
         if _is_ban(r):
-            _rate_limited = True
+            _mark_ban(r)
         if isinstance(r, dict) and ('http' in r or 'err' in r or 'code' in r):
             return r
         return r
@@ -86,12 +92,12 @@ def safe_pub(path, params=None):
         time.sleep(0.15)
         r = pub(path, params or {})
         if _is_ban(r):
-            _rate_limited = True
+            _mark_ban(r)
         return r
     except Exception as e:
         msg = str(e)
         if '418' in msg or 'banned' in msg or 'Too many' in msg:
-            _rate_limited = True
+            _mark_ban(msg)
         return {'err': msg}
 
 def fnum(x, d=0.0):
@@ -106,6 +112,28 @@ telegram_sent = False
 telegram_message = None
 telegram_error = None
 
+# --- 0) Honor a still-active IP ban without touching Binance ---
+_pre_ban = _ipban.load_active(NOW)
+if _pre_ban:
+    _rate_limited = True
+    _ban_until = _pre_ban['until']
+    until_s = _ipban.format_until(_ban_until)
+    out = {
+        'ts_saigon': TS, 'walletBalance': None, 'availableBalance': None,
+        'realizedPnL_today': None, 'positions': 0, 'openOrders': 0, 'openAlgo': 0,
+        'actions': [], 'skips': [f'IP ban still active until {until_s}; no API calls'],
+        'telegram_sent': False, 'telegram_message': None, 'auth_error': None,
+        'changed': False, 'skip_summary': f'IP ban until {until_s} — skipped all API calls',
+        'ip_ban_until': _pre_ban.get('until_saigon'),
+    }
+    print(json.dumps(out, ensure_ascii=False, indent=2))
+    if DRY:
+        sys.exit(0)
+    open('/workspace/trade/last_run.json','w').write(json.dumps(out, ensure_ascii=False, indent=2))
+    with open('/workspace/trade/hourly_log.jsonl','a') as f:
+        f.write(json.dumps(out, ensure_ascii=False)+'\n')
+    sys.exit(0)
+
 # --- 1) Account snapshot ---
 acct = safe_call('/fapi/v2/account')
 if isinstance(acct, dict) and ('err' in acct or 'http' in acct or 'code' in acct) and 'assets' not in acct:
@@ -118,20 +146,34 @@ if isinstance(acct, dict) and ('err' in acct or 'http' in acct or 'code' in acct
         'telegram_sent': False, 'auth_error': auth_error, 'changed': True,
         'skip_summary': 'API auth/account error — abort scan',
     }
-    # try telegram for API error
-    msg = f"LOI API Binance\n{auth_error}\nKhong quet/dat lenh. Kiem tra key."
+    # try telegram for API error — IP ban is not a bad key
+    if _is_ban(acct) or _rate_limited:
+        if not _ban_until:
+            _mark_ban(acct)
+        until_s = _ipban.format_until(_ban_until)
+        msg = (f"Binance chan IP may bot (qua nhieu request), den {until_s}.\n"
+               f"Khong phai loi API key. Tam dung quet/dat lenh cho den khi het cam.")
+        already_tg = bool((_ipban.load_active(NOW) or {}).get('telegram_sent'))
+    else:
+        msg = f"LOI API Binance\n{auth_error}\nKhong quet/dat lenh. Kiem tra key."
+        already_tg = False
     if DRY:
         print(json.dumps(out, ensure_ascii=False, indent=2)); sys.exit(1)
-    try:
-        import subprocess
-        p = subprocess.run(['python3','/workspace/tg_trade.py'], input=msg.encode('utf-8'),
-                           capture_output=True, timeout=20)
-        out['telegram_sent'] = b'True' in p.stdout or p.stdout.strip()==b'true' or 'true' in p.stdout.decode().lower()
-        out['telegram_message'] = msg
-        telegram_sent = out['telegram_sent']
-    except Exception as e:
-        out['telegram_error'] = str(e)
-        out['telegram_message'] = msg
+    out['telegram_message'] = msg
+    if already_tg:
+        out['telegram_sent'] = False
+        out['skips'] = list(out.get('skips') or []) + ['Telegram skipped: IP ban already notified']
+    else:
+        try:
+            import subprocess
+            p = subprocess.run(['python3','/workspace/tg_trade.py'], input=msg.encode('utf-8'),
+                               capture_output=True, timeout=20)
+            out['telegram_sent'] = b'True' in p.stdout or p.stdout.strip()==b'true' or 'true' in p.stdout.decode().lower()
+            telegram_sent = out['telegram_sent']
+            if telegram_sent and (_is_ban(acct) or _rate_limited):
+                _ipban.mark_telegram_sent()
+        except Exception as e:
+            out['telegram_error'] = str(e)
     open('/workspace/trade/last_run.json','w').write(json.dumps(out, ensure_ascii=False, indent=2))
     with open('/workspace/trade/hourly_log.jsonl','a') as f:
         f.write(json.dumps(out, ensure_ascii=False)+'\n')
