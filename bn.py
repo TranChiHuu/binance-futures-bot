@@ -1,6 +1,18 @@
 import os,time,hmac,hashlib,urllib.request,urllib.parse,json,sys
 K=os.environ.get('BINANCE_API_KEY');S=os.environ.get('BINANCE_API_SECRET')
 BASE='https://fapi.binance.com'
+# Route Binance traffic through the user's computer tunnel (own IP) when available.
+import socket
+def _tunnel():
+    a=os.environ.get('BN_PROXY') or os.environ.get('SAND_EGRESS_TUNNEL_PROXY_ADDR') or '127.0.0.1:8791'
+    a=a.replace('http://','')
+    h,_,pt=a.partition(':')
+    try:
+        socket.create_connection((h,int(pt or 80)),timeout=2).close(); return 'http://'+a
+    except Exception: return None
+PROXY=_tunnel()
+if PROXY:
+    urllib.request.install_opener(urllib.request.build_opener(urllib.request.ProxyHandler({'https':PROXY,'http':PROXY})))
 def call(base,path,params=None,method='GET'):
     p=dict(params or {});p['timestamp']=int(time.time()*1000);p['recvWindow']=10000
     q=urllib.parse.urlencode(p);sig=hmac.new(S.encode(),q.encode(),hashlib.sha256).hexdigest()
