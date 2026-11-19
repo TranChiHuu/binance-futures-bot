@@ -20,9 +20,9 @@ def main():
     arb_past = 0.99 * 0.01  # dummy atr=0.01 -> 0.99 ATR
     check('AVAX 0.38 ATR is shallow', B.is_shallow_breakout(0.38 * avax_atr, avax_atr))
     check('TIA 0.64 ATR is shallow', B.is_shallow_breakout(0.64 * tia_atr, tia_atr))
-    check('ARB 0.99 ATR is not shallow', not B.is_shallow_breakout(0.99 * 0.01, 0.01))
-    check('exactly 0.75 ATR is not shallow', not B.is_shallow_breakout(0.75 * 1.0, 1.0))
-    check('just under 0.75 is shallow', B.is_shallow_breakout(0.749 * 1.0, 1.0))
+    check('ARB 0.99 ATR is shallow since 2026-11-19 (min 1.0)', B.is_shallow_breakout(0.99 * 0.01, 0.01))
+    check('exactly 1.0 ATR is not shallow', not B.is_shallow_breakout(1.0 * 1.0, 1.0))
+    check('just under 1.0 is shallow', B.is_shallow_breakout(0.999 * 1.0, 1.0))
     check('missing ATR does not skip', not B.is_shallow_breakout(0.1, 0))
     check('None ATR does not skip', not B.is_shallow_breakout(0.1, None))
 

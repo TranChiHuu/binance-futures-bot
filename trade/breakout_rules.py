@@ -9,7 +9,8 @@ Lessons may only tighten, never loosen.
 import re
 
 # Skip a fresh BREAKOUT if the break candle is shallower than this (x ATR(14,1h)).
-MIN_BREAKOUT_PAST_ATR = 0.75
+# 2026-11-19 (user approved): 0.75 -> 1.0 together with the 4R fallback TP2 in run_hourly.py (quant/loosen/).
+MIN_BREAKOUT_PAST_ATR = 1.0
 # 1h close must travel this far through the level (x ATR) before we flatten.
 INVALID_CLOSE_ATR = 0.05
 # Fallback when ATR is missing: 0.05% of the level.

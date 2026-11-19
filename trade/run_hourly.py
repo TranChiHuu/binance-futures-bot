@@ -34,7 +34,11 @@ MARKET_ZONE = 0.003        # market entry if within 0.3% of level, else limit at
 MAX_LIMIT_DIST = 0.008     # limit never more than 0.8% from mark (hard cap 1.5% for stale cancel)
 RETEST_ATR_BUF = 0.4       # SL buffer beyond swing/level, x ATR(1h,14)
 HIGH_CHASE_ATR = 1.5       # HIGH: skip breakout only if > 1.5 ATR past level
-MIN_BREAKOUT_PAST_ATR = 0.75  # 2026-11-12: skip BREAKOUT shallower than 0.75 ATR (AVAX 0.38, TIA 0.64; ARB win 0.99)
+# 2026-11-12: skip BREAKOUT shallower than 0.75 ATR (AVAX 0.38, TIA 0.64; ARB win 0.99)
+# 2026-11-19 (user approved "ha xuong run di"): 2y backtest quant/loosen/ -> min breakout 0.75 -> 1.0 ATR, and a BREAKOUT
+# with no structure target now uses the existing 4R cap as TP2 (was SKIP_no_structure_target). R:R>=2 / rr_net>=2 still apply.
+MIN_BREAKOUT_PAST_ATR = 1.0
+BREAKOUT_FALLBACK_TP2_R = 4.0
 DRY = '--dry-run' in sys.argv
 sys.path.insert(0, '/workspace/trade')
 import pos_manage as pm
@@ -475,7 +479,7 @@ def scan_sym(sym, port):
     alignDN = t4=='DN' and mom3 < 0 and rng_pos < 0.45
     alignUP = t4=='UP' and mom3 > 0 and rng_pos > 0.55
 
-    def mk_plan(side, entry, sl, tp1_hint, levels, entry_type, beyond):
+    def mk_plan(side, entry, sl, tp1_hint, levels, entry_type, beyond, fallback_r=None):
         risk = (entry - sl) if side=='LONG' else (sl - entry)
         if risk <= 0: return None, 'bad_risk'
         # TP1 ~1.5R, or break extreme if it sits 1.0-2.0R away
@@ -484,6 +488,8 @@ def scan_sym(sym, port):
             r_h = (tp1_hint-entry)/risk if side=='LONG' else (entry-tp1_hint)/risk
             if 1.0 <= r_h <= 2.0: tp1 = tp1_hint
         tp2 = next_target(side, entry, risk, levels, max(tp1, beyond) if side=='LONG' else min(tp1, beyond))
+        if tp2 is None and fallback_r:   # 2026-11-19 user-approved: BREAKOUT only, TP2 = 4R cap when no structure level
+            tp2 = entry + fallback_r*risk if side=='LONG' else entry - fallback_r*risk
         if tp2 is None: return None, 'no_structure_target'
         rr = (tp2-entry)/risk if side=='LONG' else (entry-tp2)/risk
         return {'side':side,'entry':entry,'entry_type':entry_type,'sl':sl,'tp1':tp1,'tp2':tp2,
@@ -549,10 +555,10 @@ def scan_sym(sym, port):
         mm = L + (phi-plo) if side=='LONG' else L - (phi-plo)
         if side == 'LONG':
             sl = min(L, min(l[-3:])) - RETEST_ATR_BUF*atr
-            plan, why = mk_plan('LONG', mark, sl, None, [hi48, mm], 'MARKET', h[-1])
+            plan, why = mk_plan('LONG', mark, sl, None, [hi48, mm], 'MARKET', h[-1], fallback_r=BREAKOUT_FALLBACK_TP2_R)
         else:
             sl = max(L, max(h[-3:])) + RETEST_ATR_BUF*atr
-            plan, why = mk_plan('SHORT', mark, sl, None, [lo48, mm], 'MARKET', l[-1])
+            plan, why = mk_plan('SHORT', mark, sl, None, [lo48, mm], 'MARKET', l[-1], fallback_r=BREAKOUT_FALLBACK_TP2_R)
         note = f"lvl={L:.6g} past={past_atr_v:.2f}ATR"
         if plan is None: decision = f'SKIP_{why}'
         elif _br.is_shallow_breakout(past, atr):
@@ -692,7 +698,7 @@ elif not slots_ok:
 elif within_30_us:
     skips.append("Within 30min major US data — no new entry")
 elif not candidates:
-    skips.append("No CANDIDATE (BREAKOUT only while RETEST/MOMENTUM locked; need R:R>=2 to TP2, score>=3.5 CORE / >=2.5 HIGH, SL>=1xATR)")
+    skips.append("No CANDIDATE (BREAKOUT only while RETEST/MOMENTUM locked; need R:R>=2 to TP2 (structure or 4R fallback), break>=1.0xATR, score>=3.5 CORE / >=2.5 HIGH, SL>=1xATR)")
 else:
     # pick best candidate respecting portfolio slots and correlation
     for cand in candidates:

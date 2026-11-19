@@ -1,0 +1,3894 @@
+{
+ "d0.75|struct|strict|sc-0.0": {
+  "V": {
+   "depth": 0.75,
+   "atr_tgt": 0.0,
+   "high_chase": 1.5,
+   "core_chase": 0.12,
+   "core_min": 3.5,
+   "high_min": 2.5
+  },
+  "all": {
+   "n": 18,
+   "per_month": 0.75,
+   "win": 27.8,
+   "avgR": -0.068,
+   "sumR": -1.2,
+   "pf": 0.87,
+   "maxdd": 6.1
+  },
+  "nofill": 6,
+  "d90": {
+   "n": 4,
+   "per_month": 1.35,
+   "win": 25.0,
+   "avgR": -0.249,
+   "sumR": -1.0,
+   "pf": 0.42,
+   "maxdd": 1.3
+  },
+  "d30": {
+   "n": 1,
+   "per_month": 1.0,
+   "win": 0.0,
+   "avgR": -0.376,
+   "sumR": -0.4,
+   "pf": 0.0,
+   "maxdd": 0.4
+  },
+  "by_book": {
+   "CORE": {
+    "n": 0,
+    "per_month": 0
+   },
+   "HIGH": {
+    "n": 18,
+    "per_month": 0.75,
+    "win": 27.8,
+    "avgR": -0.068,
+    "sumR": -1.2,
+    "pf": 0.87,
+    "maxdd": 6.1
+   }
+  },
+  "outcomes": {
+   "INVALID": 9,
+   "TP1_TP2": 4,
+   "SL": 4,
+   "TP1_BE": 1
+  },
+  "first_year": {
+   "n": 8,
+   "per_month": 0.67,
+   "win": 37.5,
+   "avgR": 0.148,
+   "sumR": 1.2,
+   "pf": 1.27,
+   "maxdd": 3.4
+  },
+  "second_year": {
+   "n": 10,
+   "per_month": 0.83,
+   "win": 20.0,
+   "avgR": -0.241,
+   "sumR": -2.4,
+   "pf": 0.5,
+   "maxdd": 4.5
+  }
+ },
+ "d0.75|struct|strict|sc-0.5": {
+  "V": {
+   "depth": 0.75,
+   "atr_tgt": 0.0,
+   "high_chase": 1.5,
+   "core_chase": 0.12,
+   "core_min": 3.0,
+   "high_min": 2.0
+  },
+  "all": {
+   "n": 21,
+   "per_month": 0.88,
+   "win": 23.8,
+   "avgR": -0.135,
+   "sumR": -2.8,
+   "pf": 0.74,
+   "maxdd": 7.7
+  },
+  "nofill": 8,
+  "d90": {
+   "n": 4,
+   "per_month": 1.35,
+   "win": 25.0,
+   "avgR": -0.249,
+   "sumR": -1.0,
+   "pf": 0.42,
+   "maxdd": 1.3
+  },
+  "d30": {
+   "n": 1,
+   "per_month": 1.0,
+   "win": 0.0,
+   "avgR": -0.376,
+   "sumR": -0.4,
+   "pf": 0.0,
+   "maxdd": 0.4
+  },
+  "by_book": {
+   "CORE": {
+    "n": 0,
+    "per_month": 0
+   },
+   "HIGH": {
+    "n": 21,
+    "per_month": 0.88,
+    "win": 23.8,
+    "avgR": -0.135,
+    "sumR": -2.8,
+    "pf": 0.74,
+    "maxdd": 7.7
+   }
+  },
+  "outcomes": {
+   "INVALID": 11,
+   "SL": 5,
+   "TP1_TP2": 4,
+   "TP1_BE": 1
+  },
+  "first_year": {
+   "n": 11,
+   "per_month": 0.92,
+   "win": 27.3,
+   "avgR": -0.038,
+   "sumR": -0.4,
+   "pf": 0.93,
+   "maxdd": 5.0
+  },
+  "second_year": {
+   "n": 10,
+   "per_month": 0.83,
+   "win": 20.0,
+   "avgR": -0.241,
+   "sumR": -2.4,
+   "pf": 0.5,
+   "maxdd": 4.5
+  }
+ },
+ "d0.75|struct|relaxed|sc-0.0": {
+  "V": {
+   "depth": 0.75,
+   "atr_tgt": 0.0,
+   "high_chase": 2.0,
+   "core_chase": 0.05,
+   "core_min": 3.5,
+   "high_min": 2.5
+  },
+  "all": {
+   "n": 22,
+   "per_month": 0.92,
+   "win": 36.4,
+   "avgR": 0.172,
+   "sumR": 3.8,
+   "pf": 1.39,
+   "maxdd": 4.4
+  },
+  "nofill": 6,
+  "d90": {
+   "n": 5,
+   "per_month": 1.69,
+   "win": 40.0,
+   "avgR": 0.149,
+   "sumR": 0.7,
+   "pf": 1.44,
+   "maxdd": 1.3
+  },
+  "d30": {
+   "n": 2,
+   "per_month": 2.0,
+   "win": 50.0,
+   "avgR": 0.681,
+   "sumR": 1.4,
+   "pf": 4.62,
+   "maxdd": 0.4
+  },
+  "by_book": {
+   "CORE": {
+    "n": 4,
+    "per_month": 0.17,
+    "win": 75.0,
+    "avgR": 1.254,
+    "sumR": 5.0,
+    "pf": 11.44,
+    "maxdd": 0.5
+   },
+   "HIGH": {
+    "n": 18,
+    "per_month": 0.75,
+    "win": 27.8,
+    "avgR": -0.068,
+    "sumR": -1.2,
+    "pf": 0.87,
+    "maxdd": 6.1
+   }
+  },
+  "outcomes": {
+   "INVALID": 10,
+   "TP1_TP2": 7,
+   "SL": 4,
+   "TP1_BE": 1
+  },
+  "first_year": {
+   "n": 10,
+   "per_month": 0.83,
+   "win": 40.0,
+   "avgR": 0.269,
+   "sumR": 2.7,
+   "pf": 1.55,
+   "maxdd": 3.4
+  },
+  "second_year": {
+   "n": 12,
+   "per_month": 1.0,
+   "win": 33.3,
+   "avgR": 0.091,
+   "sumR": 1.1,
+   "pf": 1.23,
+   "maxdd": 2.8
+  }
+ },
+ "d0.75|struct|relaxed|sc-0.5": {
+  "V": {
+   "depth": 0.75,
+   "atr_tgt": 0.0,
+   "high_chase": 2.0,
+   "core_chase": 0.05,
+   "core_min": 3.0,
+   "high_min": 2.0
+  },
+  "all": {
+   "n": 26,
+   "per_month": 1.08,
+   "win": 30.8,
+   "avgR": 0.046,
+   "sumR": 1.2,
+   "pf": 1.1,
+   "maxdd": 6.9
+  },
+  "nofill": 9,
+  "d90": {
+   "n": 5,
+   "per_month": 1.69,
+   "win": 40.0,
+   "avgR": 0.149,
+   "sumR": 0.7,
+   "pf": 1.44,
+   "maxdd": 1.3
+  },
+  "d30": {
+   "n": 2,
+   "per_month": 2.0,
+   "win": 50.0,
+   "avgR": 0.681,
+   "sumR": 1.4,
+   "pf": 4.62,
+   "maxdd": 0.4
+  },
+  "by_book": {
+   "CORE": {
+    "n": 4,
+    "per_month": 0.17,
+    "win": 75.0,
+    "avgR": 1.254,
+    "sumR": 5.0,
+    "pf": 11.44,
+    "maxdd": 0.5
+   },
+   "HIGH": {
+    "n": 22,
+    "per_month": 0.92,
+    "win": 22.7,
+    "avgR": -0.173,
+    "sumR": -3.8,
+    "pf": 0.68,
+    "maxdd": 8.7
+   }
+  },
+  "outcomes": {
+   "INVALID": 12,
+   "TP1_TP2": 7,
+   "SL": 6,
+   "TP1_BE": 1
+  },
+  "first_year": {
+   "n": 14,
+   "per_month": 1.17,
+   "win": 28.6,
+   "avgR": 0.007,
+   "sumR": 0.1,
+   "pf": 1.01,
+   "maxdd": 6.0
+  },
+  "second_year": {
+   "n": 12,
+   "per_month": 1.0,
+   "win": 33.3,
+   "avgR": 0.091,
+   "sumR": 1.1,
+   "pf": 1.23,
+   "maxdd": 2.8
+  }
+ },
+ "d0.75|tgtATR3|strict|sc-0.0": {
+  "V": {
+   "depth": 0.75,
+   "atr_tgt": 3.0,
+   "high_chase": 1.5,
+   "core_chase": 0.12,
+   "core_min": 3.5,
+   "high_min": 2.5
+  },
+  "all": {
+   "n": 18,
+   "per_month": 0.75,
+   "win": 27.8,
+   "avgR": -0.068,
+   "sumR": -1.2,
+   "pf": 0.87,
+   "maxdd": 6.1
+  },
+  "nofill": 6,
+  "d90": {
+   "n": 4,
+   "per_month": 1.35,
+   "win": 25.0,
+   "avgR": -0.249,
+   "sumR": -1.0,
+   "pf": 0.42,
+   "maxdd": 1.3
+  },
+  "d30": {
+   "n": 1,
+   "per_month": 1.0,
+   "win": 0.0,
+   "avgR": -0.376,
+   "sumR": -0.4,
+   "pf": 0.0,
+   "maxdd": 0.4
+  },
+  "by_book": {
+   "CORE": {
+    "n": 0,
+    "per_month": 0
+   },
+   "HIGH": {
+    "n": 18,
+    "per_month": 0.75,
+    "win": 27.8,
+    "avgR": -0.068,
+    "sumR": -1.2,
+    "pf": 0.87,
+    "maxdd": 6.1
+   }
+  },
+  "outcomes": {
+   "INVALID": 9,
+   "TP1_TP2": 4,
+   "SL": 4,
+   "TP1_BE": 1
+  },
+  "first_year": {
+   "n": 8,
+   "per_month": 0.67,
+   "win": 37.5,
+   "avgR": 0.148,
+   "sumR": 1.2,
+   "pf": 1.27,
+   "maxdd": 3.4
+  },
+  "second_year": {
+   "n": 10,
+   "per_month": 0.83,
+   "win": 20.0,
+   "avgR": -0.241,
+   "sumR": -2.4,
+   "pf": 0.5,
+   "maxdd": 4.5
+  }
+ },
+ "d0.75|tgtATR3|strict|sc-0.5": {
+  "V": {
+   "depth": 0.75,
+   "atr_tgt": 3.0,
+   "high_chase": 1.5,
+   "core_chase": 0.12,
+   "core_min": 3.0,
+   "high_min": 2.0
+  },
+  "all": {
+   "n": 21,
+   "per_month": 0.88,
+   "win": 23.8,
+   "avgR": -0.135,
+   "sumR": -2.8,
+   "pf": 0.74,
+   "maxdd": 7.7
+  },
+  "nofill": 8,
+  "d90": {
+   "n": 4,
+   "per_month": 1.35,
+   "win": 25.0,
+   "avgR": -0.249,
+   "sumR": -1.0,
+   "pf": 0.42,
+   "maxdd": 1.3
+  },
+  "d30": {
+   "n": 1,
+   "per_month": 1.0,
+   "win": 0.0,
+   "avgR": -0.376,
+   "sumR": -0.4,
+   "pf": 0.0,
+   "maxdd": 0.4
+  },
+  "by_book": {
+   "CORE": {
+    "n": 0,
+    "per_month": 0
+   },
+   "HIGH": {
+    "n": 21,
+    "per_month": 0.88,
+    "win": 23.8,
+    "avgR": -0.135,
+    "sumR": -2.8,
+    "pf": 0.74,
+    "maxdd": 7.7
+   }
+  },
+  "outcomes": {
+   "INVALID": 11,
+   "SL": 5,
+   "TP1_TP2": 4,
+   "TP1_BE": 1
+  },
+  "first_year": {
+   "n": 11,
+   "per_month": 0.92,
+   "win": 27.3,
+   "avgR": -0.038,
+   "sumR": -0.4,
+   "pf": 0.93,
+   "maxdd": 5.0
+  },
+  "second_year": {
+   "n": 10,
+   "per_month": 0.83,
+   "win": 20.0,
+   "avgR": -0.241,
+   "sumR": -2.4,
+   "pf": 0.5,
+   "maxdd": 4.5
+  }
+ },
+ "d0.75|tgtATR3|relaxed|sc-0.0": {
+  "V": {
+   "depth": 0.75,
+   "atr_tgt": 3.0,
+   "high_chase": 2.0,
+   "core_chase": 0.05,
+   "core_min": 3.5,
+   "high_min": 2.5
+  },
+  "all": {
+   "n": 22,
+   "per_month": 0.92,
+   "win": 36.4,
+   "avgR": 0.172,
+   "sumR": 3.8,
+   "pf": 1.39,
+   "maxdd": 4.4
+  },
+  "nofill": 6,
+  "d90": {
+   "n": 5,
+   "per_month": 1.69,
+   "win": 40.0,
+   "avgR": 0.149,
+   "sumR": 0.7,
+   "pf": 1.44,
+   "maxdd": 1.3
+  },
+  "d30": {
+   "n": 2,
+   "per_month": 2.0,
+   "win": 50.0,
+   "avgR": 0.681,
+   "sumR": 1.4,
+   "pf": 4.62,
+   "maxdd": 0.4
+  },
+  "by_book": {
+   "CORE": {
+    "n": 4,
+    "per_month": 0.17,
+    "win": 75.0,
+    "avgR": 1.254,
+    "sumR": 5.0,
+    "pf": 11.44,
+    "maxdd": 0.5
+   },
+   "HIGH": {
+    "n": 18,
+    "per_month": 0.75,
+    "win": 27.8,
+    "avgR": -0.068,
+    "sumR": -1.2,
+    "pf": 0.87,
+    "maxdd": 6.1
+   }
+  },
+  "outcomes": {
+   "INVALID": 10,
+   "TP1_TP2": 7,
+   "SL": 4,
+   "TP1_BE": 1
+  },
+  "first_year": {
+   "n": 10,
+   "per_month": 0.83,
+   "win": 40.0,
+   "avgR": 0.269,
+   "sumR": 2.7,
+   "pf": 1.55,
+   "maxdd": 3.4
+  },
+  "second_year": {
+   "n": 12,
+   "per_month": 1.0,
+   "win": 33.3,
+   "avgR": 0.091,
+   "sumR": 1.1,
+   "pf": 1.23,
+   "maxdd": 2.8
+  }
+ },
+ "d0.75|tgtATR3|relaxed|sc-0.5": {
+  "V": {
+   "depth": 0.75,
+   "atr_tgt": 3.0,
+   "high_chase": 2.0,
+   "core_chase": 0.05,
+   "core_min": 3.0,
+   "high_min": 2.0
+  },
+  "all": {
+   "n": 26,
+   "per_month": 1.08,
+   "win": 30.8,
+   "avgR": 0.046,
+   "sumR": 1.2,
+   "pf": 1.1,
+   "maxdd": 6.9
+  },
+  "nofill": 9,
+  "d90": {
+   "n": 5,
+   "per_month": 1.69,
+   "win": 40.0,
+   "avgR": 0.149,
+   "sumR": 0.7,
+   "pf": 1.44,
+   "maxdd": 1.3
+  },
+  "d30": {
+   "n": 2,
+   "per_month": 2.0,
+   "win": 50.0,
+   "avgR": 0.681,
+   "sumR": 1.4,
+   "pf": 4.62,
+   "maxdd": 0.4
+  },
+  "by_book": {
+   "CORE": {
+    "n": 4,
+    "per_month": 0.17,
+    "win": 75.0,
+    "avgR": 1.254,
+    "sumR": 5.0,
+    "pf": 11.44,
+    "maxdd": 0.5
+   },
+   "HIGH": {
+    "n": 22,
+    "per_month": 0.92,
+    "win": 22.7,
+    "avgR": -0.173,
+    "sumR": -3.8,
+    "pf": 0.68,
+    "maxdd": 8.7
+   }
+  },
+  "outcomes": {
+   "INVALID": 12,
+   "TP1_TP2": 7,
+   "SL": 6,
+   "TP1_BE": 1
+  },
+  "first_year": {
+   "n": 14,
+   "per_month": 1.17,
+   "win": 28.6,
+   "avgR": 0.007,
+   "sumR": 0.1,
+   "pf": 1.01,
+   "maxdd": 6.0
+  },
+  "second_year": {
+   "n": 12,
+   "per_month": 1.0,
+   "win": 33.3,
+   "avgR": 0.091,
+   "sumR": 1.1,
+   "pf": 1.23,
+   "maxdd": 2.8
+  }
+ },
+ "d0.75|tgt3R|strict|sc-0.0": {
+  "V": {
+   "depth": 0.75,
+   "atr_tgt": -3.0,
+   "high_chase": 1.5,
+   "core_chase": 0.12,
+   "core_min": 3.5,
+   "high_min": 2.5
+  },
+  "all": {
+   "n": 420,
+   "per_month": 17.51,
+   "win": 32.1,
+   "avgR": 0.085,
+   "sumR": 35.8,
+   "pf": 1.24,
+   "maxdd": 17.0
+  },
+  "nofill": 126,
+  "d90": {
+   "n": 53,
+   "per_month": 17.93,
+   "win": 37.7,
+   "avgR": 0.159,
+   "sumR": 8.4,
+   "pf": 1.46,
+   "maxdd": 5.3
+  },
+  "d30": {
+   "n": 17,
+   "per_month": 17.0,
+   "win": 52.9,
+   "avgR": 0.572,
+   "sumR": 9.7,
+   "pf": 3.13,
+   "maxdd": 1.2
+  },
+  "by_book": {
+   "CORE": {
+    "n": 41,
+    "per_month": 1.71,
+    "win": 43.9,
+    "avgR": 0.315,
+    "sumR": 12.9,
+    "pf": 1.95,
+    "maxdd": 3.1
+   },
+   "HIGH": {
+    "n": 379,
+    "per_month": 15.8,
+    "win": 30.9,
+    "avgR": 0.06,
+    "sumR": 22.8,
+    "pf": 1.17,
+    "maxdd": 20.0
+   }
+  },
+  "outcomes": {
+   "INVALID": 250,
+   "TP1_BE": 76,
+   "TP1_TP2": 57,
+   "SL": 35,
+   "OPEN_END": 2
+  },
+  "first_year": {
+   "n": 212,
+   "per_month": 17.67,
+   "win": 31.6,
+   "avgR": 0.095,
+   "sumR": 20.2,
+   "pf": 1.26,
+   "maxdd": 16.0
+  },
+  "second_year": {
+   "n": 208,
+   "per_month": 17.33,
+   "win": 32.7,
+   "avgR": 0.075,
+   "sumR": 15.5,
+   "pf": 1.21,
+   "maxdd": 8.8
+  }
+ },
+ "d0.75|tgt3R|strict|sc-0.5": {
+  "V": {
+   "depth": 0.75,
+   "atr_tgt": -3.0,
+   "high_chase": 1.5,
+   "core_chase": 0.12,
+   "core_min": 3.0,
+   "high_min": 2.0
+  },
+  "all": {
+   "n": 476,
+   "per_month": 19.85,
+   "win": 30.3,
+   "avgR": 0.053,
+   "sumR": 25.1,
+   "pf": 1.14,
+   "maxdd": 19.2
+  },
+  "nofill": 145,
+  "d90": {
+   "n": 62,
+   "per_month": 20.97,
+   "win": 35.5,
+   "avgR": 0.11,
+   "sumR": 6.8,
+   "pf": 1.32,
+   "maxdd": 5.3
+  },
+  "d30": {
+   "n": 19,
+   "per_month": 19.0,
+   "win": 47.4,
+   "avgR": 0.474,
+   "sumR": 9.0,
+   "pf": 2.7,
+   "maxdd": 1.6
+  },
+  "by_book": {
+   "CORE": {
+    "n": 41,
+    "per_month": 1.71,
+    "win": 43.9,
+    "avgR": 0.315,
+    "sumR": 12.9,
+    "pf": 1.95,
+    "maxdd": 3.1
+   },
+   "HIGH": {
+    "n": 435,
+    "per_month": 18.14,
+    "win": 29.0,
+    "avgR": 0.028,
+    "sumR": 12.1,
+    "pf": 1.08,
+    "maxdd": 20.9
+   }
+  },
+  "outcomes": {
+   "INVALID": 296,
+   "TP1_BE": 82,
+   "TP1_TP2": 60,
+   "SL": 36,
+   "OPEN_END": 2
+  },
+  "first_year": {
+   "n": 236,
+   "per_month": 19.67,
+   "win": 30.1,
+   "avgR": 0.063,
+   "sumR": 14.8,
+   "pf": 1.17,
+   "maxdd": 12.2
+  },
+  "second_year": {
+   "n": 240,
+   "per_month": 20.0,
+   "win": 30.4,
+   "avgR": 0.043,
+   "sumR": 10.2,
+   "pf": 1.12,
+   "maxdd": 10.2
+  }
+ },
+ "d0.75|tgt3R|relaxed|sc-0.0": {
+  "V": {
+   "depth": 0.75,
+   "atr_tgt": -3.0,
+   "high_chase": 2.0,
+   "core_chase": 0.05,
+   "core_min": 3.5,
+   "high_min": 2.5
+  },
+  "all": {
+   "n": 516,
+   "per_month": 21.52,
+   "win": 32.4,
+   "avgR": 0.103,
+   "sumR": 53.4,
+   "pf": 1.28,
+   "maxdd": 22.0
+  },
+  "nofill": 137,
+  "d90": {
+   "n": 65,
+   "per_month": 21.98,
+   "win": 44.6,
+   "avgR": 0.357,
+   "sumR": 23.2,
+   "pf": 2.16,
+   "maxdd": 4.9
+  },
+  "d30": {
+   "n": 21,
+   "per_month": 21.0,
+   "win": 52.4,
+   "avgR": 0.534,
+   "sumR": 11.2,
+   "pf": 3.03,
+   "maxdd": 1.9
+  },
+  "by_book": {
+   "CORE": {
+    "n": 113,
+    "per_month": 4.71,
+    "win": 37.2,
+    "avgR": 0.21,
+    "sumR": 23.7,
+    "pf": 1.56,
+    "maxdd": 14.7
+   },
+   "HIGH": {
+    "n": 403,
+    "per_month": 16.8,
+    "win": 31.0,
+    "avgR": 0.074,
+    "sumR": 29.6,
+    "pf": 1.2,
+    "maxdd": 23.3
+   }
+  },
+  "outcomes": {
+   "INVALID": 304,
+   "TP1_BE": 86,
+   "TP1_TP2": 79,
+   "SL": 45,
+   "OPEN_END": 2
+  },
+  "first_year": {
+   "n": 253,
+   "per_month": 21.08,
+   "win": 32.0,
+   "avgR": 0.122,
+   "sumR": 30.8,
+   "pf": 1.34,
+   "maxdd": 20.2
+  },
+  "second_year": {
+   "n": 263,
+   "per_month": 21.92,
+   "win": 32.7,
+   "avgR": 0.086,
+   "sumR": 22.6,
+   "pf": 1.23,
+   "maxdd": 13.9
+  }
+ },
+ "d0.75|tgt3R|relaxed|sc-0.5": {
+  "V": {
+   "depth": 0.75,
+   "atr_tgt": -3.0,
+   "high_chase": 2.0,
+   "core_chase": 0.05,
+   "core_min": 3.0,
+   "high_min": 2.0
+  },
+  "all": {
+   "n": 567,
+   "per_month": 23.64,
+   "win": 30.9,
+   "avgR": 0.07,
+   "sumR": 39.9,
+   "pf": 1.19,
+   "maxdd": 28.4
+  },
+  "nofill": 158,
+  "d90": {
+   "n": 73,
+   "per_month": 24.69,
+   "win": 42.5,
+   "avgR": 0.309,
+   "sumR": 22.6,
+   "pf": 2.02,
+   "maxdd": 4.9
+  },
+  "d30": {
+   "n": 23,
+   "per_month": 23.0,
+   "win": 47.8,
+   "avgR": 0.456,
+   "sumR": 10.5,
+   "pf": 2.68,
+   "maxdd": 1.9
+  },
+  "by_book": {
+   "CORE": {
+    "n": 113,
+    "per_month": 4.71,
+    "win": 37.2,
+    "avgR": 0.21,
+    "sumR": 23.7,
+    "pf": 1.56,
+    "maxdd": 14.7
+   },
+   "HIGH": {
+    "n": 454,
+    "per_month": 18.93,
+    "win": 29.3,
+    "avgR": 0.036,
+    "sumR": 16.2,
+    "pf": 1.1,
+    "maxdd": 25.5
+   }
+  },
+  "outcomes": {
+   "INVALID": 344,
+   "TP1_BE": 92,
+   "TP1_TP2": 81,
+   "SL": 48,
+   "OPEN_END": 2
+  },
+  "first_year": {
+   "n": 274,
+   "per_month": 22.83,
+   "win": 31.0,
+   "avgR": 0.09,
+   "sumR": 24.7,
+   "pf": 1.24,
+   "maxdd": 15.6
+  },
+  "second_year": {
+   "n": 293,
+   "per_month": 24.42,
+   "win": 30.7,
+   "avgR": 0.052,
+   "sumR": 15.2,
+   "pf": 1.14,
+   "maxdd": 18.5
+  }
+ },
+ "d0.6|struct|strict|sc-0.0": {
+  "V": {
+   "depth": 0.6,
+   "atr_tgt": 0.0,
+   "high_chase": 1.5,
+   "core_chase": 0.12,
+   "core_min": 3.5,
+   "high_min": 2.5
+  },
+  "all": {
+   "n": 56,
+   "per_month": 2.34,
+   "win": 25.0,
+   "avgR": -0.034,
+   "sumR": -1.9,
+   "pf": 0.92,
+   "maxdd": 6.6
+  },
+  "nofill": 9,
+  "d90": {
+   "n": 8,
+   "per_month": 2.71,
+   "win": 25.0,
+   "avgR": -0.05,
+   "sumR": -0.4,
+   "pf": 0.87,
+   "maxdd": 1.7
+  },
+  "d30": {
+   "n": 4,
+   "per_month": 4.0,
+   "win": 0.0,
+   "avgR": -0.41,
+   "sumR": -1.6,
+   "pf": 0.0,
+   "maxdd": 1.6
+  },
+  "by_book": {
+   "CORE": {
+    "n": 0,
+    "per_month": 0
+   },
+   "HIGH": {
+    "n": 56,
+    "per_month": 2.34,
+    "win": 25.0,
+    "avgR": -0.034,
+    "sumR": -1.9,
+    "pf": 0.92,
+    "maxdd": 6.6
+   }
+  },
+  "outcomes": {
+   "INVALID": 38,
+   "TP1_TP2": 9,
+   "TP1_BE": 5,
+   "SL": 4
+  },
+  "first_year": {
+   "n": 25,
+   "per_month": 2.08,
+   "win": 24.0,
+   "avgR": -0.072,
+   "sumR": -1.8,
+   "pf": 0.83,
+   "maxdd": 5.7
+  },
+  "second_year": {
+   "n": 31,
+   "per_month": 2.58,
+   "win": 25.8,
+   "avgR": -0.003,
+   "sumR": -0.1,
+   "pf": 0.99,
+   "maxdd": 5.6
+  }
+ },
+ "d0.6|struct|strict|sc-0.5": {
+  "V": {
+   "depth": 0.6,
+   "atr_tgt": 0.0,
+   "high_chase": 1.5,
+   "core_chase": 0.12,
+   "core_min": 3.0,
+   "high_min": 2.0
+  },
+  "all": {
+   "n": 59,
+   "per_month": 2.46,
+   "win": 23.7,
+   "avgR": -0.059,
+   "sumR": -3.5,
+   "pf": 0.86,
+   "maxdd": 8.2
+  },
+  "nofill": 11,
+  "d90": {
+   "n": 8,
+   "per_month": 2.71,
+   "win": 25.0,
+   "avgR": -0.05,
+   "sumR": -0.4,
+   "pf": 0.87,
+   "maxdd": 1.7
+  },
+  "d30": {
+   "n": 4,
+   "per_month": 4.0,
+   "win": 0.0,
+   "avgR": -0.41,
+   "sumR": -1.6,
+   "pf": 0.0,
+   "maxdd": 1.6
+  },
+  "by_book": {
+   "CORE": {
+    "n": 0,
+    "per_month": 0
+   },
+   "HIGH": {
+    "n": 59,
+    "per_month": 2.46,
+    "win": 23.7,
+    "avgR": -0.059,
+    "sumR": -3.5,
+    "pf": 0.86,
+    "maxdd": 8.2
+   }
+  },
+  "outcomes": {
+   "INVALID": 40,
+   "TP1_TP2": 9,
+   "SL": 5,
+   "TP1_BE": 5
+  },
+  "first_year": {
+   "n": 28,
+   "per_month": 2.33,
+   "win": 21.4,
+   "avgR": -0.121,
+   "sumR": -3.4,
+   "pf": 0.72,
+   "maxdd": 6.8
+  },
+  "second_year": {
+   "n": 31,
+   "per_month": 2.58,
+   "win": 25.8,
+   "avgR": -0.003,
+   "sumR": -0.1,
+   "pf": 0.99,
+   "maxdd": 5.6
+  }
+ },
+ "d0.6|struct|relaxed|sc-0.0": {
+  "V": {
+   "depth": 0.6,
+   "atr_tgt": 0.0,
+   "high_chase": 2.0,
+   "core_chase": 0.05,
+   "core_min": 3.5,
+   "high_min": 2.5
+  },
+  "all": {
+   "n": 62,
+   "per_month": 2.59,
+   "win": 27.4,
+   "avgR": 0.038,
+   "sumR": 2.4,
+   "pf": 1.1,
+   "maxdd": 6.6
+  },
+  "nofill": 10,
+  "d90": {
+   "n": 9,
+   "per_month": 3.04,
+   "win": 33.3,
+   "avgR": 0.149,
+   "sumR": 1.3,
+   "pf": 1.45,
+   "maxdd": 1.2
+  },
+  "d30": {
+   "n": 5,
+   "per_month": 5.0,
+   "win": 20.0,
+   "avgR": 0.02,
+   "sumR": 0.1,
+   "pf": 1.06,
+   "maxdd": 1.2
+  },
+  "by_book": {
+   "CORE": {
+    "n": 6,
+    "per_month": 0.25,
+    "win": 50.0,
+    "avgR": 0.711,
+    "sumR": 4.3,
+    "pf": 4.47,
+    "maxdd": 0.8
+   },
+   "HIGH": {
+    "n": 56,
+    "per_month": 2.34,
+    "win": 25.0,
+    "avgR": -0.034,
+    "sumR": -1.9,
+    "pf": 0.92,
+    "maxdd": 6.6
+   }
+  },
+  "outcomes": {
+   "INVALID": 41,
+   "TP1_TP2": 12,
+   "TP1_BE": 5,
+   "SL": 4
+  },
+  "first_year": {
+   "n": 28,
+   "per_month": 2.33,
+   "win": 25.0,
+   "avgR": -0.022,
+   "sumR": -0.6,
+   "pf": 0.95,
+   "maxdd": 5.7
+  },
+  "second_year": {
+   "n": 34,
+   "per_month": 2.83,
+   "win": 29.4,
+   "avgR": 0.088,
+   "sumR": 3.0,
+   "pf": 1.25,
+   "maxdd": 4.8
+  }
+ },
+ "d0.6|struct|relaxed|sc-0.5": {
+  "V": {
+   "depth": 0.6,
+   "atr_tgt": 0.0,
+   "high_chase": 2.0,
+   "core_chase": 0.05,
+   "core_min": 3.0,
+   "high_min": 2.0
+  },
+  "all": {
+   "n": 66,
+   "per_month": 2.75,
+   "win": 25.8,
+   "avgR": -0.003,
+   "sumR": -0.2,
+   "pf": 0.99,
+   "maxdd": 9.2
+  },
+  "nofill": 13,
+  "d90": {
+   "n": 9,
+   "per_month": 3.04,
+   "win": 33.3,
+   "avgR": 0.149,
+   "sumR": 1.3,
+   "pf": 1.45,
+   "maxdd": 1.2
+  },
+  "d30": {
+   "n": 5,
+   "per_month": 5.0,
+   "win": 20.0,
+   "avgR": 0.02,
+   "sumR": 0.1,
+   "pf": 1.06,
+   "maxdd": 1.2
+  },
+  "by_book": {
+   "CORE": {
+    "n": 6,
+    "per_month": 0.25,
+    "win": 50.0,
+    "avgR": 0.711,
+    "sumR": 4.3,
+    "pf": 4.47,
+    "maxdd": 0.8
+   },
+   "HIGH": {
+    "n": 60,
+    "per_month": 2.5,
+    "win": 23.3,
+    "avgR": -0.075,
+    "sumR": -4.5,
+    "pf": 0.82,
+    "maxdd": 9.2
+   }
+  },
+  "outcomes": {
+   "INVALID": 43,
+   "TP1_TP2": 12,
+   "SL": 6,
+   "TP1_BE": 5
+  },
+  "first_year": {
+   "n": 32,
+   "per_month": 2.67,
+   "win": 21.9,
+   "avgR": -0.1,
+   "sumR": -3.2,
+   "pf": 0.77,
+   "maxdd": 7.7
+  },
+  "second_year": {
+   "n": 34,
+   "per_month": 2.83,
+   "win": 29.4,
+   "avgR": 0.088,
+   "sumR": 3.0,
+   "pf": 1.25,
+   "maxdd": 4.8
+  }
+ },
+ "d0.6|tgtATR3|strict|sc-0.0": {
+  "V": {
+   "depth": 0.6,
+   "atr_tgt": 3.0,
+   "high_chase": 1.5,
+   "core_chase": 0.12,
+   "core_min": 3.5,
+   "high_min": 2.5
+  },
+  "all": {
+   "n": 56,
+   "per_month": 2.34,
+   "win": 25.0,
+   "avgR": -0.034,
+   "sumR": -1.9,
+   "pf": 0.92,
+   "maxdd": 6.6
+  },
+  "nofill": 9,
+  "d90": {
+   "n": 8,
+   "per_month": 2.71,
+   "win": 25.0,
+   "avgR": -0.05,
+   "sumR": -0.4,
+   "pf": 0.87,
+   "maxdd": 1.7
+  },
+  "d30": {
+   "n": 4,
+   "per_month": 4.0,
+   "win": 0.0,
+   "avgR": -0.41,
+   "sumR": -1.6,
+   "pf": 0.0,
+   "maxdd": 1.6
+  },
+  "by_book": {
+   "CORE": {
+    "n": 0,
+    "per_month": 0
+   },
+   "HIGH": {
+    "n": 56,
+    "per_month": 2.34,
+    "win": 25.0,
+    "avgR": -0.034,
+    "sumR": -1.9,
+    "pf": 0.92,
+    "maxdd": 6.6
+   }
+  },
+  "outcomes": {
+   "INVALID": 38,
+   "TP1_TP2": 9,
+   "TP1_BE": 5,
+   "SL": 4
+  },
+  "first_year": {
+   "n": 25,
+   "per_month": 2.08,
+   "win": 24.0,
+   "avgR": -0.072,
+   "sumR": -1.8,
+   "pf": 0.83,
+   "maxdd": 5.7
+  },
+  "second_year": {
+   "n": 31,
+   "per_month": 2.58,
+   "win": 25.8,
+   "avgR": -0.003,
+   "sumR": -0.1,
+   "pf": 0.99,
+   "maxdd": 5.6
+  }
+ },
+ "d0.6|tgtATR3|strict|sc-0.5": {
+  "V": {
+   "depth": 0.6,
+   "atr_tgt": 3.0,
+   "high_chase": 1.5,
+   "core_chase": 0.12,
+   "core_min": 3.0,
+   "high_min": 2.0
+  },
+  "all": {
+   "n": 59,
+   "per_month": 2.46,
+   "win": 23.7,
+   "avgR": -0.059,
+   "sumR": -3.5,
+   "pf": 0.86,
+   "maxdd": 8.2
+  },
+  "nofill": 11,
+  "d90": {
+   "n": 8,
+   "per_month": 2.71,
+   "win": 25.0,
+   "avgR": -0.05,
+   "sumR": -0.4,
+   "pf": 0.87,
+   "maxdd": 1.7
+  },
+  "d30": {
+   "n": 4,
+   "per_month": 4.0,
+   "win": 0.0,
+   "avgR": -0.41,
+   "sumR": -1.6,
+   "pf": 0.0,
+   "maxdd": 1.6
+  },
+  "by_book": {
+   "CORE": {
+    "n": 0,
+    "per_month": 0
+   },
+   "HIGH": {
+    "n": 59,
+    "per_month": 2.46,
+    "win": 23.7,
+    "avgR": -0.059,
+    "sumR": -3.5,
+    "pf": 0.86,
+    "maxdd": 8.2
+   }
+  },
+  "outcomes": {
+   "INVALID": 40,
+   "TP1_TP2": 9,
+   "SL": 5,
+   "TP1_BE": 5
+  },
+  "first_year": {
+   "n": 28,
+   "per_month": 2.33,
+   "win": 21.4,
+   "avgR": -0.121,
+   "sumR": -3.4,
+   "pf": 0.72,
+   "maxdd": 6.8
+  },
+  "second_year": {
+   "n": 31,
+   "per_month": 2.58,
+   "win": 25.8,
+   "avgR": -0.003,
+   "sumR": -0.1,
+   "pf": 0.99,
+   "maxdd": 5.6
+  }
+ },
+ "d0.6|tgtATR3|relaxed|sc-0.0": {
+  "V": {
+   "depth": 0.6,
+   "atr_tgt": 3.0,
+   "high_chase": 2.0,
+   "core_chase": 0.05,
+   "core_min": 3.5,
+   "high_min": 2.5
+  },
+  "all": {
+   "n": 62,
+   "per_month": 2.59,
+   "win": 27.4,
+   "avgR": 0.038,
+   "sumR": 2.4,
+   "pf": 1.1,
+   "maxdd": 6.6
+  },
+  "nofill": 10,
+  "d90": {
+   "n": 9,
+   "per_month": 3.04,
+   "win": 33.3,
+   "avgR": 0.149,
+   "sumR": 1.3,
+   "pf": 1.45,
+   "maxdd": 1.2
+  },
+  "d30": {
+   "n": 5,
+   "per_month": 5.0,
+   "win": 20.0,
+   "avgR": 0.02,
+   "sumR": 0.1,
+   "pf": 1.06,
+   "maxdd": 1.2
+  },
+  "by_book": {
+   "CORE": {
+    "n": 6,
+    "per_month": 0.25,
+    "win": 50.0,
+    "avgR": 0.711,
+    "sumR": 4.3,
+    "pf": 4.47,
+    "maxdd": 0.8
+   },
+   "HIGH": {
+    "n": 56,
+    "per_month": 2.34,
+    "win": 25.0,
+    "avgR": -0.034,
+    "sumR": -1.9,
+    "pf": 0.92,
+    "maxdd": 6.6
+   }
+  },
+  "outcomes": {
+   "INVALID": 41,
+   "TP1_TP2": 12,
+   "TP1_BE": 5,
+   "SL": 4
+  },
+  "first_year": {
+   "n": 28,
+   "per_month": 2.33,
+   "win": 25.0,
+   "avgR": -0.022,
+   "sumR": -0.6,
+   "pf": 0.95,
+   "maxdd": 5.7
+  },
+  "second_year": {
+   "n": 34,
+   "per_month": 2.83,
+   "win": 29.4,
+   "avgR": 0.088,
+   "sumR": 3.0,
+   "pf": 1.25,
+   "maxdd": 4.8
+  }
+ },
+ "d0.6|tgtATR3|relaxed|sc-0.5": {
+  "V": {
+   "depth": 0.6,
+   "atr_tgt": 3.0,
+   "high_chase": 2.0,
+   "core_chase": 0.05,
+   "core_min": 3.0,
+   "high_min": 2.0
+  },
+  "all": {
+   "n": 66,
+   "per_month": 2.75,
+   "win": 25.8,
+   "avgR": -0.003,
+   "sumR": -0.2,
+   "pf": 0.99,
+   "maxdd": 9.2
+  },
+  "nofill": 13,
+  "d90": {
+   "n": 9,
+   "per_month": 3.04,
+   "win": 33.3,
+   "avgR": 0.149,
+   "sumR": 1.3,
+   "pf": 1.45,
+   "maxdd": 1.2
+  },
+  "d30": {
+   "n": 5,
+   "per_month": 5.0,
+   "win": 20.0,
+   "avgR": 0.02,
+   "sumR": 0.1,
+   "pf": 1.06,
+   "maxdd": 1.2
+  },
+  "by_book": {
+   "CORE": {
+    "n": 6,
+    "per_month": 0.25,
+    "win": 50.0,
+    "avgR": 0.711,
+    "sumR": 4.3,
+    "pf": 4.47,
+    "maxdd": 0.8
+   },
+   "HIGH": {
+    "n": 60,
+    "per_month": 2.5,
+    "win": 23.3,
+    "avgR": -0.075,
+    "sumR": -4.5,
+    "pf": 0.82,
+    "maxdd": 9.2
+   }
+  },
+  "outcomes": {
+   "INVALID": 43,
+   "TP1_TP2": 12,
+   "SL": 6,
+   "TP1_BE": 5
+  },
+  "first_year": {
+   "n": 32,
+   "per_month": 2.67,
+   "win": 21.9,
+   "avgR": -0.1,
+   "sumR": -3.2,
+   "pf": 0.77,
+   "maxdd": 7.7
+  },
+  "second_year": {
+   "n": 34,
+   "per_month": 2.83,
+   "win": 29.4,
+   "avgR": 0.088,
+   "sumR": 3.0,
+   "pf": 1.25,
+   "maxdd": 4.8
+  }
+ },
+ "d0.6|tgt3R|strict|sc-0.0": {
+  "V": {
+   "depth": 0.6,
+   "atr_tgt": -3.0,
+   "high_chase": 1.5,
+   "core_chase": 0.12,
+   "core_min": 3.5,
+   "high_min": 2.5
+  },
+  "all": {
+   "n": 518,
+   "per_month": 21.6,
+   "win": 29.7,
+   "avgR": 0.053,
+   "sumR": 27.4,
+   "pf": 1.15,
+   "maxdd": 13.1
+  },
+  "nofill": 161,
+  "d90": {
+   "n": 63,
+   "per_month": 21.31,
+   "win": 31.7,
+   "avgR": 0.049,
+   "sumR": 3.1,
+   "pf": 1.12,
+   "maxdd": 6.4
+  },
+  "d30": {
+   "n": 18,
+   "per_month": 18.0,
+   "win": 44.4,
+   "avgR": 0.337,
+   "sumR": 6.1,
+   "pf": 2.08,
+   "maxdd": 3.0
+  },
+  "by_book": {
+   "CORE": {
+    "n": 47,
+    "per_month": 1.96,
+    "win": 38.3,
+    "avgR": 0.234,
+    "sumR": 11.0,
+    "pf": 1.7,
+    "maxdd": 4.3
+   },
+   "HIGH": {
+    "n": 471,
+    "per_month": 19.64,
+    "win": 28.9,
+    "avgR": 0.035,
+    "sumR": 16.4,
+    "pf": 1.1,
+    "maxdd": 15.5
+   }
+  },
+  "outcomes": {
+   "INVALID": 324,
+   "TP1_BE": 87,
+   "TP1_TP2": 65,
+   "SL": 40,
+   "OPEN_END": 2
+  },
+  "first_year": {
+   "n": 263,
+   "per_month": 21.92,
+   "win": 30.0,
+   "avgR": 0.086,
+   "sumR": 22.7,
+   "pf": 1.24,
+   "maxdd": 11.7
+  },
+  "second_year": {
+   "n": 255,
+   "per_month": 21.25,
+   "win": 29.4,
+   "avgR": 0.018,
+   "sumR": 4.7,
+   "pf": 1.05,
+   "maxdd": 13.1
+  }
+ },
+ "d0.6|tgt3R|strict|sc-0.5": {
+  "V": {
+   "depth": 0.6,
+   "atr_tgt": -3.0,
+   "high_chase": 1.5,
+   "core_chase": 0.12,
+   "core_min": 3.0,
+   "high_min": 2.0
+  },
+  "all": {
+   "n": 579,
+   "per_month": 24.14,
+   "win": 28.3,
+   "avgR": 0.024,
+   "sumR": 14.0,
+   "pf": 1.07,
+   "maxdd": 22.2
+  },
+  "nofill": 177,
+  "d90": {
+   "n": 75,
+   "per_month": 25.37,
+   "win": 29.3,
+   "avgR": -0.006,
+   "sumR": -0.4,
+   "pf": 0.99,
+   "maxdd": 7.7
+  },
+  "d30": {
+   "n": 23,
+   "per_month": 23.0,
+   "win": 34.8,
+   "avgR": 0.152,
+   "sumR": 3.5,
+   "pf": 1.42,
+   "maxdd": 3.8
+  },
+  "by_book": {
+   "CORE": {
+    "n": 47,
+    "per_month": 1.96,
+    "win": 38.3,
+    "avgR": 0.234,
+    "sumR": 11.0,
+    "pf": 1.7,
+    "maxdd": 4.3
+   },
+   "HIGH": {
+    "n": 532,
+    "per_month": 22.18,
+    "win": 27.4,
+    "avgR": 0.006,
+    "sumR": 3.1,
+    "pf": 1.02,
+    "maxdd": 24.3
+   }
+  },
+  "outcomes": {
+   "INVALID": 369,
+   "TP1_BE": 93,
+   "TP1_TP2": 69,
+   "SL": 46,
+   "OPEN_END": 2
+  },
+  "first_year": {
+   "n": 285,
+   "per_month": 23.75,
+   "win": 29.5,
+   "avgR": 0.066,
+   "sumR": 18.9,
+   "pf": 1.18,
+   "maxdd": 13.7
+  },
+  "second_year": {
+   "n": 294,
+   "per_month": 24.5,
+   "win": 27.2,
+   "avgR": -0.017,
+   "sumR": -4.9,
+   "pf": 0.95,
+   "maxdd": 19.3
+  }
+ },
+ "d0.6|tgt3R|relaxed|sc-0.0": {
+  "V": {
+   "depth": 0.6,
+   "atr_tgt": -3.0,
+   "high_chase": 2.0,
+   "core_chase": 0.05,
+   "core_min": 3.5,
+   "high_min": 2.5
+  },
+  "all": {
+   "n": 622,
+   "per_month": 25.94,
+   "win": 30.9,
+   "avgR": 0.08,
+   "sumR": 49.5,
+   "pf": 1.22,
+   "maxdd": 18.5
+  },
+  "nofill": 170,
+  "d90": {
+   "n": 75,
+   "per_month": 25.37,
+   "win": 40.0,
+   "avgR": 0.252,
+   "sumR": 18.9,
+   "pf": 1.72,
+   "maxdd": 5.3
+  },
+  "d30": {
+   "n": 23,
+   "per_month": 23.0,
+   "win": 47.8,
+   "avgR": 0.361,
+   "sumR": 8.3,
+   "pf": 2.26,
+   "maxdd": 3.2
+  },
+  "by_book": {
+   "CORE": {
+    "n": 137,
+    "per_month": 5.71,
+    "win": 32.1,
+    "avgR": 0.13,
+    "sumR": 17.8,
+    "pf": 1.35,
+    "maxdd": 16.6
+   },
+   "HIGH": {
+    "n": 485,
+    "per_month": 20.22,
+    "win": 30.5,
+    "avgR": 0.065,
+    "sumR": 31.7,
+    "pf": 1.18,
+    "maxdd": 13.6
+   }
+  },
+  "outcomes": {
+   "INVALID": 378,
+   "TP1_BE": 102,
+   "TP1_TP2": 88,
+   "SL": 52,
+   "OPEN_END": 2
+  },
+  "first_year": {
+   "n": 310,
+   "per_month": 25.83,
+   "win": 31.0,
+   "avgR": 0.107,
+   "sumR": 33.1,
+   "pf": 1.3,
+   "maxdd": 16.4
+  },
+  "second_year": {
+   "n": 312,
+   "per_month": 26.0,
+   "win": 30.8,
+   "avgR": 0.052,
+   "sumR": 16.4,
+   "pf": 1.14,
+   "maxdd": 18.5
+  }
+ },
+ "d0.6|tgt3R|relaxed|sc-0.5": {
+  "V": {
+   "depth": 0.6,
+   "atr_tgt": -3.0,
+   "high_chase": 2.0,
+   "core_chase": 0.05,
+   "core_min": 3.0,
+   "high_min": 2.0
+  },
+  "all": {
+   "n": 674,
+   "per_month": 28.1,
+   "win": 29.7,
+   "avgR": 0.05,
+   "sumR": 33.4,
+   "pf": 1.13,
+   "maxdd": 26.7
+  },
+  "nofill": 190,
+  "d90": {
+   "n": 86,
+   "per_month": 29.09,
+   "win": 37.2,
+   "avgR": 0.191,
+   "sumR": 16.4,
+   "pf": 1.54,
+   "maxdd": 5.6
+  },
+  "d30": {
+   "n": 28,
+   "per_month": 28.0,
+   "win": 39.3,
+   "avgR": 0.204,
+   "sumR": 5.7,
+   "pf": 1.62,
+   "maxdd": 4.0
+  },
+  "by_book": {
+   "CORE": {
+    "n": 138,
+    "per_month": 5.75,
+    "win": 31.9,
+    "avgR": 0.128,
+    "sumR": 17.6,
+    "pf": 1.34,
+    "maxdd": 16.6
+   },
+   "HIGH": {
+    "n": 536,
+    "per_month": 22.35,
+    "win": 29.1,
+    "avgR": 0.029,
+    "sumR": 15.8,
+    "pf": 1.08,
+    "maxdd": 22.7
+   }
+  },
+  "outcomes": {
+   "INVALID": 414,
+   "TP1_BE": 108,
+   "TP1_TP2": 90,
+   "SL": 60,
+   "OPEN_END": 2
+  },
+  "first_year": {
+   "n": 326,
+   "per_month": 27.17,
+   "win": 31.0,
+   "avgR": 0.093,
+   "sumR": 30.2,
+   "pf": 1.25,
+   "maxdd": 13.9
+  },
+  "second_year": {
+   "n": 348,
+   "per_month": 29.0,
+   "win": 28.4,
+   "avgR": 0.009,
+   "sumR": 3.2,
+   "pf": 1.02,
+   "maxdd": 26.7
+  }
+ },
+ "d0.5|struct|strict|sc-0.0": {
+  "V": {
+   "depth": 0.5,
+   "atr_tgt": 0.0,
+   "high_chase": 1.5,
+   "core_chase": 0.12,
+   "core_min": 3.5,
+   "high_min": 2.5
+  },
+  "all": {
+   "n": 83,
+   "per_month": 3.46,
+   "win": 22.9,
+   "avgR": -0.065,
+   "sumR": -5.4,
+   "pf": 0.84,
+   "maxdd": 13.3
+  },
+  "nofill": 16,
+  "d90": {
+   "n": 9,
+   "per_month": 3.04,
+   "win": 33.3,
+   "avgR": 0.191,
+   "sumR": 1.7,
+   "pf": 1.58,
+   "maxdd": 1.7
+  },
+  "d30": {
+   "n": 4,
+   "per_month": 4.0,
+   "win": 0.0,
+   "avgR": -0.41,
+   "sumR": -1.6,
+   "pf": 0.0,
+   "maxdd": 1.6
+  },
+  "by_book": {
+   "CORE": {
+    "n": 0,
+    "per_month": 0
+   },
+   "HIGH": {
+    "n": 83,
+    "per_month": 3.46,
+    "win": 22.9,
+    "avgR": -0.065,
+    "sumR": -5.4,
+    "pf": 0.84,
+    "maxdd": 13.3
+   }
+  },
+  "outcomes": {
+   "INVALID": 57,
+   "TP1_TP2": 12,
+   "SL": 7,
+   "TP1_BE": 7
+  },
+  "first_year": {
+   "n": 44,
+   "per_month": 3.67,
+   "win": 20.5,
+   "avgR": -0.092,
+   "sumR": -4.0,
+   "pf": 0.78,
+   "maxdd": 9.1
+  },
+  "second_year": {
+   "n": 39,
+   "per_month": 3.25,
+   "win": 25.6,
+   "avgR": -0.034,
+   "sumR": -1.3,
+   "pf": 0.92,
+   "maxdd": 7.0
+  }
+ },
+ "d0.5|struct|strict|sc-0.5": {
+  "V": {
+   "depth": 0.5,
+   "atr_tgt": 0.0,
+   "high_chase": 1.5,
+   "core_chase": 0.12,
+   "core_min": 3.0,
+   "high_min": 2.0
+  },
+  "all": {
+   "n": 86,
+   "per_month": 3.59,
+   "win": 22.1,
+   "avgR": -0.081,
+   "sumR": -7.0,
+   "pf": 0.8,
+   "maxdd": 14.9
+  },
+  "nofill": 17,
+  "d90": {
+   "n": 9,
+   "per_month": 3.04,
+   "win": 33.3,
+   "avgR": 0.191,
+   "sumR": 1.7,
+   "pf": 1.58,
+   "maxdd": 1.7
+  },
+  "d30": {
+   "n": 4,
+   "per_month": 4.0,
+   "win": 0.0,
+   "avgR": -0.41,
+   "sumR": -1.6,
+   "pf": 0.0,
+   "maxdd": 1.6
+  },
+  "by_book": {
+   "CORE": {
+    "n": 0,
+    "per_month": 0
+   },
+   "HIGH": {
+    "n": 86,
+    "per_month": 3.59,
+    "win": 22.1,
+    "avgR": -0.081,
+    "sumR": -7.0,
+    "pf": 0.8,
+    "maxdd": 14.9
+   }
+  },
+  "outcomes": {
+   "INVALID": 59,
+   "TP1_TP2": 12,
+   "SL": 8,
+   "TP1_BE": 7
+  },
+  "first_year": {
+   "n": 47,
+   "per_month": 3.92,
+   "win": 19.1,
+   "avgR": -0.12,
+   "sumR": -5.6,
+   "pf": 0.71,
+   "maxdd": 10.7
+  },
+  "second_year": {
+   "n": 39,
+   "per_month": 3.25,
+   "win": 25.6,
+   "avgR": -0.034,
+   "sumR": -1.3,
+   "pf": 0.92,
+   "maxdd": 7.0
+  }
+ },
+ "d0.5|struct|relaxed|sc-0.0": {
+  "V": {
+   "depth": 0.5,
+   "atr_tgt": 0.0,
+   "high_chase": 2.0,
+   "core_chase": 0.05,
+   "core_min": 3.5,
+   "high_min": 2.5
+  },
+  "all": {
+   "n": 90,
+   "per_month": 3.75,
+   "win": 24.4,
+   "avgR": -0.013,
+   "sumR": -1.2,
+   "pf": 0.97,
+   "maxdd": 13.4
+  },
+  "nofill": 18,
+  "d90": {
+   "n": 10,
+   "per_month": 3.38,
+   "win": 40.0,
+   "avgR": 0.346,
+   "sumR": 3.5,
+   "pf": 2.17,
+   "maxdd": 1.2
+  },
+  "d30": {
+   "n": 5,
+   "per_month": 5.0,
+   "win": 20.0,
+   "avgR": 0.02,
+   "sumR": 0.1,
+   "pf": 1.06,
+   "maxdd": 1.2
+  },
+  "by_book": {
+   "CORE": {
+    "n": 7,
+    "per_month": 0.29,
+    "win": 42.9,
+    "avgR": 0.594,
+    "sumR": 4.2,
+    "pf": 4.11,
+    "maxdd": 0.8
+   },
+   "HIGH": {
+    "n": 83,
+    "per_month": 3.46,
+    "win": 22.9,
+    "avgR": -0.065,
+    "sumR": -5.4,
+    "pf": 0.84,
+    "maxdd": 13.3
+   }
+  },
+  "outcomes": {
+   "INVALID": 61,
+   "TP1_TP2": 15,
+   "SL": 7,
+   "TP1_BE": 7
+  },
+  "first_year": {
+   "n": 48,
+   "per_month": 4.0,
+   "win": 20.8,
+   "avgR": -0.062,
+   "sumR": -3.0,
+   "pf": 0.84,
+   "maxdd": 9.2
+  },
+  "second_year": {
+   "n": 42,
+   "per_month": 3.5,
+   "win": 28.6,
+   "avgR": 0.042,
+   "sumR": 1.8,
+   "pf": 1.11,
+   "maxdd": 5.6
+  }
+ },
+ "d0.5|struct|relaxed|sc-0.5": {
+  "V": {
+   "depth": 0.5,
+   "atr_tgt": 0.0,
+   "high_chase": 2.0,
+   "core_chase": 0.05,
+   "core_min": 3.0,
+   "high_min": 2.0
+  },
+  "all": {
+   "n": 94,
+   "per_month": 3.92,
+   "win": 23.4,
+   "avgR": -0.04,
+   "sumR": -3.8,
+   "pf": 0.9,
+   "maxdd": 16.0
+  },
+  "nofill": 20,
+  "d90": {
+   "n": 10,
+   "per_month": 3.38,
+   "win": 40.0,
+   "avgR": 0.346,
+   "sumR": 3.5,
+   "pf": 2.17,
+   "maxdd": 1.2
+  },
+  "d30": {
+   "n": 5,
+   "per_month": 5.0,
+   "win": 20.0,
+   "avgR": 0.02,
+   "sumR": 0.1,
+   "pf": 1.06,
+   "maxdd": 1.2
+  },
+  "by_book": {
+   "CORE": {
+    "n": 7,
+    "per_month": 0.29,
+    "win": 42.9,
+    "avgR": 0.594,
+    "sumR": 4.2,
+    "pf": 4.11,
+    "maxdd": 0.8
+   },
+   "HIGH": {
+    "n": 87,
+    "per_month": 3.63,
+    "win": 21.8,
+    "avgR": -0.091,
+    "sumR": -8.0,
+    "pf": 0.78,
+    "maxdd": 15.9
+   }
+  },
+  "outcomes": {
+   "INVALID": 63,
+   "TP1_TP2": 15,
+   "SL": 9,
+   "TP1_BE": 7
+  },
+  "first_year": {
+   "n": 52,
+   "per_month": 4.33,
+   "win": 19.2,
+   "avgR": -0.107,
+   "sumR": -5.6,
+   "pf": 0.74,
+   "maxdd": 11.8
+  },
+  "second_year": {
+   "n": 42,
+   "per_month": 3.5,
+   "win": 28.6,
+   "avgR": 0.042,
+   "sumR": 1.8,
+   "pf": 1.11,
+   "maxdd": 5.6
+  }
+ },
+ "d0.5|tgtATR3|strict|sc-0.0": {
+  "V": {
+   "depth": 0.5,
+   "atr_tgt": 3.0,
+   "high_chase": 1.5,
+   "core_chase": 0.12,
+   "core_min": 3.5,
+   "high_min": 2.5
+  },
+  "all": {
+   "n": 83,
+   "per_month": 3.46,
+   "win": 22.9,
+   "avgR": -0.065,
+   "sumR": -5.4,
+   "pf": 0.84,
+   "maxdd": 13.3
+  },
+  "nofill": 16,
+  "d90": {
+   "n": 9,
+   "per_month": 3.04,
+   "win": 33.3,
+   "avgR": 0.191,
+   "sumR": 1.7,
+   "pf": 1.58,
+   "maxdd": 1.7
+  },
+  "d30": {
+   "n": 4,
+   "per_month": 4.0,
+   "win": 0.0,
+   "avgR": -0.41,
+   "sumR": -1.6,
+   "pf": 0.0,
+   "maxdd": 1.6
+  },
+  "by_book": {
+   "CORE": {
+    "n": 0,
+    "per_month": 0
+   },
+   "HIGH": {
+    "n": 83,
+    "per_month": 3.46,
+    "win": 22.9,
+    "avgR": -0.065,
+    "sumR": -5.4,
+    "pf": 0.84,
+    "maxdd": 13.3
+   }
+  },
+  "outcomes": {
+   "INVALID": 57,
+   "TP1_TP2": 12,
+   "SL": 7,
+   "TP1_BE": 7
+  },
+  "first_year": {
+   "n": 44,
+   "per_month": 3.67,
+   "win": 20.5,
+   "avgR": -0.092,
+   "sumR": -4.0,
+   "pf": 0.78,
+   "maxdd": 9.1
+  },
+  "second_year": {
+   "n": 39,
+   "per_month": 3.25,
+   "win": 25.6,
+   "avgR": -0.034,
+   "sumR": -1.3,
+   "pf": 0.92,
+   "maxdd": 7.0
+  }
+ },
+ "d0.5|tgtATR3|strict|sc-0.5": {
+  "V": {
+   "depth": 0.5,
+   "atr_tgt": 3.0,
+   "high_chase": 1.5,
+   "core_chase": 0.12,
+   "core_min": 3.0,
+   "high_min": 2.0
+  },
+  "all": {
+   "n": 86,
+   "per_month": 3.59,
+   "win": 22.1,
+   "avgR": -0.081,
+   "sumR": -7.0,
+   "pf": 0.8,
+   "maxdd": 14.9
+  },
+  "nofill": 17,
+  "d90": {
+   "n": 9,
+   "per_month": 3.04,
+   "win": 33.3,
+   "avgR": 0.191,
+   "sumR": 1.7,
+   "pf": 1.58,
+   "maxdd": 1.7
+  },
+  "d30": {
+   "n": 4,
+   "per_month": 4.0,
+   "win": 0.0,
+   "avgR": -0.41,
+   "sumR": -1.6,
+   "pf": 0.0,
+   "maxdd": 1.6
+  },
+  "by_book": {
+   "CORE": {
+    "n": 0,
+    "per_month": 0
+   },
+   "HIGH": {
+    "n": 86,
+    "per_month": 3.59,
+    "win": 22.1,
+    "avgR": -0.081,
+    "sumR": -7.0,
+    "pf": 0.8,
+    "maxdd": 14.9
+   }
+  },
+  "outcomes": {
+   "INVALID": 59,
+   "TP1_TP2": 12,
+   "SL": 8,
+   "TP1_BE": 7
+  },
+  "first_year": {
+   "n": 47,
+   "per_month": 3.92,
+   "win": 19.1,
+   "avgR": -0.12,
+   "sumR": -5.6,
+   "pf": 0.71,
+   "maxdd": 10.7
+  },
+  "second_year": {
+   "n": 39,
+   "per_month": 3.25,
+   "win": 25.6,
+   "avgR": -0.034,
+   "sumR": -1.3,
+   "pf": 0.92,
+   "maxdd": 7.0
+  }
+ },
+ "d0.5|tgtATR3|relaxed|sc-0.0": {
+  "V": {
+   "depth": 0.5,
+   "atr_tgt": 3.0,
+   "high_chase": 2.0,
+   "core_chase": 0.05,
+   "core_min": 3.5,
+   "high_min": 2.5
+  },
+  "all": {
+   "n": 90,
+   "per_month": 3.75,
+   "win": 24.4,
+   "avgR": -0.013,
+   "sumR": -1.2,
+   "pf": 0.97,
+   "maxdd": 13.4
+  },
+  "nofill": 18,
+  "d90": {
+   "n": 10,
+   "per_month": 3.38,
+   "win": 40.0,
+   "avgR": 0.346,
+   "sumR": 3.5,
+   "pf": 2.17,
+   "maxdd": 1.2
+  },
+  "d30": {
+   "n": 5,
+   "per_month": 5.0,
+   "win": 20.0,
+   "avgR": 0.02,
+   "sumR": 0.1,
+   "pf": 1.06,
+   "maxdd": 1.2
+  },
+  "by_book": {
+   "CORE": {
+    "n": 7,
+    "per_month": 0.29,
+    "win": 42.9,
+    "avgR": 0.594,
+    "sumR": 4.2,
+    "pf": 4.11,
+    "maxdd": 0.8
+   },
+   "HIGH": {
+    "n": 83,
+    "per_month": 3.46,
+    "win": 22.9,
+    "avgR": -0.065,
+    "sumR": -5.4,
+    "pf": 0.84,
+    "maxdd": 13.3
+   }
+  },
+  "outcomes": {
+   "INVALID": 61,
+   "TP1_TP2": 15,
+   "SL": 7,
+   "TP1_BE": 7
+  },
+  "first_year": {
+   "n": 48,
+   "per_month": 4.0,
+   "win": 20.8,
+   "avgR": -0.062,
+   "sumR": -3.0,
+   "pf": 0.84,
+   "maxdd": 9.2
+  },
+  "second_year": {
+   "n": 42,
+   "per_month": 3.5,
+   "win": 28.6,
+   "avgR": 0.042,
+   "sumR": 1.8,
+   "pf": 1.11,
+   "maxdd": 5.6
+  }
+ },
+ "d0.5|tgtATR3|relaxed|sc-0.5": {
+  "V": {
+   "depth": 0.5,
+   "atr_tgt": 3.0,
+   "high_chase": 2.0,
+   "core_chase": 0.05,
+   "core_min": 3.0,
+   "high_min": 2.0
+  },
+  "all": {
+   "n": 94,
+   "per_month": 3.92,
+   "win": 23.4,
+   "avgR": -0.04,
+   "sumR": -3.8,
+   "pf": 0.9,
+   "maxdd": 16.0
+  },
+  "nofill": 20,
+  "d90": {
+   "n": 10,
+   "per_month": 3.38,
+   "win": 40.0,
+   "avgR": 0.346,
+   "sumR": 3.5,
+   "pf": 2.17,
+   "maxdd": 1.2
+  },
+  "d30": {
+   "n": 5,
+   "per_month": 5.0,
+   "win": 20.0,
+   "avgR": 0.02,
+   "sumR": 0.1,
+   "pf": 1.06,
+   "maxdd": 1.2
+  },
+  "by_book": {
+   "CORE": {
+    "n": 7,
+    "per_month": 0.29,
+    "win": 42.9,
+    "avgR": 0.594,
+    "sumR": 4.2,
+    "pf": 4.11,
+    "maxdd": 0.8
+   },
+   "HIGH": {
+    "n": 87,
+    "per_month": 3.63,
+    "win": 21.8,
+    "avgR": -0.091,
+    "sumR": -8.0,
+    "pf": 0.78,
+    "maxdd": 15.9
+   }
+  },
+  "outcomes": {
+   "INVALID": 63,
+   "TP1_TP2": 15,
+   "SL": 9,
+   "TP1_BE": 7
+  },
+  "first_year": {
+   "n": 52,
+   "per_month": 4.33,
+   "win": 19.2,
+   "avgR": -0.107,
+   "sumR": -5.6,
+   "pf": 0.74,
+   "maxdd": 11.8
+  },
+  "second_year": {
+   "n": 42,
+   "per_month": 3.5,
+   "win": 28.6,
+   "avgR": 0.042,
+   "sumR": 1.8,
+   "pf": 1.11,
+   "maxdd": 5.6
+  }
+ },
+ "d0.5|tgt3R|strict|sc-0.0": {
+  "V": {
+   "depth": 0.5,
+   "atr_tgt": -3.0,
+   "high_chase": 1.5,
+   "core_chase": 0.12,
+   "core_min": 3.5,
+   "high_min": 2.5
+  },
+  "all": {
+   "n": 577,
+   "per_month": 24.06,
+   "win": 28.9,
+   "avgR": 0.057,
+   "sumR": 32.9,
+   "pf": 1.16,
+   "maxdd": 18.0
+  },
+  "nofill": 181,
+  "d90": {
+   "n": 70,
+   "per_month": 23.68,
+   "win": 31.4,
+   "avgR": 0.08,
+   "sumR": 5.6,
+   "pf": 1.21,
+   "maxdd": 7.2
+  },
+  "d30": {
+   "n": 18,
+   "per_month": 18.0,
+   "win": 44.4,
+   "avgR": 0.337,
+   "sumR": 6.1,
+   "pf": 2.08,
+   "maxdd": 3.0
+  },
+  "by_book": {
+   "CORE": {
+    "n": 49,
+    "per_month": 2.04,
+    "win": 38.8,
+    "avgR": 0.272,
+    "sumR": 13.3,
+    "pf": 1.85,
+    "maxdd": 4.4
+   },
+   "HIGH": {
+    "n": 528,
+    "per_month": 22.02,
+    "win": 28.0,
+    "avgR": 0.037,
+    "sumR": 19.5,
+    "pf": 1.11,
+    "maxdd": 15.5
+   }
+  },
+  "outcomes": {
+   "INVALID": 371,
+   "TP1_BE": 91,
+   "TP1_TP2": 73,
+   "SL": 40,
+   "OPEN_END": 2
+  },
+  "first_year": {
+   "n": 295,
+   "per_month": 24.58,
+   "win": 29.8,
+   "avgR": 0.093,
+   "sumR": 27.4,
+   "pf": 1.27,
+   "maxdd": 9.1
+  },
+  "second_year": {
+   "n": 282,
+   "per_month": 23.5,
+   "win": 28.0,
+   "avgR": 0.02,
+   "sumR": 5.5,
+   "pf": 1.06,
+   "maxdd": 18.0
+  }
+ },
+ "d0.5|tgt3R|strict|sc-0.5": {
+  "V": {
+   "depth": 0.5,
+   "atr_tgt": -3.0,
+   "high_chase": 1.5,
+   "core_chase": 0.12,
+   "core_min": 3.0,
+   "high_min": 2.0
+  },
+  "all": {
+   "n": 643,
+   "per_month": 26.81,
+   "win": 27.5,
+   "avgR": 0.026,
+   "sumR": 16.5,
+   "pf": 1.07,
+   "maxdd": 26.4
+  },
+  "nofill": 190,
+  "d90": {
+   "n": 87,
+   "per_month": 29.43,
+   "win": 27.6,
+   "avgR": -0.012,
+   "sumR": -1.1,
+   "pf": 0.97,
+   "maxdd": 9.2
+  },
+  "d30": {
+   "n": 26,
+   "per_month": 26.0,
+   "win": 30.8,
+   "avgR": 0.041,
+   "sumR": 1.1,
+   "pf": 1.12,
+   "maxdd": 4.7
+  },
+  "by_book": {
+   "CORE": {
+    "n": 50,
+    "per_month": 2.08,
+    "win": 38.0,
+    "avgR": 0.264,
+    "sumR": 13.2,
+    "pf": 1.83,
+    "maxdd": 4.4
+   },
+   "HIGH": {
+    "n": 593,
+    "per_month": 24.73,
+    "win": 26.6,
+    "avgR": 0.006,
+    "sumR": 3.3,
+    "pf": 1.02,
+    "maxdd": 25.4
+   }
+  },
+  "outcomes": {
+   "INVALID": 422,
+   "TP1_BE": 99,
+   "TP1_TP2": 75,
+   "SL": 45,
+   "OPEN_END": 2
+  },
+  "first_year": {
+   "n": 308,
+   "per_month": 25.67,
+   "win": 29.9,
+   "avgR": 0.083,
+   "sumR": 25.7,
+   "pf": 1.24,
+   "maxdd": 9.2
+  },
+  "second_year": {
+   "n": 335,
+   "per_month": 27.92,
+   "win": 25.4,
+   "avgR": -0.028,
+   "sumR": -9.2,
+   "pf": 0.92,
+   "maxdd": 26.4
+  }
+ },
+ "d0.5|tgt3R|relaxed|sc-0.0": {
+  "V": {
+   "depth": 0.5,
+   "atr_tgt": -3.0,
+   "high_chase": 2.0,
+   "core_chase": 0.05,
+   "core_min": 3.5,
+   "high_min": 2.5
+  },
+  "all": {
+   "n": 683,
+   "per_month": 28.48,
+   "win": 29.3,
+   "avgR": 0.066,
+   "sumR": 44.8,
+   "pf": 1.18,
+   "maxdd": 24.9
+  },
+  "nofill": 184,
+  "d90": {
+   "n": 83,
+   "per_month": 28.07,
+   "win": 38.6,
+   "avgR": 0.255,
+   "sumR": 21.1,
+   "pf": 1.74,
+   "maxdd": 5.8
+  },
+  "d30": {
+   "n": 23,
+   "per_month": 23.0,
+   "win": 47.8,
+   "avgR": 0.361,
+   "sumR": 8.3,
+   "pf": 2.26,
+   "maxdd": 3.2
+  },
+  "by_book": {
+   "CORE": {
+    "n": 147,
+    "per_month": 6.13,
+    "win": 29.9,
+    "avgR": 0.098,
+    "sumR": 14.4,
+    "pf": 1.26,
+    "maxdd": 17.6
+   },
+   "HIGH": {
+    "n": 536,
+    "per_month": 22.35,
+    "win": 29.1,
+    "avgR": 0.057,
+    "sumR": 30.4,
+    "pf": 1.16,
+    "maxdd": 17.3
+   }
+  },
+  "outcomes": {
+   "INVALID": 431,
+   "TP1_BE": 103,
+   "TP1_TP2": 94,
+   "SL": 53,
+   "OPEN_END": 2
+  },
+  "first_year": {
+   "n": 349,
+   "per_month": 29.08,
+   "win": 29.5,
+   "avgR": 0.1,
+   "sumR": 35.0,
+   "pf": 1.29,
+   "maxdd": 16.1
+  },
+  "second_year": {
+   "n": 334,
+   "per_month": 27.83,
+   "win": 29.0,
+   "avgR": 0.029,
+   "sumR": 9.8,
+   "pf": 1.08,
+   "maxdd": 24.9
+  }
+ },
+ "d0.5|tgt3R|relaxed|sc-0.5": {
+  "V": {
+   "depth": 0.5,
+   "atr_tgt": -3.0,
+   "high_chase": 2.0,
+   "core_chase": 0.05,
+   "core_min": 3.0,
+   "high_min": 2.0
+  },
+  "all": {
+   "n": 735,
+   "per_month": 30.65,
+   "win": 28.3,
+   "avgR": 0.038,
+   "sumR": 27.8,
+   "pf": 1.1,
+   "maxdd": 34.8
+  },
+  "nofill": 200,
+  "d90": {
+   "n": 99,
+   "per_month": 33.48,
+   "win": 34.3,
+   "avgR": 0.156,
+   "sumR": 15.5,
+   "pf": 1.45,
+   "maxdd": 7.1
+  },
+  "d30": {
+   "n": 31,
+   "per_month": 31.0,
+   "win": 35.5,
+   "avgR": 0.107,
+   "sumR": 3.3,
+   "pf": 1.33,
+   "maxdd": 5.0
+  },
+  "by_book": {
+   "CORE": {
+    "n": 149,
+    "per_month": 6.21,
+    "win": 29.5,
+    "avgR": 0.095,
+    "sumR": 14.1,
+    "pf": 1.25,
+    "maxdd": 17.6
+   },
+   "HIGH": {
+    "n": 586,
+    "per_month": 24.44,
+    "win": 28.0,
+    "avgR": 0.023,
+    "sumR": 13.7,
+    "pf": 1.06,
+    "maxdd": 26.1
+   }
+  },
+  "outcomes": {
+   "INVALID": 469,
+   "TP1_BE": 111,
+   "TP1_TP2": 94,
+   "SL": 59,
+   "OPEN_END": 2
+  },
+  "first_year": {
+   "n": 354,
+   "per_month": 29.5,
+   "win": 30.2,
+   "avgR": 0.1,
+   "sumR": 35.3,
+   "pf": 1.28,
+   "maxdd": 10.1
+  },
+  "second_year": {
+   "n": 381,
+   "per_month": 31.75,
+   "win": 26.5,
+   "avgR": -0.02,
+   "sumR": -7.5,
+   "pf": 0.95,
+   "maxdd": 34.8
+  }
+ },
+ "d0.4|struct|strict|sc-0.0": {
+  "V": {
+   "depth": 0.4,
+   "atr_tgt": 0.0,
+   "high_chase": 1.5,
+   "core_chase": 0.12,
+   "core_min": 3.5,
+   "high_min": 2.5
+  },
+  "all": {
+   "n": 120,
+   "per_month": 5.0,
+   "win": 21.7,
+   "avgR": -0.106,
+   "sumR": -12.8,
+   "pf": 0.73,
+   "maxdd": 22.3
+  },
+  "nofill": 22,
+  "d90": {
+   "n": 11,
+   "per_month": 3.72,
+   "win": 36.4,
+   "avgR": 0.322,
+   "sumR": 3.5,
+   "pf": 2.12,
+   "maxdd": 1.8
+  },
+  "d30": {
+   "n": 6,
+   "per_month": 6.0,
+   "win": 16.7,
+   "avgR": 0.031,
+   "sumR": 0.2,
+   "pf": 1.1,
+   "maxdd": 1.8
+  },
+  "by_book": {
+   "CORE": {
+    "n": 1,
+    "per_month": 0.04,
+    "win": 0.0,
+    "avgR": -0.371,
+    "sumR": -0.4,
+    "pf": 0.0,
+    "maxdd": 0.4
+   },
+   "HIGH": {
+    "n": 119,
+    "per_month": 4.96,
+    "win": 21.8,
+    "avgR": -0.104,
+    "sumR": -12.4,
+    "pf": 0.74,
+    "maxdd": 21.9
+   }
+  },
+  "outcomes": {
+   "INVALID": 85,
+   "TP1_TP2": 14,
+   "TP1_BE": 11,
+   "SL": 10
+  },
+  "first_year": {
+   "n": 64,
+   "per_month": 5.33,
+   "win": 17.2,
+   "avgR": -0.151,
+   "sumR": -9.7,
+   "pf": 0.62,
+   "maxdd": 14.1
+  },
+  "second_year": {
+   "n": 56,
+   "per_month": 4.67,
+   "win": 26.8,
+   "avgR": -0.055,
+   "sumR": -3.1,
+   "pf": 0.86,
+   "maxdd": 10.3
+  }
+ },
+ "d0.4|struct|strict|sc-0.5": {
+  "V": {
+   "depth": 0.4,
+   "atr_tgt": 0.0,
+   "high_chase": 1.5,
+   "core_chase": 0.12,
+   "core_min": 3.0,
+   "high_min": 2.0
+  },
+  "all": {
+   "n": 126,
+   "per_month": 5.25,
+   "win": 21.4,
+   "avgR": -0.104,
+   "sumR": -13.2,
+   "pf": 0.74,
+   "maxdd": 24.5
+  },
+  "nofill": 24,
+  "d90": {
+   "n": 12,
+   "per_month": 4.06,
+   "win": 41.7,
+   "avgR": 0.452,
+   "sumR": 5.4,
+   "pf": 2.71,
+   "maxdd": 1.8
+  },
+  "d30": {
+   "n": 6,
+   "per_month": 6.0,
+   "win": 16.7,
+   "avgR": 0.031,
+   "sumR": 0.2,
+   "pf": 1.1,
+   "maxdd": 1.8
+  },
+  "by_book": {
+   "CORE": {
+    "n": 1,
+    "per_month": 0.04,
+    "win": 0.0,
+    "avgR": -0.371,
+    "sumR": -0.4,
+    "pf": 0.0,
+    "maxdd": 0.4
+   },
+   "HIGH": {
+    "n": 125,
+    "per_month": 5.21,
+    "win": 21.6,
+    "avgR": -0.102,
+    "sumR": -12.8,
+    "pf": 0.74,
+    "maxdd": 24.2
+   }
+  },
+  "outcomes": {
+   "INVALID": 89,
+   "TP1_TP2": 15,
+   "SL": 11,
+   "TP1_BE": 11
+  },
+  "first_year": {
+   "n": 68,
+   "per_month": 5.67,
+   "win": 16.2,
+   "avgR": -0.17,
+   "sumR": -11.6,
+   "pf": 0.58,
+   "maxdd": 16.0
+  },
+  "second_year": {
+   "n": 58,
+   "per_month": 4.83,
+   "win": 27.6,
+   "avgR": -0.027,
+   "sumR": -1.6,
+   "pf": 0.93,
+   "maxdd": 10.3
+  }
+ },
+ "d0.4|struct|relaxed|sc-0.0": {
+  "V": {
+   "depth": 0.4,
+   "atr_tgt": 0.0,
+   "high_chase": 2.0,
+   "core_chase": 0.05,
+   "core_min": 3.5,
+   "high_min": 2.5
+  },
+  "all": {
+   "n": 127,
+   "per_month": 5.3,
+   "win": 22.8,
+   "avgR": -0.068,
+   "sumR": -8.6,
+   "pf": 0.82,
+   "maxdd": 20.6
+  },
+  "nofill": 24,
+  "d90": {
+   "n": 12,
+   "per_month": 4.06,
+   "win": 41.7,
+   "avgR": 0.44,
+   "sumR": 5.3,
+   "pf": 2.67,
+   "maxdd": 1.4
+  },
+  "d30": {
+   "n": 7,
+   "per_month": 7.0,
+   "win": 28.6,
+   "avgR": 0.275,
+   "sumR": 1.9,
+   "pf": 2.04,
+   "maxdd": 1.4
+  },
+  "by_book": {
+   "CORE": {
+    "n": 8,
+    "per_month": 0.33,
+    "win": 37.5,
+    "avgR": 0.474,
+    "sumR": 3.8,
+    "pf": 3.22,
+    "maxdd": 0.8
+   },
+   "HIGH": {
+    "n": 119,
+    "per_month": 4.96,
+    "win": 21.8,
+    "avgR": -0.104,
+    "sumR": -12.4,
+    "pf": 0.74,
+    "maxdd": 21.9
+   }
+  },
+  "outcomes": {
+   "INVALID": 89,
+   "TP1_TP2": 17,
+   "TP1_BE": 11,
+   "SL": 10
+  },
+  "first_year": {
+   "n": 68,
+   "per_month": 5.67,
+   "win": 17.6,
+   "avgR": -0.126,
+   "sumR": -8.6,
+   "pf": 0.68,
+   "maxdd": 14.2
+  },
+  "second_year": {
+   "n": 59,
+   "per_month": 4.92,
+   "win": 28.8,
+   "avgR": -0.0,
+   "sumR": -0.0,
+   "pf": 1.0,
+   "maxdd": 8.5
+  }
+ },
+ "d0.4|struct|relaxed|sc-0.5": {
+  "V": {
+   "depth": 0.4,
+   "atr_tgt": 0.0,
+   "high_chase": 2.0,
+   "core_chase": 0.05,
+   "core_min": 3.0,
+   "high_min": 2.0
+  },
+  "all": {
+   "n": 134,
+   "per_month": 5.59,
+   "win": 22.4,
+   "avgR": -0.074,
+   "sumR": -10.0,
+   "pf": 0.81,
+   "maxdd": 23.9
+  },
+  "nofill": 27,
+  "d90": {
+   "n": 13,
+   "per_month": 4.4,
+   "win": 46.2,
+   "avgR": 0.551,
+   "sumR": 7.2,
+   "pf": 3.26,
+   "maxdd": 1.4
+  },
+  "d30": {
+   "n": 7,
+   "per_month": 7.0,
+   "win": 28.6,
+   "avgR": 0.275,
+   "sumR": 1.9,
+   "pf": 2.04,
+   "maxdd": 1.4
+  },
+  "by_book": {
+   "CORE": {
+    "n": 8,
+    "per_month": 0.33,
+    "win": 37.5,
+    "avgR": 0.474,
+    "sumR": 3.8,
+    "pf": 3.22,
+    "maxdd": 0.8
+   },
+   "HIGH": {
+    "n": 126,
+    "per_month": 5.25,
+    "win": 21.4,
+    "avgR": -0.109,
+    "sumR": -13.8,
+    "pf": 0.73,
+    "maxdd": 25.1
+   }
+  },
+  "outcomes": {
+   "INVALID": 93,
+   "TP1_TP2": 18,
+   "SL": 12,
+   "TP1_BE": 11
+  },
+  "first_year": {
+   "n": 73,
+   "per_month": 6.08,
+   "win": 16.4,
+   "avgR": -0.158,
+   "sumR": -11.5,
+   "pf": 0.61,
+   "maxdd": 17.1
+  },
+  "second_year": {
+   "n": 61,
+   "per_month": 5.08,
+   "win": 29.5,
+   "avgR": 0.025,
+   "sumR": 1.5,
+   "pf": 1.07,
+   "maxdd": 8.5
+  }
+ },
+ "d0.4|tgtATR3|strict|sc-0.0": {
+  "V": {
+   "depth": 0.4,
+   "atr_tgt": 3.0,
+   "high_chase": 1.5,
+   "core_chase": 0.12,
+   "core_min": 3.5,
+   "high_min": 2.5
+  },
+  "all": {
+   "n": 120,
+   "per_month": 5.0,
+   "win": 21.7,
+   "avgR": -0.106,
+   "sumR": -12.8,
+   "pf": 0.73,
+   "maxdd": 22.3
+  },
+  "nofill": 22,
+  "d90": {
+   "n": 11,
+   "per_month": 3.72,
+   "win": 36.4,
+   "avgR": 0.322,
+   "sumR": 3.5,
+   "pf": 2.12,
+   "maxdd": 1.8
+  },
+  "d30": {
+   "n": 6,
+   "per_month": 6.0,
+   "win": 16.7,
+   "avgR": 0.031,
+   "sumR": 0.2,
+   "pf": 1.1,
+   "maxdd": 1.8
+  },
+  "by_book": {
+   "CORE": {
+    "n": 1,
+    "per_month": 0.04,
+    "win": 0.0,
+    "avgR": -0.371,
+    "sumR": -0.4,
+    "pf": 0.0,
+    "maxdd": 0.4
+   },
+   "HIGH": {
+    "n": 119,
+    "per_month": 4.96,
+    "win": 21.8,
+    "avgR": -0.104,
+    "sumR": -12.4,
+    "pf": 0.74,
+    "maxdd": 21.9
+   }
+  },
+  "outcomes": {
+   "INVALID": 85,
+   "TP1_TP2": 14,
+   "TP1_BE": 11,
+   "SL": 10
+  },
+  "first_year": {
+   "n": 64,
+   "per_month": 5.33,
+   "win": 17.2,
+   "avgR": -0.151,
+   "sumR": -9.7,
+   "pf": 0.62,
+   "maxdd": 14.1
+  },
+  "second_year": {
+   "n": 56,
+   "per_month": 4.67,
+   "win": 26.8,
+   "avgR": -0.055,
+   "sumR": -3.1,
+   "pf": 0.86,
+   "maxdd": 10.3
+  }
+ },
+ "d0.4|tgtATR3|strict|sc-0.5": {
+  "V": {
+   "depth": 0.4,
+   "atr_tgt": 3.0,
+   "high_chase": 1.5,
+   "core_chase": 0.12,
+   "core_min": 3.0,
+   "high_min": 2.0
+  },
+  "all": {
+   "n": 126,
+   "per_month": 5.25,
+   "win": 21.4,
+   "avgR": -0.104,
+   "sumR": -13.2,
+   "pf": 0.74,
+   "maxdd": 24.5
+  },
+  "nofill": 24,
+  "d90": {
+   "n": 12,
+   "per_month": 4.06,
+   "win": 41.7,
+   "avgR": 0.452,
+   "sumR": 5.4,
+   "pf": 2.71,
+   "maxdd": 1.8
+  },
+  "d30": {
+   "n": 6,
+   "per_month": 6.0,
+   "win": 16.7,
+   "avgR": 0.031,
+   "sumR": 0.2,
+   "pf": 1.1,
+   "maxdd": 1.8
+  },
+  "by_book": {
+   "CORE": {
+    "n": 1,
+    "per_month": 0.04,
+    "win": 0.0,
+    "avgR": -0.371,
+    "sumR": -0.4,
+    "pf": 0.0,
+    "maxdd": 0.4
+   },
+   "HIGH": {
+    "n": 125,
+    "per_month": 5.21,
+    "win": 21.6,
+    "avgR": -0.102,
+    "sumR": -12.8,
+    "pf": 0.74,
+    "maxdd": 24.2
+   }
+  },
+  "outcomes": {
+   "INVALID": 89,
+   "TP1_TP2": 15,
+   "SL": 11,
+   "TP1_BE": 11
+  },
+  "first_year": {
+   "n": 68,
+   "per_month": 5.67,
+   "win": 16.2,
+   "avgR": -0.17,
+   "sumR": -11.6,
+   "pf": 0.58,
+   "maxdd": 16.0
+  },
+  "second_year": {
+   "n": 58,
+   "per_month": 4.83,
+   "win": 27.6,
+   "avgR": -0.027,
+   "sumR": -1.6,
+   "pf": 0.93,
+   "maxdd": 10.3
+  }
+ },
+ "d0.4|tgtATR3|relaxed|sc-0.0": {
+  "V": {
+   "depth": 0.4,
+   "atr_tgt": 3.0,
+   "high_chase": 2.0,
+   "core_chase": 0.05,
+   "core_min": 3.5,
+   "high_min": 2.5
+  },
+  "all": {
+   "n": 127,
+   "per_month": 5.3,
+   "win": 22.8,
+   "avgR": -0.068,
+   "sumR": -8.6,
+   "pf": 0.82,
+   "maxdd": 20.6
+  },
+  "nofill": 24,
+  "d90": {
+   "n": 12,
+   "per_month": 4.06,
+   "win": 41.7,
+   "avgR": 0.44,
+   "sumR": 5.3,
+   "pf": 2.67,
+   "maxdd": 1.4
+  },
+  "d30": {
+   "n": 7,
+   "per_month": 7.0,
+   "win": 28.6,
+   "avgR": 0.275,
+   "sumR": 1.9,
+   "pf": 2.04,
+   "maxdd": 1.4
+  },
+  "by_book": {
+   "CORE": {
+    "n": 8,
+    "per_month": 0.33,
+    "win": 37.5,
+    "avgR": 0.474,
+    "sumR": 3.8,
+    "pf": 3.22,
+    "maxdd": 0.8
+   },
+   "HIGH": {
+    "n": 119,
+    "per_month": 4.96,
+    "win": 21.8,
+    "avgR": -0.104,
+    "sumR": -12.4,
+    "pf": 0.74,
+    "maxdd": 21.9
+   }
+  },
+  "outcomes": {
+   "INVALID": 89,
+   "TP1_TP2": 17,
+   "TP1_BE": 11,
+   "SL": 10
+  },
+  "first_year": {
+   "n": 68,
+   "per_month": 5.67,
+   "win": 17.6,
+   "avgR": -0.126,
+   "sumR": -8.6,
+   "pf": 0.68,
+   "maxdd": 14.2
+  },
+  "second_year": {
+   "n": 59,
+   "per_month": 4.92,
+   "win": 28.8,
+   "avgR": -0.0,
+   "sumR": -0.0,
+   "pf": 1.0,
+   "maxdd": 8.5
+  }
+ },
+ "d0.4|tgtATR3|relaxed|sc-0.5": {
+  "V": {
+   "depth": 0.4,
+   "atr_tgt": 3.0,
+   "high_chase": 2.0,
+   "core_chase": 0.05,
+   "core_min": 3.0,
+   "high_min": 2.0
+  },
+  "all": {
+   "n": 134,
+   "per_month": 5.59,
+   "win": 22.4,
+   "avgR": -0.074,
+   "sumR": -10.0,
+   "pf": 0.81,
+   "maxdd": 23.9
+  },
+  "nofill": 27,
+  "d90": {
+   "n": 13,
+   "per_month": 4.4,
+   "win": 46.2,
+   "avgR": 0.551,
+   "sumR": 7.2,
+   "pf": 3.26,
+   "maxdd": 1.4
+  },
+  "d30": {
+   "n": 7,
+   "per_month": 7.0,
+   "win": 28.6,
+   "avgR": 0.275,
+   "sumR": 1.9,
+   "pf": 2.04,
+   "maxdd": 1.4
+  },
+  "by_book": {
+   "CORE": {
+    "n": 8,
+    "per_month": 0.33,
+    "win": 37.5,
+    "avgR": 0.474,
+    "sumR": 3.8,
+    "pf": 3.22,
+    "maxdd": 0.8
+   },
+   "HIGH": {
+    "n": 126,
+    "per_month": 5.25,
+    "win": 21.4,
+    "avgR": -0.109,
+    "sumR": -13.8,
+    "pf": 0.73,
+    "maxdd": 25.1
+   }
+  },
+  "outcomes": {
+   "INVALID": 93,
+   "TP1_TP2": 18,
+   "SL": 12,
+   "TP1_BE": 11
+  },
+  "first_year": {
+   "n": 73,
+   "per_month": 6.08,
+   "win": 16.4,
+   "avgR": -0.158,
+   "sumR": -11.5,
+   "pf": 0.61,
+   "maxdd": 17.1
+  },
+  "second_year": {
+   "n": 61,
+   "per_month": 5.08,
+   "win": 29.5,
+   "avgR": 0.025,
+   "sumR": 1.5,
+   "pf": 1.07,
+   "maxdd": 8.5
+  }
+ },
+ "d0.4|tgt3R|strict|sc-0.0": {
+  "V": {
+   "depth": 0.4,
+   "atr_tgt": -3.0,
+   "high_chase": 1.5,
+   "core_chase": 0.12,
+   "core_min": 3.5,
+   "high_min": 2.5
+  },
+  "all": {
+   "n": 653,
+   "per_month": 27.23,
+   "win": 27.9,
+   "avgR": 0.05,
+   "sumR": 32.5,
+   "pf": 1.15,
+   "maxdd": 17.3
+  },
+  "nofill": 214,
+  "d90": {
+   "n": 79,
+   "per_month": 26.72,
+   "win": 30.4,
+   "avgR": 0.052,
+   "sumR": 4.1,
+   "pf": 1.13,
+   "maxdd": 8.2
+  },
+  "d30": {
+   "n": 24,
+   "per_month": 24.0,
+   "win": 41.7,
+   "avgR": 0.267,
+   "sumR": 6.4,
+   "pf": 1.88,
+   "maxdd": 4.2
+  },
+  "by_book": {
+   "CORE": {
+    "n": 51,
+    "per_month": 2.13,
+    "win": 37.3,
+    "avgR": 0.243,
+    "sumR": 12.4,
+    "pf": 1.74,
+    "maxdd": 4.8
+   },
+   "HIGH": {
+    "n": 602,
+    "per_month": 25.1,
+    "win": 27.1,
+    "avgR": 0.033,
+    "sumR": 20.1,
+    "pf": 1.1,
+    "maxdd": 15.8
+   }
+  },
+  "outcomes": {
+   "INVALID": 430,
+   "TP1_BE": 97,
+   "TP1_TP2": 81,
+   "SL": 43,
+   "OPEN_END": 2
+  },
+  "first_year": {
+   "n": 333,
+   "per_month": 27.75,
+   "win": 27.9,
+   "avgR": 0.066,
+   "sumR": 22.1,
+   "pf": 1.2,
+   "maxdd": 13.1
+  },
+  "second_year": {
+   "n": 320,
+   "per_month": 26.67,
+   "win": 27.8,
+   "avgR": 0.032,
+   "sumR": 10.4,
+   "pf": 1.09,
+   "maxdd": 17.3
+  }
+ },
+ "d0.4|tgt3R|strict|sc-0.5": {
+  "V": {
+   "depth": 0.4,
+   "atr_tgt": -3.0,
+   "high_chase": 1.5,
+   "core_chase": 0.12,
+   "core_min": 3.0,
+   "high_min": 2.0
+  },
+  "all": {
+   "n": 717,
+   "per_month": 29.9,
+   "win": 27.1,
+   "avgR": 0.03,
+   "sumR": 21.3,
+   "pf": 1.09,
+   "maxdd": 26.3
+  },
+  "nofill": 230,
+  "d90": {
+   "n": 94,
+   "per_month": 31.79,
+   "win": 28.7,
+   "avgR": 0.018,
+   "sumR": 1.7,
+   "pf": 1.05,
+   "maxdd": 10.2
+  },
+  "d30": {
+   "n": 29,
+   "per_month": 29.0,
+   "win": 34.5,
+   "avgR": 0.132,
+   "sumR": 3.8,
+   "pf": 1.39,
+   "maxdd": 5.0
+  },
+  "by_book": {
+   "CORE": {
+    "n": 52,
+    "per_month": 2.17,
+    "win": 36.5,
+    "avgR": 0.236,
+    "sumR": 12.2,
+    "pf": 1.73,
+    "maxdd": 4.8
+   },
+   "HIGH": {
+    "n": 665,
+    "per_month": 27.73,
+    "win": 26.3,
+    "avgR": 0.014,
+    "sumR": 9.1,
+    "pf": 1.04,
+    "maxdd": 24.7
+   }
+  },
+  "outcomes": {
+   "INVALID": 477,
+   "TP1_BE": 105,
+   "TP1_TP2": 85,
+   "SL": 48,
+   "OPEN_END": 2
+  },
+  "first_year": {
+   "n": 344,
+   "per_month": 28.67,
+   "win": 28.5,
+   "avgR": 0.063,
+   "sumR": 21.8,
+   "pf": 1.19,
+   "maxdd": 10.8
+  },
+  "second_year": {
+   "n": 373,
+   "per_month": 31.08,
+   "win": 25.7,
+   "avgR": -0.001,
+   "sumR": -0.4,
+   "pf": 1.0,
+   "maxdd": 26.3
+  }
+ },
+ "d0.4|tgt3R|relaxed|sc-0.0": {
+  "V": {
+   "depth": 0.4,
+   "atr_tgt": -3.0,
+   "high_chase": 2.0,
+   "core_chase": 0.05,
+   "core_min": 3.5,
+   "high_min": 2.5
+  },
+  "all": {
+   "n": 761,
+   "per_month": 31.73,
+   "win": 28.6,
+   "avgR": 0.066,
+   "sumR": 50.5,
+   "pf": 1.19,
+   "maxdd": 23.0
+  },
+  "nofill": 217,
+  "d90": {
+   "n": 90,
+   "per_month": 30.44,
+   "win": 37.8,
+   "avgR": 0.231,
+   "sumR": 20.8,
+   "pf": 1.67,
+   "maxdd": 5.7
+  },
+  "d30": {
+   "n": 28,
+   "per_month": 28.0,
+   "win": 46.4,
+   "avgR": 0.316,
+   "sumR": 8.8,
+   "pf": 2.1,
+   "maxdd": 4.3
+  },
+  "by_book": {
+   "CORE": {
+    "n": 159,
+    "per_month": 6.63,
+    "win": 29.6,
+    "avgR": 0.093,
+    "sumR": 14.8,
+    "pf": 1.25,
+    "maxdd": 18.7
+   },
+   "HIGH": {
+    "n": 602,
+    "per_month": 25.1,
+    "win": 28.4,
+    "avgR": 0.059,
+    "sumR": 35.7,
+    "pf": 1.17,
+    "maxdd": 14.8
+   }
+  },
+  "outcomes": {
+   "INVALID": 492,
+   "TP1_BE": 111,
+   "TP1_TP2": 103,
+   "SL": 53,
+   "OPEN_END": 2
+  },
+  "first_year": {
+   "n": 388,
+   "per_month": 32.33,
+   "win": 28.1,
+   "avgR": 0.083,
+   "sumR": 32.3,
+   "pf": 1.25,
+   "maxdd": 16.7
+  },
+  "second_year": {
+   "n": 373,
+   "per_month": 31.08,
+   "win": 29.2,
+   "avgR": 0.049,
+   "sumR": 18.2,
+   "pf": 1.14,
+   "maxdd": 23.0
+  }
+ },
+ "d0.4|tgt3R|relaxed|sc-0.5": {
+  "V": {
+   "depth": 0.4,
+   "atr_tgt": -3.0,
+   "high_chase": 2.0,
+   "core_chase": 0.05,
+   "core_min": 3.0,
+   "high_min": 2.0
+  },
+  "all": {
+   "n": 811,
+   "per_month": 33.82,
+   "win": 28.1,
+   "avgR": 0.047,
+   "sumR": 38.4,
+   "pf": 1.13,
+   "maxdd": 30.1
+  },
+  "nofill": 236,
+  "d90": {
+   "n": 104,
+   "per_month": 35.18,
+   "win": 35.6,
+   "avgR": 0.187,
+   "sumR": 19.4,
+   "pf": 1.55,
+   "maxdd": 5.7
+  },
+  "d30": {
+   "n": 33,
+   "per_month": 33.0,
+   "win": 39.4,
+   "avgR": 0.189,
+   "sumR": 6.3,
+   "pf": 1.59,
+   "maxdd": 5.1
+  },
+  "by_book": {
+   "CORE": {
+    "n": 162,
+    "per_month": 6.76,
+    "win": 29.0,
+    "avgR": 0.088,
+    "sumR": 14.2,
+    "pf": 1.24,
+    "maxdd": 18.7
+   },
+   "HIGH": {
+    "n": 649,
+    "per_month": 27.06,
+    "win": 27.9,
+    "avgR": 0.037,
+    "sumR": 24.2,
+    "pf": 1.11,
+    "maxdd": 17.1
+   }
+  },
+  "outcomes": {
+   "INVALID": 525,
+   "TP1_BE": 119,
+   "TP1_TP2": 105,
+   "SL": 60,
+   "OPEN_END": 2
+  },
+  "first_year": {
+   "n": 391,
+   "per_month": 32.58,
+   "win": 29.2,
+   "avgR": 0.086,
+   "sumR": 33.6,
+   "pf": 1.25,
+   "maxdd": 11.3
+  },
+  "second_year": {
+   "n": 420,
+   "per_month": 35.0,
+   "win": 27.1,
+   "avgR": 0.011,
+   "sumR": 4.7,
+   "pf": 1.03,
+   "maxdd": 30.1
+  }
+ }
+}

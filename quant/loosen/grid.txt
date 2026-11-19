@@ -1,0 +1,49 @@
+d0.75|struct|strict|sc-0.0         n=  18 /mo= 0.75 win=27.8% avgR=-0.068 PF=0.87 DD=6.1R sumR=-1.2 | 90d n=4 avgR=-0.249 sumR=-1.0 | 30d n=1 sumR=-0.4 | Y1 0.148 Y2 -0.241
+d0.75|struct|strict|sc-0.5         n=  21 /mo= 0.88 win=23.8% avgR=-0.135 PF=0.74 DD=7.7R sumR=-2.8 | 90d n=4 avgR=-0.249 sumR=-1.0 | 30d n=1 sumR=-0.4 | Y1 -0.038 Y2 -0.241
+d0.75|struct|relaxed|sc-0.0        n=  22 /mo= 0.92 win=36.4% avgR=0.172 PF=1.39 DD=4.4R sumR=3.8 | 90d n=5 avgR=0.149 sumR=0.7 | 30d n=2 sumR=1.4 | Y1 0.269 Y2 0.091
+d0.75|struct|relaxed|sc-0.5        n=  26 /mo= 1.08 win=30.8% avgR=0.046 PF=1.1 DD=6.9R sumR=1.2 | 90d n=5 avgR=0.149 sumR=0.7 | 30d n=2 sumR=1.4 | Y1 0.007 Y2 0.091
+d0.75|tgtATR3|strict|sc-0.0        n=  18 /mo= 0.75 win=27.8% avgR=-0.068 PF=0.87 DD=6.1R sumR=-1.2 | 90d n=4 avgR=-0.249 sumR=-1.0 | 30d n=1 sumR=-0.4 | Y1 0.148 Y2 -0.241
+d0.75|tgtATR3|strict|sc-0.5        n=  21 /mo= 0.88 win=23.8% avgR=-0.135 PF=0.74 DD=7.7R sumR=-2.8 | 90d n=4 avgR=-0.249 sumR=-1.0 | 30d n=1 sumR=-0.4 | Y1 -0.038 Y2 -0.241
+d0.75|tgtATR3|relaxed|sc-0.0       n=  22 /mo= 0.92 win=36.4% avgR=0.172 PF=1.39 DD=4.4R sumR=3.8 | 90d n=5 avgR=0.149 sumR=0.7 | 30d n=2 sumR=1.4 | Y1 0.269 Y2 0.091
+d0.75|tgtATR3|relaxed|sc-0.5       n=  26 /mo= 1.08 win=30.8% avgR=0.046 PF=1.1 DD=6.9R sumR=1.2 | 90d n=5 avgR=0.149 sumR=0.7 | 30d n=2 sumR=1.4 | Y1 0.007 Y2 0.091
+d0.75|tgt3R|strict|sc-0.0          n= 420 /mo=17.51 win=32.1% avgR=0.085 PF=1.24 DD=17.0R sumR=35.8 | 90d n=53 avgR=0.159 sumR=8.4 | 30d n=17 sumR=9.7 | Y1 0.095 Y2 0.075
+d0.75|tgt3R|strict|sc-0.5          n= 476 /mo=19.85 win=30.3% avgR=0.053 PF=1.14 DD=19.2R sumR=25.1 | 90d n=62 avgR=0.11 sumR=6.8 | 30d n=19 sumR=9.0 | Y1 0.063 Y2 0.043
+d0.75|tgt3R|relaxed|sc-0.0         n= 516 /mo=21.52 win=32.4% avgR=0.103 PF=1.28 DD=22.0R sumR=53.4 | 90d n=65 avgR=0.357 sumR=23.2 | 30d n=21 sumR=11.2 | Y1 0.122 Y2 0.086
+d0.75|tgt3R|relaxed|sc-0.5         n= 567 /mo=23.64 win=30.9% avgR=0.07 PF=1.19 DD=28.4R sumR=39.9 | 90d n=73 avgR=0.309 sumR=22.6 | 30d n=23 sumR=10.5 | Y1 0.09 Y2 0.052
+d0.6|struct|strict|sc-0.0          n=  56 /mo= 2.34 win=25.0% avgR=-0.034 PF=0.92 DD=6.6R sumR=-1.9 | 90d n=8 avgR=-0.05 sumR=-0.4 | 30d n=4 sumR=-1.6 | Y1 -0.072 Y2 -0.003
+d0.6|struct|strict|sc-0.5          n=  59 /mo= 2.46 win=23.7% avgR=-0.059 PF=0.86 DD=8.2R sumR=-3.5 | 90d n=8 avgR=-0.05 sumR=-0.4 | 30d n=4 sumR=-1.6 | Y1 -0.121 Y2 -0.003
+d0.6|struct|relaxed|sc-0.0         n=  62 /mo= 2.59 win=27.4% avgR=0.038 PF=1.1 DD=6.6R sumR=2.4 | 90d n=9 avgR=0.149 sumR=1.3 | 30d n=5 sumR=0.1 | Y1 -0.022 Y2 0.088
+d0.6|struct|relaxed|sc-0.5         n=  66 /mo= 2.75 win=25.8% avgR=-0.003 PF=0.99 DD=9.2R sumR=-0.2 | 90d n=9 avgR=0.149 sumR=1.3 | 30d n=5 sumR=0.1 | Y1 -0.1 Y2 0.088
+d0.6|tgtATR3|strict|sc-0.0         n=  56 /mo= 2.34 win=25.0% avgR=-0.034 PF=0.92 DD=6.6R sumR=-1.9 | 90d n=8 avgR=-0.05 sumR=-0.4 | 30d n=4 sumR=-1.6 | Y1 -0.072 Y2 -0.003
+d0.6|tgtATR3|strict|sc-0.5         n=  59 /mo= 2.46 win=23.7% avgR=-0.059 PF=0.86 DD=8.2R sumR=-3.5 | 90d n=8 avgR=-0.05 sumR=-0.4 | 30d n=4 sumR=-1.6 | Y1 -0.121 Y2 -0.003
+d0.6|tgtATR3|relaxed|sc-0.0        n=  62 /mo= 2.59 win=27.4% avgR=0.038 PF=1.1 DD=6.6R sumR=2.4 | 90d n=9 avgR=0.149 sumR=1.3 | 30d n=5 sumR=0.1 | Y1 -0.022 Y2 0.088
+d0.6|tgtATR3|relaxed|sc-0.5        n=  66 /mo= 2.75 win=25.8% avgR=-0.003 PF=0.99 DD=9.2R sumR=-0.2 | 90d n=9 avgR=0.149 sumR=1.3 | 30d n=5 sumR=0.1 | Y1 -0.1 Y2 0.088
+d0.6|tgt3R|strict|sc-0.0           n= 518 /mo=21.60 win=29.7% avgR=0.053 PF=1.15 DD=13.1R sumR=27.4 | 90d n=63 avgR=0.049 sumR=3.1 | 30d n=18 sumR=6.1 | Y1 0.086 Y2 0.018
+d0.6|tgt3R|strict|sc-0.5           n= 579 /mo=24.14 win=28.3% avgR=0.024 PF=1.07 DD=22.2R sumR=14.0 | 90d n=75 avgR=-0.006 sumR=-0.4 | 30d n=23 sumR=3.5 | Y1 0.066 Y2 -0.017
+d0.6|tgt3R|relaxed|sc-0.0          n= 622 /mo=25.94 win=30.9% avgR=0.08 PF=1.22 DD=18.5R sumR=49.5 | 90d n=75 avgR=0.252 sumR=18.9 | 30d n=23 sumR=8.3 | Y1 0.107 Y2 0.052
+d0.6|tgt3R|relaxed|sc-0.5          n= 674 /mo=28.10 win=29.7% avgR=0.05 PF=1.13 DD=26.7R sumR=33.4 | 90d n=86 avgR=0.191 sumR=16.4 | 30d n=28 sumR=5.7 | Y1 0.093 Y2 0.009
+d0.5|struct|strict|sc-0.0          n=  83 /mo= 3.46 win=22.9% avgR=-0.065 PF=0.84 DD=13.3R sumR=-5.4 | 90d n=9 avgR=0.191 sumR=1.7 | 30d n=4 sumR=-1.6 | Y1 -0.092 Y2 -0.034
+d0.5|struct|strict|sc-0.5          n=  86 /mo= 3.59 win=22.1% avgR=-0.081 PF=0.8 DD=14.9R sumR=-7.0 | 90d n=9 avgR=0.191 sumR=1.7 | 30d n=4 sumR=-1.6 | Y1 -0.12 Y2 -0.034
+d0.5|struct|relaxed|sc-0.0         n=  90 /mo= 3.75 win=24.4% avgR=-0.013 PF=0.97 DD=13.4R sumR=-1.2 | 90d n=10 avgR=0.346 sumR=3.5 | 30d n=5 sumR=0.1 | Y1 -0.062 Y2 0.042
+d0.5|struct|relaxed|sc-0.5         n=  94 /mo= 3.92 win=23.4% avgR=-0.04 PF=0.9 DD=16.0R sumR=-3.8 | 90d n=10 avgR=0.346 sumR=3.5 | 30d n=5 sumR=0.1 | Y1 -0.107 Y2 0.042
+d0.5|tgtATR3|strict|sc-0.0         n=  83 /mo= 3.46 win=22.9% avgR=-0.065 PF=0.84 DD=13.3R sumR=-5.4 | 90d n=9 avgR=0.191 sumR=1.7 | 30d n=4 sumR=-1.6 | Y1 -0.092 Y2 -0.034
+d0.5|tgtATR3|strict|sc-0.5         n=  86 /mo= 3.59 win=22.1% avgR=-0.081 PF=0.8 DD=14.9R sumR=-7.0 | 90d n=9 avgR=0.191 sumR=1.7 | 30d n=4 sumR=-1.6 | Y1 -0.12 Y2 -0.034
+d0.5|tgtATR3|relaxed|sc-0.0        n=  90 /mo= 3.75 win=24.4% avgR=-0.013 PF=0.97 DD=13.4R sumR=-1.2 | 90d n=10 avgR=0.346 sumR=3.5 | 30d n=5 sumR=0.1 | Y1 -0.062 Y2 0.042
+d0.5|tgtATR3|relaxed|sc-0.5        n=  94 /mo= 3.92 win=23.4% avgR=-0.04 PF=0.9 DD=16.0R sumR=-3.8 | 90d n=10 avgR=0.346 sumR=3.5 | 30d n=5 sumR=0.1 | Y1 -0.107 Y2 0.042
+d0.5|tgt3R|strict|sc-0.0           n= 577 /mo=24.06 win=28.9% avgR=0.057 PF=1.16 DD=18.0R sumR=32.9 | 90d n=70 avgR=0.08 sumR=5.6 | 30d n=18 sumR=6.1 | Y1 0.093 Y2 0.02
+d0.5|tgt3R|strict|sc-0.5           n= 643 /mo=26.81 win=27.5% avgR=0.026 PF=1.07 DD=26.4R sumR=16.5 | 90d n=87 avgR=-0.012 sumR=-1.1 | 30d n=26 sumR=1.1 | Y1 0.083 Y2 -0.028
+d0.5|tgt3R|relaxed|sc-0.0          n= 683 /mo=28.48 win=29.3% avgR=0.066 PF=1.18 DD=24.9R sumR=44.8 | 90d n=83 avgR=0.255 sumR=21.1 | 30d n=23 sumR=8.3 | Y1 0.1 Y2 0.029
+d0.5|tgt3R|relaxed|sc-0.5          n= 735 /mo=30.65 win=28.3% avgR=0.038 PF=1.1 DD=34.8R sumR=27.8 | 90d n=99 avgR=0.156 sumR=15.5 | 30d n=31 sumR=3.3 | Y1 0.1 Y2 -0.02
+d0.4|struct|strict|sc-0.0          n= 120 /mo= 5.00 win=21.7% avgR=-0.106 PF=0.73 DD=22.3R sumR=-12.8 | 90d n=11 avgR=0.322 sumR=3.5 | 30d n=6 sumR=0.2 | Y1 -0.151 Y2 -0.055
+d0.4|struct|strict|sc-0.5          n= 126 /mo= 5.25 win=21.4% avgR=-0.104 PF=0.74 DD=24.5R sumR=-13.2 | 90d n=12 avgR=0.452 sumR=5.4 | 30d n=6 sumR=0.2 | Y1 -0.17 Y2 -0.027
+d0.4|struct|relaxed|sc-0.0         n= 127 /mo= 5.30 win=22.8% avgR=-0.068 PF=0.82 DD=20.6R sumR=-8.6 | 90d n=12 avgR=0.44 sumR=5.3 | 30d n=7 sumR=1.9 | Y1 -0.126 Y2 -0.0
+d0.4|struct|relaxed|sc-0.5         n= 134 /mo= 5.59 win=22.4% avgR=-0.074 PF=0.81 DD=23.9R sumR=-10.0 | 90d n=13 avgR=0.551 sumR=7.2 | 30d n=7 sumR=1.9 | Y1 -0.158 Y2 0.025
+d0.4|tgtATR3|strict|sc-0.0         n= 120 /mo= 5.00 win=21.7% avgR=-0.106 PF=0.73 DD=22.3R sumR=-12.8 | 90d n=11 avgR=0.322 sumR=3.5 | 30d n=6 sumR=0.2 | Y1 -0.151 Y2 -0.055
+d0.4|tgtATR3|strict|sc-0.5         n= 126 /mo= 5.25 win=21.4% avgR=-0.104 PF=0.74 DD=24.5R sumR=-13.2 | 90d n=12 avgR=0.452 sumR=5.4 | 30d n=6 sumR=0.2 | Y1 -0.17 Y2 -0.027
+d0.4|tgtATR3|relaxed|sc-0.0        n= 127 /mo= 5.30 win=22.8% avgR=-0.068 PF=0.82 DD=20.6R sumR=-8.6 | 90d n=12 avgR=0.44 sumR=5.3 | 30d n=7 sumR=1.9 | Y1 -0.126 Y2 -0.0
+d0.4|tgtATR3|relaxed|sc-0.5        n= 134 /mo= 5.59 win=22.4% avgR=-0.074 PF=0.81 DD=23.9R sumR=-10.0 | 90d n=13 avgR=0.551 sumR=7.2 | 30d n=7 sumR=1.9 | Y1 -0.158 Y2 0.025
+d0.4|tgt3R|strict|sc-0.0           n= 653 /mo=27.23 win=27.9% avgR=0.05 PF=1.15 DD=17.3R sumR=32.5 | 90d n=79 avgR=0.052 sumR=4.1 | 30d n=24 sumR=6.4 | Y1 0.066 Y2 0.032
+d0.4|tgt3R|strict|sc-0.5           n= 717 /mo=29.90 win=27.1% avgR=0.03 PF=1.09 DD=26.3R sumR=21.3 | 90d n=94 avgR=0.018 sumR=1.7 | 30d n=29 sumR=3.8 | Y1 0.063 Y2 -0.001
+d0.4|tgt3R|relaxed|sc-0.0          n= 761 /mo=31.73 win=28.6% avgR=0.066 PF=1.19 DD=23.0R sumR=50.5 | 90d n=90 avgR=0.231 sumR=20.8 | 30d n=28 sumR=8.8 | Y1 0.083 Y2 0.049
+d0.4|tgt3R|relaxed|sc-0.5          n= 811 /mo=33.82 win=28.1% avgR=0.047 PF=1.13 DD=30.1R sumR=38.4 | 90d n=104 avgR=0.187 sumR=19.4 | 30d n=33 sumR=6.3 | Y1 0.086 Y2 0.011
+END 2026-11-19 10:00:00
