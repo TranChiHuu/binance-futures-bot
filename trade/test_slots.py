@@ -20,24 +20,26 @@ def main():
     empty = S.count_slots([], [], CORE, HIGH)
     check('empty core 0', empty['core_used'] == 0)
     check('empty high 0', empty['high_used'] == 0)
+    # combined max is 2; both books can still show 2 free when flat
     check('empty core 2 free', empty['core_slots_free'] == 2 and empty['core_free'])
     check('empty high 2 free', empty['high_slots_free'] == 2 and empty['high_free'])
     check('empty slots_ok', empty['slots_ok'])
+    check('empty total max 2', S.MAX_TOTAL_SLOTS == 2)
 
-    # Live snapshot after this change: 1 open HIGH AVAX long, no pending
+    # 1 open HIGH AVAX long, no pending: 1 of 2 total used, 1 free on either book
     avax = [{'symbol': 'AVAXUSDT', 'port': 'HIGH', 'amt': 8.0}]
     live = S.count_slots(avax, [], CORE, HIGH)
     check('live high used 1', live['high_used'] == 1, live)
     check('live core used 0', live['core_used'] == 0)
     check('live high 1 free', live['high_slots_free'] == 1 and live['high_free'])
-    check('live core 2 free', live['core_slots_free'] == 2 and live['core_free'])
+    check('live core 1 free (total room)', live['core_slots_free'] == 1 and live['core_free'])
     check('live total 1', live['total_used'] == 1 and live['slots_ok'])
 
-    # 1 pos + 1 pending on HIGH already uses 2 HIGH slots
+    # 1 pos + 1 pending already uses the combined max of 2
     pend_doge = [{'symbol': 'DOGEUSDT', 'port': 'HIGH', 'side': 'LONG', 'pending': True}]
     full_high = S.count_slots(avax, pend_doge, CORE, HIGH)
     check('high pos+pending = 2', full_high['high_used'] == 2 and full_high['high_slots_free'] == 0)
-    check('high full, core still 2 free', full_high['core_slots_free'] == 2 and full_high['slots_ok'])
+    check('high full, total full, core 0', full_high['core_slots_free'] == 0 and not full_high['slots_ok'])
 
     # Pending also inferred from raw open-order shape
     orders = [
@@ -47,8 +49,8 @@ def main():
     pends = S.pending_entries(orders, open_syms={'AVAXUSDT'}, core=CORE, high=HIGH)
     check('pending BTC only', [p['symbol'] for p in pends] == ['BTCUSDT'] and pends[0]['port'] == 'CORE')
     mixed = S.count_slots(avax, pends, CORE, HIGH)
-    check('1 HIGH open + 1 CORE pending', mixed['high_used'] == 1 and mixed['core_used'] == 1
-          and mixed['core_slots_free'] == 1 and mixed['high_slots_free'] == 1)
+    check('1 HIGH open + 1 CORE pending fills total 2', mixed['high_used'] == 1 and mixed['core_used'] == 1
+          and mixed['core_slots_free'] == 0 and mixed['high_slots_free'] == 0 and not mixed['slots_ok'])
 
     # Duplicate pending on same symbol counts once
     dup_orders = [
@@ -64,14 +66,20 @@ def main():
         [{'symbol': 'BTCUSDT', 'port': 'CORE'}, {'symbol': 'ETHUSDT', 'port': 'CORE'},
          {'symbol': 'DOGEUSDT', 'port': 'HIGH'}, {'symbol': 'INJUSDT', 'port': 'HIGH'}],
         [], CORE, HIGH)
-    check('4 full, no room', two_core_two_high['total_used'] == 4 and not two_core_two_high['slots_ok']
+    check('4 counted, no room', two_core_two_high['total_used'] == 4 and not two_core_two_high['slots_ok']
           and two_core_two_high['core_slots_free'] == 0 and two_core_two_high['high_slots_free'] == 0)
+
+    two_mixed = S.count_slots(
+        [{'symbol': 'BTCUSDT', 'port': 'CORE'}, {'symbol': 'DOGEUSDT', 'port': 'HIGH'}],
+        [], CORE, HIGH)
+    check('1 CORE + 1 HIGH fills total 2', two_mixed['total_used'] == 2 and not two_mixed['slots_ok']
+          and two_mixed['core_slots_free'] == 0 and two_mixed['high_slots_free'] == 0)
 
     two_core = S.count_slots(
         [{'symbol': 'BTCUSDT', 'port': 'CORE'}, {'symbol': 'XRPUSDT', 'port': 'CORE'}],
         [], CORE, HIGH)
-    check('2 CORE full, HIGH 2 free', two_core['core_free'] is False and two_core['high_slots_free'] == 2
-          and two_core['slots_ok'])
+    check('2 CORE fills total, HIGH 0 free', two_core['core_free'] is False and two_core['high_slots_free'] == 0
+          and not two_core['slots_ok'] and two_core['total_used'] == 2)
 
     # Correlation
     held_avax = [{'symbol': 'AVAXUSDT', 'port': 'HIGH', 'amt': 8.0, 'side': 'LONG'}]

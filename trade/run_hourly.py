@@ -13,10 +13,10 @@ NOW = datetime.datetime.now(SAIGON)
 TS = NOW.strftime('%Y-%m-%dT%H:%M+07:00')
 DAY = NOW.strftime('%Y-%m-%d')
 DAY_MS = int(datetime.datetime(NOW.year, NOW.month, NOW.day, tzinfo=SAIGON).timestamp()*1000)
-DAILY_STOP_HARD = -7.5     # hard cap (USDT realized, Saigon day)
-DAILY_STOP = DAILY_STOP_HARD  # tightened below once wallet is known (A7)
-RISK_PCT = 0.01            # overwritten by risk_tier.compute; small wallet is per-book (CORE 2.5%, HIGH 4%)
-DAILY_STOP_RISK_MULT = 3.0 # A7: daily stop = max(-7.5, -3 x per-trade risk)
+# 2026-11-20 (user approved 25% risk, accepted blow-up risk): daily stop = -50% of start-of-day wallet
+DAILY_STOP_PCT = 0.50
+DAILY_STOP = None          # set from risk_tier.compute once wallet / start-of-day is known
+RISK_PCT = 0.25            # overwritten by risk_tier.compute; both books 25% (DD may only cut this)
 MIN_SL_ATR = 1.0           # A3: skip candidates whose SL distance < 1.0 x ATR(14,1h)
 # --- 2026-11-11 (t50u): maker entries + wallet-adaptive risk ---
 MAKER_ENTRY = True         # BREAKOUT: post-only (GTX) limit at the breakout candle close; never chase with market
@@ -225,22 +225,21 @@ realized = sum(fnum(i.get('income')) for i in inc) if isinstance(inc, list) else
 commission = sum(fnum(i.get('income')) for i in comm) if isinstance(comm, list) else 0.0
 
 import risk_tier as _rt
-RISK_STATE = _rt.compute(wallet, _rt.load_state())   # adaptive tier (DD from peak, scale-up after >=100/200 trades)
+RISK_STATE = _rt.compute(wallet, _rt.load_state(), day=DAY, realized=realized, commission=commission)
 if not DRY:
     _rt.save(RISK_STATE)
 RISK_PCT_CORE = RISK_STATE['risk_pct_core']
 RISK_PCT_HIGH = RISK_STATE['risk_pct_high']
-RISK_PCT = RISK_STATE['risk_pct']              # larger book (HIGH on the small-wallet tier) for daily stop / back-compat
+RISK_PCT = RISK_STATE['risk_pct']
 risk_budget_core = _rt.book_cap('CORE', wallet, rs=RISK_STATE)
 risk_budget_high = _rt.book_cap('HIGH', wallet, rs=RISK_STATE)
-risk_budget_trade = max(risk_budget_core, risk_budget_high)  # daily stop uses the larger book's per-trade risk
+risk_budget_trade = max(risk_budget_core, risk_budget_high)
 high_budget = risk_budget_high
-DAILY_STOP = max(DAILY_STOP_HARD, -DAILY_STOP_RISK_MULT * risk_budget_trade)  # A7 (tightening only)
-remaining_daily = DAILY_STOP - realized  # e.g. -7.5 - 0 = -7.5; usable risk = 7.5 + realized if realized negative
-# daily stop if realized <= -7.5
+DAILY_STOP = float(RISK_STATE['daily_stop'])  # -50% of Saigon start-of-day wallet
+remaining_daily = DAILY_STOP - realized
 blocked_daily = realized <= DAILY_STOP
 # remaining risk budget before hitting stop: how much more loss allowed
-room = abs(DAILY_STOP) + realized  # if realized=0, room=7.5; if realized=-3, room=4.5
+room = abs(DAILY_STOP) + realized
 if room < 0: room = 0
 
 core_pos = [p for p in positions if p['port']=='CORE']
@@ -262,7 +261,7 @@ held_for_corr = list(positions) + list(_pend_list)
 
 skips.append(f"Book: {len(positions)} pos, {len(orders)} orders, {len(algos)} algo; wallet={wallet:.8f} avail={avail:.8f}")
 skips.append(f"Saigon day {DAY} realizedPnL_today={realized:.4f} commission={commission:.4f} — daily stop {'HIT' if blocked_daily else 'OK'} (limit {DAILY_STOP:.2f}, room={room:.2f})")
-skips.append(f"Risk tier {RISK_STATE['tier']}: CORE {RISK_PCT_CORE*100:.2f}%={risk_budget_core:.4f} USDT, HIGH {RISK_PCT_HIGH*100:.2f}%={risk_budget_high:.4f} USDT (peak {RISK_STATE['peak']:.2f}, DD {RISK_STATE['dd']*100:.1f}%, post-change trades {RISK_STATE['journal']['n']}); daily stop={DAILY_STOP:.4f} from larger book (hard cap {DAILY_STOP_HARD}); min SL {MIN_SL_ATR}xATR; min breakout {MIN_BREAKOUT_PAST_ATR}xATR; maker entry {'ON' if MAKER_ENTRY else 'OFF'}")
+skips.append(f"Risk tier {RISK_STATE['tier']}: CORE {RISK_PCT_CORE*100:.2f}%={risk_budget_core:.4f} USDT, HIGH {RISK_PCT_HIGH*100:.2f}%={risk_budget_high:.4f} USDT (peak {RISK_STATE['peak']:.2f}, DD {RISK_STATE['dd']*100:.1f}%, post-change trades {RISK_STATE['journal']['n']}); daily stop={DAILY_STOP:.4f} (-{DAILY_STOP_PCT*100:.0f}% of start-of-day wallet {RISK_STATE.get('day_start_wallet', wallet):.4f}); min SL {MIN_SL_ATR}xATR; min breakout {MIN_BREAKOUT_PAST_ATR}xATR; maker entry {'ON' if MAKER_ENTRY else 'OFF'}")
 
 # --- Fix SL/TP / stale pendings ---
 # exchangeInfo for filters
@@ -280,7 +279,23 @@ if isinstance(exinfo, dict) and 'symbols' in exinfo:
                 'stepSize': fnum(filters.get('LOT_SIZE',{}).get('stepSize'), 0.001),
                 'minQty': fnum(filters.get('LOT_SIZE',{}).get('minQty'), 0),
                 'minNotional': fnum(filters.get('MIN_NOTIONAL',{}).get('notional'), 5),
+                'maxLeverage': _rt.LEV_HARD_MAX,
             }
+# cap leverage to each symbol's exchange max (top initialLeverage bracket)
+_brkt = safe_call('/fapi/v1/leverageBracket')
+if isinstance(_brkt, list):
+    for b in _brkt:
+        sym = b.get('symbol')
+        if sym not in sym_info:
+            continue
+        brackets = b.get('brackets') or []
+        try:
+            mx = max(int(x.get('initialLeverage') or 1) for x in brackets)
+        except ValueError:
+            continue
+        if mx > 0:
+            sym_info[sym]['maxLeverage'] = mx
+
 # confirm HIGH symbols exist
 valid_high = [s for s in HIGH if s in sym_info and sym_info[s]['status']=='TRADING']
 missing_high = [s for s in HIGH if s not in sym_info or sym_info[s]['status']!='TRADING']
@@ -710,7 +725,7 @@ else:
         if _slots.already_held(cand['sym'], held_for_corr):
             skips.append(f"{cand['sym']} skip: already open or pending")
             continue
-        risk_budget = _rt.book_cap(port, wallet, rs=RISK_STATE)  # per-book adaptive tier, never above old book caps
+        risk_budget = _rt.book_cap(port, wallet, rs=RISK_STATE)  # per-book 25% tier, hard-capped at 25% wallet
         if port == 'HIGH' and room < risk_budget:
             # don't shrink below meaningful — skip if remaining daily < planned risk
             if room < risk_budget:
@@ -735,7 +750,7 @@ else:
         step = info.get('stepSize', 0.001)
         tick = info.get('tickSize', 0.01)
         min_n = info.get('minNotional', 5)
-        lev_max = 10 if port=='CORE' else 20
+        lev_max = int(info.get('maxLeverage') or _rt.LEV_HARD_MAX)
         pp = info.get('pricePrecision', 4)
         def fmt_p(x):
             # round to tick in the safe direction is overkill here; tick-round then precision
@@ -755,36 +770,23 @@ else:
         if not use_market and abs(entry_px/mark - 1) > MAX_LIMIT_DIST:
             skips.append(f"{cand['sym']} limit {entry_px} >{MAX_LIMIT_DIST*100:.1f}% from mark — skip")
             continue
-        # leverage so isolated liquidation stays well beyond SL
-        sl_dist = risk_per_unit / entry_px
-        lev_liq = int(0.9 / (sl_dist + 0.01)) if sl_dist > 0 else lev_max
-        lev = max(1, min(lev_max, lev_liq))
-
-        fee_buf = entry_px * FEE_RATE * 2
-        qty_raw = risk_budget / (risk_per_unit + fee_buf)
-        # cap by margin available (risk may be below cap, never above)
-        max_qty_margin = (avail * 0.85 * lev) / entry_px if entry_px else 0
-        if qty_raw > max_qty_margin:
-            qty_raw = max_qty_margin
-        qty = floor_step(qty_raw, step)   # A4: always round DOWN, never upsize
-        qp = info.get('quantityPrecision')
-        while qty > 0 and qty * (risk_per_unit + fee_buf) > risk_budget * (1 + 1e-9):
-            qty = floor_step(qty - step, step)
-        notional = qty * entry_px
-        min_q = info.get('minQty', 0) or 0
-        if qty <= 0 or qty < min_q or notional < min_n:
-            skips.append(f"{cand['sym']} SKIP_min_notional qty={qty} (minQty {min_q}) notional={notional:.2f} < min {min_n} at risk {risk_budget:.4f}")
-            cand['decision'] = 'SKIP_min_notional'
+        # isolated margin, lev so liq is >= 1.5x SL away; size down to available balance if needed
+        sized = _rt.size_position(
+            entry=entry_px, sl=sl, side=side, risk_budget=risk_budget, avail=avail,
+            step=step, min_qty=info.get('minQty', 0) or 0, min_notional=min_n,
+            fee_rate=FEE_RATE, lev_max=lev_max,
+        )
+        if not sized.get('ok'):
+            skips.append(f"{cand['sym']} SKIP_{sized.get('code') or 'size'} {sized.get('reason')}")
+            cand['decision'] = 'SKIP_' + str(sized.get('code') or 'size')
             continue
-        margin_needed = notional / lev
-        if margin_needed > avail * 0.9:
-            skips.append(f"{cand['sym']} margin {margin_needed:.2f} > avail*0.9; skip")
-            continue
-        # approx isolated liq (MMR ~1%): must be beyond SL
-        liq_est = entry_px * (1 - 1/lev + 0.01) if side=='LONG' else entry_px * (1 + 1/lev - 0.01)
-        if (side=='LONG' and liq_est >= sl) or (side=='SHORT' and liq_est <= sl):
-            skips.append(f"{cand['sym']} est liq {liq_est:.6g} not beyond SL {sl:.6g} — skip")
-            continue
+        qty = sized['qty']
+        lev = sized['lev']
+        notional = sized['notional']
+        margin_needed = sized['margin']
+        liq_est = sized['liq_est']
+        if sized.get('sized_down'):
+            skips.append(f"{cand['sym']} sized down to fit margin: qty={qty} risk={sized['risk_usdt']:.4f} (budget {risk_budget:.4f}) lev={lev}x liq={liq_est:.6g}")
 
         rr_check = abs((tp2-entry_px)/(entry_px-sl)) if side=='LONG' else abs((entry_px-tp2)/(sl-entry_px))
         if rr_check < 2.0:
@@ -797,7 +799,14 @@ else:
             continue
 
         r1 = safe_call('/fapi/v1/marginType', {'symbol':cand['sym'],'marginType':'ISOLATED'}, 'POST')
+        # -4046 = already isolated, fine; any other error: skip before placing the entry
+        if not DRY and isinstance(r1, dict) and r1.get('code') not in (None, 0, '0', -4046, '-4046'):
+            skips.append(f"{cand['sym']} set ISOLATED failed: {str(r1)[:160]} — skip")
+            continue
         r2 = safe_call('/fapi/v1/leverage', {'symbol':cand['sym'],'leverage':lev}, 'POST')
+        if not DRY and isinstance(r2, dict) and r2.get('code') not in (None, 0, '0'):
+            skips.append(f"{cand['sym']} set leverage {lev} failed: {str(r2)[:160]} — skip")
+            continue
 
         sl_p = fmt_p(sl); tp1_p = fmt_p(tp1); tp2_p = fmt_p(tp2)
 
@@ -1047,8 +1056,8 @@ result = {
         'high_used': high_used,
         'core_free': core_free,
         'high_risk_free': high_free,
-        'core_slots_free': (max(0, MAX_CORE_SLOTS - core_used) if pos_used < MAX_TOTAL_SLOTS else 0),
-        'high_slots_free': (max(0, MAX_HIGH_SLOTS - high_used) if pos_used < MAX_TOTAL_SLOTS else 0),
+        'core_slots_free': min(max(0, MAX_CORE_SLOTS - core_used), max(0, MAX_TOTAL_SLOTS - pos_used)),
+        'high_slots_free': min(max(0, MAX_HIGH_SLOTS - high_used), max(0, MAX_TOTAL_SLOTS - pos_used)),
         'positions_used': pos_used,
         'open_positions': len(pos2),
         'max_core': MAX_CORE_SLOTS,

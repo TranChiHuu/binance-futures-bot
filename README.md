@@ -5,6 +5,7 @@ Bot tự động giao dịch Binance USDT-M Futures (2 danh mục CORE và MAO H
 - `bn.py`: helper gọi API Binance có ký (env `BINANCE_API_KEY`, `BINANCE_API_SECRET`).
 - `tg_trade.py`: gửi thông báo Telegram (env `TELEGRAM_BOT_TOKEN`, chat id trong file riêng, không commit).
 - `trade/run_hourly.py`: quét setup (BREAKOUT / RETEST / MOMENTUM), tính rủi ro, đặt lệnh + SL + 2 TP. `--dry-run` để chạy thử.
+- `trade/risk_tier.py`: rủi ro mỗi lệnh 25% ví (CORE và MAO HIEM, đã duyệt 2026-11-20); hệ số drawdown chỉ được giảm, không vượt 25%. Daily stop -50% ví đầu ngày. Tối đa 2 lệnh đồng thời.
 - `trade/pos_manage.py`: dời SL về hòa vốn sau TP1.
 - `trade/pos_watch.py`: watcher 60s, báo TP1 / BE / đóng lệnh và ghi nhật ký.
 - `trade/lessons.json`: bài học rút ra từ lệnh đã đóng (chỉ siết luật).

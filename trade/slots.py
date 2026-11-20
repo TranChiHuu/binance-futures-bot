@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 """Concurrent position slots for the live bot.
 
-CORE max 2 open-or-pending, HIGH (MAO HIEM) max 2 open-or-pending, combined max 4.
-A pending maker/limit entry occupies a slot on its book. A book with 1 position
-and 1 pending already uses 2 slots.
+Per-book caps stay at 2, but combined open-or-pending max is 2 (user 2026-11-20:
+25% risk per trade, so two positions keep total open risk <= 50%). A pending
+maker/limit entry occupies a slot on its book. Remaining free slots are also
+capped by the combined total, so a book never looks more open than it is.
 """
 
 MAX_CORE_SLOTS = 2
 MAX_HIGH_SLOTS = 2
-MAX_TOTAL_SLOTS = 4
+MAX_TOTAL_SLOTS = 2
 
 # Same-direction pairs in a group are skipped. Slightly tighter than the old
 # 3 groups, because 2 slots per book would otherwise allow two highly
@@ -130,11 +131,9 @@ def count_slots(positions, pendings, core=None, high=None):
         else:
             high_used += 1
     total = core_used + high_used
-    core_room = max(0, MAX_CORE_SLOTS - core_used)
-    high_room = max(0, MAX_HIGH_SLOTS - high_used)
-    if total >= MAX_TOTAL_SLOTS:
-        core_room = 0
-        high_room = 0
+    total_room = max(0, MAX_TOTAL_SLOTS - total)
+    core_room = min(max(0, MAX_CORE_SLOTS - core_used), total_room)
+    high_room = min(max(0, MAX_HIGH_SLOTS - high_used), total_room)
     return {
         'core_used': core_used,
         'high_used': high_used,
