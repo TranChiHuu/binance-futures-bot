@@ -445,6 +445,7 @@ def update_lessons():
            'wins': sum(1 for r in J if r['pnl_net'] > 0), 'losses': sum(1 for r in J if r['pnl_net'] < 0),
            'net_pnl': round(sum(r['pnl_net'] for r in J), 4),
            'adjust': adj, 'lessons': lessons,
+           'daily_reviews': (old.get('daily_reviews') or [])[-30:],  # kept from daily self-review (2026-11-20)
            'last_change': None if json.dumps(adj, sort_keys=True) == prev else '; '.join(l['adjust'] for l in lessons)}
     json.dump(out, open(LESSONS, 'w'), indent=2, ensure_ascii=False)
     return out
