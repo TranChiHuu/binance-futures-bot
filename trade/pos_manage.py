@@ -369,6 +369,8 @@ def update_lessons():
         J = [json.loads(l) for l in open(JOURNAL) if l.strip()]
     except Exception:
         J = []
+    # 2026-11-20: off-rule TEST trades (user-requested) are journaled but never drive lessons
+    J = [r for r in J if r.get('setup') != 'TEST']
     J.sort(key=lambda r: r['ts_close'])
     try: old = json.load(open(LESSONS))
     except Exception: old = {}
