@@ -2,7 +2,8 @@
 import json, os, re, datetime
 
 SAIGON = datetime.timezone(datetime.timedelta(hours=7))
-FILE = '/workspace/trade/ip_ban.json'
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+FILE = ROOT+'/trade/ip_ban.json'
 # If the 418 body has no timestamp, stay dark this long.
 FALLBACK_MIN = 15
 
@@ -93,5 +94,5 @@ def mark_telegram_sent():
 
 def format_until(until):
     if not until:
-        return 'chua ro'
-    return until.strftime('%H:%M %d/%m') + ' gio VN'
+        return 'unknown'
+    return until.strftime('%H:%M %d/%m') + ' VN time'

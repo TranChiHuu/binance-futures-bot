@@ -97,8 +97,8 @@ if __name__ == '__main__':
     print('WF portfolio OOS', fmt(out['wf_portfolio']['OOS']), 'wallet', round(wallet, 1))
     print('LIVE portfolio same windows', fmt(out['live_portfolio_same_windows']['R']), 'wallet', round(wallet_l, 1))
     plt.figure(figsize=(11, 4.5))
-    for nm, e in [('Walk-forward (OOS)', eq_all), ('Luat live', eq_l)]:
+    for nm, e in [('Walk-forward (OOS)', eq_all), ('Live rules', eq_l)]:
         if e: plt.plot(pd.to_datetime([x[0] for x in e], unit='ms') + pd.Timedelta(hours=7), [x[1] for x in e], label=nm)
-    plt.title('Danh muc tren cac cua so kiem tra (out-of-sample), von 45 USDT'); plt.ylabel('USDT'); plt.legend(); plt.grid(alpha=.3); plt.tight_layout()
+    plt.title('Portfolio on test windows (out-of-sample), 45 USDT capital'); plt.ylabel('USDT'); plt.legend(); plt.grid(alpha=.3); plt.tight_layout()
     plt.savefig(f'{R}/equity_walkforward_oos_usdt.png', dpi=110); plt.close()
     json.dump(out, open(f'{R}/portfolio_tests.json', 'w'), indent=1, default=str)

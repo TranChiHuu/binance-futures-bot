@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""READ-ONLY: pull income, userTrades and allOrders since 2026-11-02 (Saigon) via /workspace/bn.py.
+"""READ-ONLY: pull income, userTrades and allOrders since 2026-11-02 (Saigon) via bn.py.
 Never places/cancels orders. Output: data/account_*.json"""
 import sys, json, time, datetime, os
-sys.path.insert(0, '/workspace'); import bn
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT); import bn
 D = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 SG = datetime.timezone(datetime.timedelta(hours=7))
 START = int(datetime.datetime(2026, 11, 2, tzinfo=SG).timestamp() * 1000)

@@ -8,7 +8,8 @@ import os, json, datetime, numpy as np, pandas as pd
 from engine import Sym, H1, M15
 from strategy import LIVE, final_score
 D = os.path.dirname(os.path.abspath(__file__)); R = f'{D}/results'; os.makedirs(R, exist_ok=True)
-T = '/workspace/trade'
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+T = ROOT+'/trade'
 SG = datetime.timezone(datetime.timedelta(hours=7))
 def ms(s): return int(datetime.datetime.fromisoformat(s).timestamp() * 1000)
 def hs(m): return datetime.datetime.fromtimestamp(m / 1000, SG).strftime('%m-%d %H:%M')

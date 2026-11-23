@@ -1,95 +1,95 @@
 {
   "generated": "2026-11-11T10:45+07:00",
-  "source": "/workspace/trade/quant/REPORT.md (backtest 2024-11-11..2026-11-11, 19 coin, 1h+15m, phi 0.055%/chieu, truot gia 0.05% lenh market, funding that)",
-  "verdict": "Luat live hien tai KHONG co edge: -0.19R/lenh (n=11837, CI95 [-0.21,-0.17]); danh muc mo phong tu 45 USDT chay ve <5 USDT sau 2 thang. RETEST am o moi nhom (diem, tuoi break, chieu, coin, quy). Chi BREAKOUT voi SL >= 1 ATR la quanh hoa von/duong nhe (+0.05R, CI95 [-0.00,+0.11]) - chua du chung minh co edge.",
+  "source": "quant/REPORT.md (backtest 2024-11-11..2026-11-11, 19 coins, 1h+15m, fee 0.055%/side, 0.05% slippage on market orders, real funding)",
+  "verdict": "The current live rules have NO edge: -0.19R/trade (n=11837, CI95 [-0.21,-0.17]); the portfolio simulated from 45 USDT falls below 5 USDT after 2 months. RETEST is negative in every group (score, break age, direction, coin, quarter). Only BREAKOUT with SL >= 1 ATR is around breakeven/slightly positive (+0.05R, CI95 [-0.00,+0.11]) - not enough to prove an edge.",
   "A_tighten_only_safe_to_auto_apply": [
     {
       "id": "A1",
-      "change": "Chan setup RETEST o ca 2 book",
-      "how": "lessons.json adjust.score_penalty.RETEST = 99 (code hien tai da ho tro, khong can sua script)",
-      "evidence": "RETEST n=9876 avgR -0.230 (CI95 -0.252..-0.208); am trong 25/25 thang, moi muc diem, moi tuoi break, moi muc SL/ATR; OOS walk-forward van -0.26R (HIGH) / -0.18R (CORE)",
-      "expected_impact": "Danh muc kich thuoc co dinh 2 nam: -1515 USDT -> +73 USDT; so lenh 1975 -> ~530 (khoang 5 lenh/tuan)",
-      "confidence": "cao"
+      "change": "Block the RETEST setup in both books",
+      "how": "lessons.json adjust.score_penalty.RETEST = 99 (current code already supports it, no script change needed)",
+      "evidence": "RETEST n=9876 avgR -0.230 (CI95 -0.252..-0.208); negative in 25/25 months, every score level, every break age, every SL/ATR level; OOS walk-forward still -0.26R (HIGH) / -0.18R (CORE)",
+      "expected_impact": "Fixed-size portfolio over 2 years: -1515 USDT -> +73 USDT; trade count 1975 -> ~530 (about 5 trades/week)",
+      "confidence": "high"
     },
     {
       "id": "A2",
-      "change": "Chan setup MOMENTUM (MAO HIEM)",
+      "change": "Block the MOMENTUM setup (HIGH)",
       "how": "lessons.json adjust.score_penalty.MOMENTUM = 99",
-      "evidence": "n=6 avgR -0.45 voi luat hien tai; n=53 avgR -0.18 khi bo lessons. Mau nho nhung khong co dau hieu duong.",
-      "expected_impact": "Rat it lenh bi anh huong; giam rui ro",
-      "confidence": "trung binh"
+      "evidence": "n=6 avgR -0.45 with current rules; n=53 avgR -0.18 without lessons. Small sample but no sign of a positive edge.",
+      "expected_impact": "Very few trades affected; lowers risk",
+      "confidence": "medium"
     },
     {
       "id": "A3",
-      "change": "Bo qua lenh co SL < 1.0 x ATR(1h,14)",
-      "how": "Can them 1 bo loc trong run_hourly.py (key moi adjust.min_sl_atr = 1.0, chi loai lenh, khong noi luat nao)",
-      "evidence": "Ca 4 lenh thua that co SL 0.41-0.70 ATR. Backtest: BREAKOUT SL<1 ATR avgR -0.45..-0.83; BREAKOUT + SL>=1 ATR avgR +0.052 (n=2128), duong o ca nam 1 (+0.051) va nam 2 (+0.054).",
-      "expected_impact": "Ket hop A1: +73 -> +140 USDT/2 nam (kich thuoc co dinh), maxDD 29R -> 21R",
-      "confidence": "trung binh"
+      "change": "Skip trades with SL < 1.0 x ATR(1h,14)",
+      "how": "Needs one more filter in run_hourly.py (new key adjust.min_sl_atr = 1.0, only rejects trades, does not loosen any rule)",
+      "evidence": "All 4 real losing trades had SL 0.41-0.70 ATR. Backtest: BREAKOUT with SL<1 ATR avgR -0.45..-0.83; BREAKOUT + SL>=1 ATR avgR +0.052 (n=2128), positive in both year 1 (+0.051) and year 2 (+0.054).",
+      "expected_impact": "Combined with A1: +73 -> +140 USDT/2 years (fixed size), maxDD 29R -> 21R",
+      "confidence": "medium"
     },
     {
       "id": "A4",
-      "change": "Giam rui ro moi lenh: ca 2 book toi da 1% vi (~0.45 USDT voi vi 45) thay cho CORE 2 USDT / MAO HIEM 15% vi",
-      "how": "Can sua hang so CORE_RISK / HIGH_RISK_PCT (hoac them adjust.risk_scale) trong run_hourly.py",
-      "evidence": "Ngay ca phuong an tot nhat cung co maxDD ~21R. Voi 2 USDT/6.75 USDT moi R, 21R = 40-140 USDT > ca vi. Mo phong lai kep luat live: vi 45 -> 4.7 USDT ngay 2025-01-15 (sau 173 lenh). 13/18 bien the thu nghiem chay ve <5 USDT; ban bo RETEST khong chay ve 0 nhung van con 6.3 USDT.",
-      "expected_impact": "Khong doi R/lenh; giam ~4-15 lan muc lo toi da, tranh chay tai khoan trong luc chua chung minh edge",
-      "confidence": "cao"
+      "change": "Lower risk per trade: both books at most 1% of wallet (~0.45 USDT with a 45 wallet) instead of CORE 2 USDT / HIGH 15% of wallet",
+      "how": "Needs a change to the CORE_RISK / HIGH_RISK_PCT constants (or a new adjust.risk_scale) in run_hourly.py",
+      "evidence": "Even the best variant has maxDD ~21R. At 2 USDT / 6.75 USDT per R, 21R = 40-140 USDT > the whole wallet. Compounded simulation of live rules: wallet 45 -> 4.7 USDT on 2025-01-15 (after 173 trades). 13/18 tested variants fall below 5 USDT; the no-RETEST variant does not go to 0 but still ends at 6.3 USDT.",
+      "expected_impact": "No change in R/trade; reduces maximum loss by ~4-15x, avoiding blowing up the account while the edge is unproven",
+      "confidence": "high"
     },
     {
       "id": "A5",
-      "change": "Khong vao lai cung 1 muc gia (cung coin, cung chieu, cung level) lan 2",
-      "how": "Can them bo loc trong run_hourly.py (doc pos_state/journal)",
-      "evidence": "Lenh BTC thu 2 (11/11 01:05) vao lai muc 73368 va thua. Nhung o quy mo lon, avgR gan nhu khong doi (-0.183 vs -0.187); neu A1 duoc ap dung thi gan nhu khong con tac dung.",
-      "expected_impact": "Nho",
-      "confidence": "thap (vo hai, chi la an toan)"
+      "change": "Do not re-enter at the same price level (same coin, same direction, same level) a second time",
+      "how": "Needs a filter in run_hourly.py (read pos_state/journal)",
+      "evidence": "The 2nd BTC trade (11/11 01:05) re-entered at 73368 and lost. But at scale avgR is almost unchanged (-0.183 vs -0.187); if A1 is applied it has almost no effect.",
+      "expected_impact": "Small",
+      "confidence": "low (harmless, only safe)"
     }
   ],
   "A_optional_low_confidence": [
     {
       "id": "A6",
-      "change": "Them tran SL <= 2.0 x ATR cho BREAKOUT",
-      "evidence": "Nhom SL 1-2 ATR tot nhat (+0.098R, n=1498) nhung nguong nay duoc chon SAU khi nhin du lieu; nam 2 chi +0.051R (CI95 -0.05..+0.15). Ve mat chinh sach la luat chat hon, nhung bang chung yeu.",
-      "expected_impact": "+140 -> +236 USDT/2 nam (kich thuoc co dinh) neu khong phai do may man"
+      "change": "Add an SL <= 2.0 x ATR cap for BREAKOUT",
+      "evidence": "The SL 1-2 ATR group is best (+0.098R, n=1498) but this threshold was chosen AFTER looking at the data; year 2 is only +0.051R (CI95 -0.05..+0.15). A tighter rule in policy terms, but weak evidence.",
+      "expected_impact": "+140 -> +236 USDT/2 years (fixed size) if it is not luck"
     },
     {
       "id": "A7",
-      "change": "Ha daily stop tu -7.5 xuong -3 x rui ro moi lenh (vd -1.5 USDT neu A4)",
-      "evidence": "Chua backtest rieng; chi la ty le thuan voi A4."
+      "change": "Lower the daily stop from -7.5 to -3 x risk per trade (e.g. -1.5 USDT if A4)",
+      "evidence": "Not backtested separately; just proportional to A4."
     }
   ],
   "B_needs_user_approval": [
     {
       "id": "B1",
-      "change": "Tam dung giao dich that (hoac chay paper/--dry-run) cho toi khi bo luat A1+A3 cho ket qua duong tren >= 50 lenh",
-      "why_approval": "Thay doi hanh vi lon: user muon bot tu giao dich",
-      "evidence": "Ngay ca bo luat tot nhat chi +0.04..+0.05R/lenh voi CI95 chua 0; walk-forward OOS -0.001R (n=1597)."
+      "change": "Pause live trading (or run paper/--dry-run) until the A1+A3 rule set shows positive results over >= 50 trades",
+      "why_approval": "Major behavior change: the user wants the bot to trade on its own",
+      "evidence": "Even the best rule set is only +0.04..+0.05R/trade with CI95 containing 0; walk-forward OOS -0.001R (n=1597)."
     },
     {
       "id": "B2",
-      "change": "Noi tran TP1 tu 1.5R len 2.0R",
-      "why_approval": "Noi long 1 bai hoc trong lessons.json",
-      "evidence": "Walk-forward chon 2.0R o 8/9 cua so, nhung tac dong trung binh ~0 (tong R -494 vs -494). Khong dang doi.",
+      "change": "Raise the TP1 cap from 1.5R to 2.0R",
+      "why_approval": "Loosens a lesson in lessons.json",
+      "evidence": "Walk-forward picks 2.0R in 8/9 windows, but the average effect is ~0 (total R -494 vs -494). Not worth changing.",
       "recommend": false
     },
     {
       "id": "B3",
-      "change": "Doi tham so quet theo walk-forward (atr_buf 0.3, lookback 3, diem +0.5..+1.0)",
-      "why_approval": "Doi hanh vi",
-      "evidence": "OOS ~0R; chu yeu anh huong RETEST (da bi chan o A1).",
+      "change": "Change scan parameters per walk-forward (atr_buf 0.3, lookback 3, score +0.5..+1.0)",
+      "why_approval": "Behavior change",
+      "evidence": "OOS ~0R; mostly affects RETEST (already blocked by A1).",
       "recommend": false
     },
     {
       "id": "B4",
-      "change": "Luat tuong quan dong (khong mo 2 lenh cung chieu neu tuong quan 30 ngay > 0.8)",
-      "why_approval": "Doi hanh vi",
-      "evidence": "Da thu: khong cai thien (live -0.236R -> -0.243R; breakout+SL1ATR +0.041R -> +0.027R). 19 coin tuong quan trung binh 0.72 nen 2 lenh cung chieu gan nhu la 1 lenh gap doi; nen kiem soat bang A4 (rui ro nho) thay vi nguong 0.8.",
+      "change": "Dynamic correlation rule (do not open 2 same-direction trades if 30-day correlation > 0.8)",
+      "why_approval": "Behavior change",
+      "evidence": "Tried: no improvement (live -0.236R -> -0.243R; breakout+SL1ATR +0.041R -> +0.027R). The 19 coins have average correlation 0.72, so 2 same-direction trades are almost one double-size trade; better controlled by A4 (small risk) than by a 0.8 threshold.",
       "recommend": false
     },
     {
       "id": "B5",
-      "change": "Nghien cuu them: vao BREAKOUT bang lenh limit (maker 0.02%) thay vi market (taker 0.05%)",
-      "why_approval": "Doi cach vao lenh; chua backtest",
-      "evidence": "Phi + truot gia chiem ~0.15-0.30R/lenh voi SL hep; giam phi la don bay lon nhat con lai."
+      "change": "Further research: enter BREAKOUT with limit orders (maker 0.02%) instead of market (taker 0.05%)",
+      "why_approval": "Changes how orders are entered; not backtested yet",
+      "evidence": "Fees + slippage take ~0.15-0.30R/trade with a tight SL; lowering fees is the biggest remaining lever."
     }
   ],
   "lessons_json_patch_for_A1_A2": {"adjust": {"score_penalty": {"RETEST": 99, "MOMENTUM": 99, "*": 0.25}}}

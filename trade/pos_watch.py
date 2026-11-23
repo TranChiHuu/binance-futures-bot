@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """Background position watcher: every ~60s run shared manage_positions (TP1 -> BE, close -> journal+lessons+Telegram).
-Shares /workspace/trade/.pos.lock with run_hourly.py, so actions never overlap. Exits when flat and no pending entry."""
+Shares trade/.pos.lock with run_hourly.py, so actions never overlap. Exits when flat and no pending entry."""
 import sys, time, json, datetime, os
-sys.path.insert(0, '/workspace/trade'); sys.path.insert(0, '/workspace')
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT+'/trade'); sys.path.insert(0, ROOT)
 import pos_manage as pm
 from bn import call, BASE
 
-LOG = '/workspace/trade/pos_watch.log'
-PID = '/workspace/trade/pos_watch.pid'
+LOG = ROOT+'/trade/pos_watch.log'
+PID = ROOT+'/trade/pos_watch.pid'
 _ban_until = 0
 
 def log(*a):

@@ -1,6 +1,7 @@
 import os,sys,json,urllib.request
 T=os.environ["TELEGRAM_BOT_TOKEN"]
-CID=open("/workspace/business/.telegram_chat_id").read().strip()
+ROOT = os.path.dirname(os.path.abspath(__file__))
+CID=open(ROOT+"/business/.telegram_chat_id").read().strip()
 text=sys.stdin.read() if len(sys.argv)<2 else " ".join(sys.argv[1:])
 # force clean UTF-8; strip lone surrogates / nulls
 text=text.encode("utf-8","replace").decode("utf-8").strip()

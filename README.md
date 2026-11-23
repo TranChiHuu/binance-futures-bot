@@ -1,14 +1,14 @@
 # binance-futures-bot
 
-Bot tự động giao dịch Binance USDT-M Futures (2 danh mục CORE và MAO HIEM), quét mỗi giờ.
+Automated Binance USDT-M Futures trading bot (2 books: CORE and HIGH), scans every hour.
 
-- `bn.py`: helper gọi API Binance có ký (env `BINANCE_API_KEY`, `BINANCE_API_SECRET`).
-- `tg_trade.py`: gửi thông báo Telegram (env `TELEGRAM_BOT_TOKEN`, chat id trong file riêng, không commit).
-- `trade/run_hourly.py`: quét setup (BREAKOUT / RETEST / MOMENTUM), tính rủi ro, đặt lệnh + SL + 2 TP. `--dry-run` để chạy thử.
-- `trade/risk_tier.py`: rủi ro mỗi lệnh 25% ví (CORE và MAO HIEM, đã duyệt 2026-11-20); hệ số drawdown chỉ được giảm, không vượt 25%. Daily stop -50% ví đầu ngày. Tối đa 2 lệnh đồng thời.
-- `trade/pos_manage.py`: dời SL về hòa vốn sau TP1.
-- `trade/pos_watch.py`: watcher 60s, báo TP1 / BE / đóng lệnh và ghi nhật ký.
-- `trade/lessons.json`: bài học rút ra từ lệnh đã đóng (chỉ siết luật).
-- `trade/trade_journal.jsonl`: nhật ký lệnh đã đóng.
+- `bn.py`: signed Binance API helper (env `BINANCE_API_KEY`, `BINANCE_API_SECRET`).
+- `tg_trade.py`: sends Telegram notifications (env `TELEGRAM_BOT_TOKEN`, chat id in a separate file, not committed).
+- `trade/run_hourly.py`: scans setups (BREAKOUT / RETEST / MOMENTUM), computes risk, places the order + SL + 2 TPs. Use `--dry-run` for a trial run.
+- `trade/risk_tier.py`: risk per trade is 25% of the wallet (CORE and HIGH, approved 2026-11-20); the drawdown factor can only reduce it, never exceed 25%. Daily stop is -50% of the start-of-day wallet. At most 2 concurrent trades.
+- `trade/pos_manage.py`: moves SL to breakeven after TP1.
+- `trade/pos_watch.py`: 60s watcher, reports TP1 / BE / closed trades and writes the journal.
+- `trade/lessons.json`: lessons learned from closed trades (rules can only be tightened).
+- `trade/trade_journal.jsonl`: journal of closed trades.
 
-Không có key nào trong repo; tất cả lấy từ biến môi trường.
+No keys are stored in the repo; everything comes from environment variables.

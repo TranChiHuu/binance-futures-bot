@@ -5,7 +5,8 @@ Limit fills only if a later 15m bar trades THROUGH the limit by >=0.01% within N
 Maker TPs: reduce-only limit at TP, filled only if price trades through by 0.01% (else no fill)."""
 import os, json, pickle, itertools, sys, numpy as np, pandas as pd
 import matplotlib; matplotlib.use('Agg'); import matplotlib.pyplot as plt
-sys.path.insert(0, '/workspace'); import bn
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT); import bn
 from strategy import LIVE
 from engine import portfolio, in_blackout, H1
 from metrics import stats, fmt, monthly

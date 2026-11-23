@@ -3,7 +3,8 @@
 compounding from 45 USDT, real stepSize/minQty/MIN_NOTIONAL from exchangeInfo) + A7 (daily stop max(-7.5, -3x risk))."""
 import json, sys, numpy as np, pandas as pd
 import matplotlib; matplotlib.use('Agg'); import matplotlib.pyplot as plt
-sys.path.insert(0, '/workspace'); import bn
+import os; ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT); import bn
 from strategy import LIVE
 from engine import portfolio
 from metrics import stats, monthly, fmt
@@ -28,6 +29,6 @@ for name, filt in [('A1+A3+A4+A7', make_filter(min_sl_atr=1.0, setups={'BREAKOUT
     if name == 'A1+A3+A4+A7':
         print('   trades per sym', out[name]['by_sym_n'])
         plt.figure(figsize=(11, 4.5)); plt.plot(pd.to_datetime([e[0] for e in eq], unit='ms') + pd.Timedelta(hours=7), [e[1] for e in eq])
-        plt.title('Cau hinh moi (chi BREAKOUT, SL>=1 ATR, rui ro 1% vi, daily stop -3R), lai kep tu 45 USDT'); plt.ylabel('USDT'); plt.grid(alpha=.3); plt.tight_layout()
+        plt.title('New config (BREAKOUT only, SL>=1 ATR, 1% wallet risk, daily stop -3R), compounded from 45 USDT'); plt.ylabel('USDT'); plt.grid(alpha=.3); plt.tight_layout()
         plt.savefig(f'{D}/results/equity_new_config_usdt.png', dpi=110); plt.close()
 json.dump(out, open(f'{D}/results/bt_a134.json', 'w'), indent=1, default=str)

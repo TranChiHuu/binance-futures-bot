@@ -9,7 +9,7 @@ from common import signals, all_syms, D
 from walkforward import make_filter
 R = f'{D}/results'
 syms = all_syms(); sigs = signals(LIVE); cache = {}
-variants = {'Luat live hien tai': None, 'Bo RETEST (chi BREAKOUT)': make_filter(setups={'BREAKOUT'}),
+variants = {'Current live rules': None, 'No RETEST (BREAKOUT only)': make_filter(setups={'BREAKOUT'}),
             'BREAKOUT + SL>=1 ATR': make_filter(min_sl_atr=1.0, setups={'BREAKOUT'})}
 out = {'monthly_symbol_R': {}, 'monthly_fixed_usdt': {}, 'fixed_book_setup': {}}
 plt.figure(figsize=(11, 4.8))
@@ -21,15 +21,15 @@ for nm, f in variants.items():
     out['monthly_fixed_usdt'][nm] = monthly(pf, 'pnl')
     out['fixed_book_setup'][nm] = {f'{b}/{s}': stats([t for t in pf if t['book'] == b and t['setup'] == s]) for b in ('CORE', 'HIGH') for s in ('RETEST', 'BREAKOUT', 'MOMENTUM')}
     out['fixed_book_setup'][nm].update({b: stats([t for t in pf if t['book'] == b]) for b in ('CORE', 'HIGH')})
-plt.axhline(0, color='grey', lw=.5); plt.title('R tich luy (moi coin doc lap, sau phi + truot gia), 19 coin, 2 nam'); plt.ylabel('R'); plt.legend(); plt.grid(alpha=.3); plt.tight_layout()
+plt.axhline(0, color='grey', lw=.5); plt.title('Cumulative R (each coin independent, after fees + slippage), 19 coins, 2 years'); plt.ylabel('R'); plt.legend(); plt.grid(alpha=.3); plt.tight_layout()
 plt.savefig(f'{R}/equity_variants_R.png', dpi=110); plt.close()
 # breakout-only fixed portfolio equity
 pf, eqf = portfolio(syms, sigs, LIVE, filt=make_filter(min_sl_atr=1.0, setups={'BREAKOUT'}), cache=cache, wallet0=1e6, high_fixed=6.75)
 pl, eql = portfolio(syms, sigs, LIVE, cache=cache, wallet0=1e6, high_fixed=6.75)
 plt.figure(figsize=(11, 4.5))
-for nm, e in [('Luat live', eql), ('BREAKOUT + SL>=1 ATR', eqf)]:
+for nm, e in [('Live rules', eql), ('BREAKOUT + SL>=1 ATR', eqf)]:
     plt.plot(pd.to_datetime([x[0] for x in e], unit='ms') + pd.Timedelta(hours=7), [x[1] - 1e6 for x in e], label=nm)
-plt.axhline(0, color='grey', lw=.5); plt.title('Danh muc day du, khoi luong co dinh (CORE 2 / MAO HIEM 6.75 USDT), lai/lo tich luy'); plt.ylabel('USDT'); plt.legend(); plt.grid(alpha=.3); plt.tight_layout()
+plt.axhline(0, color='grey', lw=.5); plt.title('Full portfolio, fixed size (CORE 2 / HIGH 6.75 USDT), cumulative P&L'); plt.ylabel('USDT'); plt.legend(); plt.grid(alpha=.3); plt.tight_layout()
 plt.savefig(f'{R}/equity_portfolio_fixed_compare_usdt.png', dpi=110); plt.close()
 # WF OOS breakdown per book / setup (symbol-level)
 wf = json.load(open(f'{R}/walkforward.json')); A = pickle.load(open(f'{R}/wf_allres.pkl', 'rb'))

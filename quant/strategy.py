@@ -1,4 +1,4 @@
-"""Faithful port of scan_sym() from /workspace/trade/run_hourly.py (version of 2026-11-11 04:59),
+"""Faithful port of scan_sym() from trade/run_hourly.py (version of 2026-11-11 04:59),
 rewritten index-based on numpy arrays so it can run over 2 years of history.
 
 run_hourly.py executes its whole body at import (account calls, lock, orders), so it cannot be
@@ -12,12 +12,12 @@ HIGH = ['DOGEUSDT','SUIUSDT','AVAXUSDT','1000PEPEUSDT','WIFUSDT','NEARUSDT','APT
         'INJUSDT','TIAUSDT','SEIUSDT','WLDUSDT','ARBUSDT','OPUSDT']
 
 DIFFERENCES = [
-    "Gia: dung gia last (klines) thay cho mark price; SL/TP live kich hoat theo MARK_PRICE.",
-    "Thoi diem quet: gia 'mark' = close nen 15m dau tien cua gio moi (~:15); volume nen dang chay = 1/3 volume nen 15m do (gia lap quet luc ~:05 nhu live).",
-    "Xu huong 4h tinh tu nen 1h gop lai (moc 4h UTC nhu Binance).",
-    "Khong mo phong tickSize/stepSize; minNotional 5 USDT.",
-    "lessons.json mo phong o dang tinh hien tai (RETEST -0.5, tat ca -0.25, TP1<=1.5R, phi 0.055%), khong tu cap nhat theo chuoi thang/thua.",
-    "Danh sach nhom tuong quan tinh (BTC/ETH/SOL/BNB, ARB/OP, DOGE/PEPE/WIF) giong live.",
+    "Price: uses last price (klines) instead of mark price; live SL/TP trigger on MARK_PRICE.",
+    "Scan timing: 'mark' price = close of the first 15m candle of the new hour (~:15); running candle volume = 1/3 of that 15m candle volume (simulates a scan at ~:05 like live).",
+    "4h trend is built from aggregated 1h candles (4h UTC boundaries like Binance).",
+    "tickSize/stepSize are not simulated; minNotional 5 USDT.",
+    "lessons.json is simulated in its current static form (RETEST -0.5, all -0.25, TP1<=1.5R, fee 0.055%), not updated from win/loss streaks.",
+    "Static correlation group list (BTC/ETH/SOL/BNB, ARB/OP, DOGE/PEPE/WIF) same as live.",
 ]
 
 @dataclass(frozen=True)

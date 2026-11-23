@@ -11,7 +11,8 @@ remain so older comments/imports still resolve, all pointing at 25%.
 import json, os, time, datetime
 from decimal import Decimal, ROUND_FLOOR
 
-D = '/workspace/trade'
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+D = ROOT+'/trade'
 STATE = f'{D}/risk_state.json'
 JOURNAL = f'{D}/trade_journal.jsonl'
 SINCE = '2026-11-11T11:30+07:00'   # trades opened after the maker/adaptive change

@@ -2,7 +2,8 @@
 """Compounding portfolio from 45 USDT at 1/2/3% risk for market vs best maker variant + bootstrap Monte Carlo."""
 import json, sys, numpy as np, pandas as pd
 import matplotlib; matplotlib.use('Agg'); import matplotlib.pyplot as plt
-sys.path.insert(0, '/workspace'); import bn
+import os; ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT); import bn
 from strategy import LIVE
 from engine import portfolio
 from metrics import stats, fmt
@@ -40,5 +41,5 @@ plt.figure(figsize=(11, 5))
 for k, e in curves.items():
     plt.plot(pd.to_datetime([x[0] for x in e], unit='ms') + pd.Timedelta(hours=7), [x[1] for x in e], label=k, lw=1.1, ls='-' if 'maker' in k else '--')
 plt.axhline(45, color='grey', lw=.5); plt.yscale('log'); plt.ylabel('USDT (log)'); plt.legend(fontsize=8); plt.grid(alpha=.3)
-plt.title('BREAKOUT + SL>=1 ATR, lai kep tu 45 USDT: vao market vs limit maker, rui ro 1/2/3%'); plt.tight_layout()
+plt.title('BREAKOUT + SL>=1 ATR, compounded from 45 USDT: market entry vs limit maker, risk 1/2/3%'); plt.tight_layout()
 plt.savefig(f'{R}/equity_maker_vs_market_risk.png', dpi=110); plt.close()

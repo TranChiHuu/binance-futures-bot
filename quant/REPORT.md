@@ -1,250 +1,250 @@
-# Báo cáo quant: backtest luật live và bài học từ lệnh thật
+# Quant report: backtest of the live rules and lessons from real trades
 
-Ngày chạy: 11/11/2026 (giờ Sài Gòn, UTC+7). Dữ liệu: 11/11/2024 tới 11/11/2026, 19 coin, nến 1h và 15m, lịch sử funding thật.
-Toàn bộ code nằm trong `quant/`. Không đụng file live và không đặt hay hủy lệnh nào. Chỉ dùng API public và API chỉ đọc (income, userTrades, allOrders).
+Run date: 2026-11-11 (Saigon time, UTC+7). Data: 2024-11-11 to 2026-11-11, 19 coins, 1h and 15m candles, real funding history.
+All code lives in `quant/`. It does not touch live files and does not place or cancel any order. Only public APIs and read-only APIs (income, userTrades, allOrders) are used.
 
-## 1. Kết luận ngắn
+## 1. Short conclusion
 
-**Luật live hiện tại không có edge, mà còn lỗ rõ rệt.**
-- Tính trên từng coin độc lập: 11.837 lệnh trong 2 năm, trung bình **−0.19R/lệnh** (khoảng tin cậy 95%: −0.21 đến −0.17), PF 0.70. Có 0/25 tháng dương.
-- Mô phỏng đủ luật danh mục (1 lệnh mỗi book, 2 lệnh tổng, daily stop, giờ ra tin Mỹ, nhóm tương quan) với khối lượng như bây giờ (CORE 2 USDT, MẠO HIỂM 6.75 USDT rủi ro mỗi lệnh): **−1.515 USDT trong 2 năm** (1.975 lệnh, −0.24R/lệnh).
-- Mô phỏng lãi kép bắt đầu từ 45 USDT: **ví về dưới 5 USDT vào ngày 15/01/2025**, tức sau 2 tháng và 173 lệnh.
+**The current live rules have no edge, and they clearly lose money.**
+- Per coin, independently: 11,837 trades over 2 years, average **−0.19R/trade** (95% confidence interval: −0.21 to −0.17), PF 0.70. 0 of 25 months were positive.
+- Simulating the full portfolio rules (1 trade per book, 2 trades total, daily stop, US data-release hours, correlation groups) at the current size (CORE 2 USDT, HIGH 6.75 USDT risk per trade): **−1,515 USDT over 2 years** (1,975 trades, −0.24R/trade).
+- Compounded simulation starting from 45 USDT: **the wallet falls below 5 USDT on 2025-01-15**, that is after 2 months and 173 trades.
 
-**Thủ phạm chính là setup RETEST.** RETEST chiếm 83% số lệnh, trung bình −0.23R. Nó âm ở mọi nhóm đã thử: mọi mức điểm, mọi tuổi break (0–7h), cả long lẫn short, cả CORE lẫn MẠO HIỂM, từng coin, từng quý. Ngay cả khi tính trước phí, RETEST vẫn âm (−0.08R). Khi cộng phí và trượt giá, với SL hẹp (trung bình 0.81%, tức 0.67×ATR) thì chi phí ăn thêm khoảng 0.15R mỗi lệnh.
+**The main culprit is the RETEST setup.** RETEST is 83% of all trades, averaging −0.23R. It is negative in every group tried: every score level, every break age (0–7h), long and short, CORE and HIGH, every coin, every quarter. Even before fees RETEST is still negative (−0.08R). Adding fees and slippage, with a tight SL (average 0.81%, i.e. 0.67×ATR), costs about another 0.15R per trade.
 
-**Phần còn sống được là BREAKOUT có SL ≥ 1×ATR:** +0.05R/lệnh (n=2.128). Năm đầu +0.051, năm sau +0.054. Mô phỏng danh mục khối lượng cố định cho +140 USDT/2 năm, maxDD 21R. Nhưng khoảng tin cậy vẫn chứa 0 (−0.00 đến +0.11). **Đây chưa phải bằng chứng có edge, chỉ là phiên bản ít tệ nhất.**
+**The part that can survive is BREAKOUT with SL ≥ 1×ATR:** +0.05R/trade (n=2,128). Year 1 +0.051, year 2 +0.054. A fixed-size portfolio simulation gives +140 USDT/2 years, maxDD 21R. But the confidence interval still contains 0 (−0.00 to +0.11). **This is not evidence of an edge, only the least bad version.**
 
-Walk-forward cho kết quả tương tự. Tối ưu trên 6 tháng rồi kiểm tra trên 2 tháng kế tiếp, lặp 9 lần: in-sample đạt +0.071R nhưng out-of-sample chỉ còn **−0.001R** (n=1.597). Luật live trên cùng các cửa sổ kiểm tra cho −0.21R. Tối ưu tham số giúp tránh lỗ nhưng không tạo ra lãi. Mức rơi IS→OOS khoảng 0.07R là dấu hiệu overfit.
+Walk-forward gives a similar result. Optimizing on 6 months and testing on the next 2 months, repeated 9 times: in-sample reaches +0.071R but out-of-sample is only **−0.001R** (n=1,597). The live rules on the same test windows give −0.21R. Parameter optimization helps avoid losses but does not create profit. The IS→OOS drop of about 0.07R is a sign of overfitting.
 
-## 2. Cách làm (tóm tắt)
+## 2. Method (summary)
 
-- `fetch_data.py`: tải klines 1h, 15m và funding, có tôn trọng weight header và tự lùi khi gặp lỗi 418/429.
-- `fetch_account.py`: tải income, userTrades, allOrders từ ngày 02/11 (chỉ đọc).
-- `strategy.py`: chép lại nguyên `scan_sym()` của `run_hourly.py`. Không import trực tiếp được vì script live tự chạy, khóa lock và đặt lệnh ngay khi import. Các điểm khác live:
-  - Dùng giá last thay cho mark price. SL/TP live kích hoạt theo MARK_PRICE.
-  - Giờ quét: giá "mark" lấy bằng close của nến 15m đầu giờ (khoảng :15). Volume nến đang chạy lấy bằng 1/3 volume nến 15m đó, để giả lập lúc quét khoảng :05 như live.
-  - Xu hướng 4h gộp từ nến 1h (mốc 4h UTC).
-  - Không mô phỏng tickSize/stepSize. minNotional 5 USDT.
-  - lessons.json giữ cố định ở trạng thái hiện tại: RETEST −0.5, tất cả −0.25, TP1 ≤ 1.5R, phí 0.055%. Không mô phỏng việc tự cập nhật theo chuỗi thắng thua.
-  - Kiểm tra độ khớp với 55 dòng quét thật trong `hourly_log.jsonl`: 71% cùng setup và cùng chiều. Trong số khớp, 72% có SL lệch không quá 0.1% (trung vị 0%). Phần lệch chủ yếu do bản port quét lúc :15, còn live quét lúc :55–:05.
+- `fetch_data.py`: downloads 1h and 15m klines and funding, respecting the weight header and backing off on 418/429 errors.
+- `fetch_account.py`: downloads income, userTrades, allOrders since 02/11 (read-only).
+- `strategy.py`: a faithful copy of `scan_sym()` from `run_hourly.py`. It cannot be imported directly because the live script runs itself, takes the lock and places orders on import. Differences from live:
+  - Uses the last price instead of the mark price. Live SL/TP trigger on MARK_PRICE.
+  - Scan time: the "mark" price is the close of the first 15m candle of the hour (about :15). The running candle volume is taken as 1/3 of that 15m candle volume, to simulate a scan at about :05 like live.
+  - The 4h trend is aggregated from 1h candles (4h UTC boundaries).
+  - tickSize/stepSize are not simulated. minNotional is 5 USDT.
+  - lessons.json is held fixed in its current state: RETEST −0.5, all −0.25, TP1 ≤ 1.5R, fee 0.055%. Auto-updating from win/loss streaks is not simulated.
+  - Fidelity check against 55 real scan rows in `hourly_log.jsonl`: 71% have the same setup and direction. Of those matches, 72% have an SL that differs by no more than 0.1% (median 0%). The mismatch is mostly from the port scanning at :15 while live scans at :55–:05.
 - `engine.py`:
-  - Vào lệnh market ở nến 15m kế tiếp, trượt giá 0.05% bất lợi. Lệnh limit khớp khi giá chạm (+0.02%), hủy sau 2h.
-  - SL/TP mô phỏng trên nến 15m theo hướng bi quan: nếu cùng một nến chạm cả SL và TP thì tính SL trước. Trường hợp này chỉ chiếm 0.15% số lệnh nên không làm méo kết quả.
-  - TP1 chốt 50%, sau đó dời SL về entry ±0.10% từ nến kế tiếp (đúng như pos_manage). Phần còn lại chạy tới TP2.
-  - Phí 0.055% mỗi chiều. Funding lấy từ lịch sử thật. Exit SL trượt 0.02%.
-  - Danh mục: daily stop −7.5 USDT theo ngày Sài Gòn, luật "room" của MẠO HIỂM, giờ ra tin Mỹ, nhóm tương quan tĩnh, sizing và tự hạ đòn bẩy giống live.
-- `walkforward.py`, `run_portfolio_tests.py`, `correlation.py`, `live_history.py`, `extra_charts.py`: tạo các bảng bên dưới. Kết quả thô nằm trong `results/*.json`.
+  - Market entry on the next 15m candle, 0.05% adverse slippage. A limit order fills when price touches it (+0.02%) and is cancelled after 2h.
+  - SL/TP are simulated on 15m candles pessimistically: if one candle touches both SL and TP, SL counts first. This case is only 0.15% of trades so it does not distort results.
+  - TP1 closes 50%, then SL moves to entry ±0.10% from the next candle (exactly like pos_manage). The remainder runs to TP2.
+  - Fee 0.055% per side. Funding comes from real history. SL exits slip 0.02%.
+  - Portfolio: daily stop −7.5 USDT by Saigon day, the HIGH "room" rule, US data-release hours, static correlation groups, sizing and automatic leverage reduction like live.
+- `walkforward.py`, `run_portfolio_tests.py`, `correlation.py`, `live_history.py`, `extra_charts.py`: produce the tables below. Raw results are in `results/*.json`.
 
-Ghi chú về chỉ số: R là lời/lỗ chia cho rủi ro dự kiến, đã gồm 2 lần phí như cách live tính khối lượng, và đã trừ phí, trượt giá, funding. "Sharpe" tính từ R theo ngày, quy ra năm.
+Note on metrics: R is profit/loss divided by expected risk, including 2 fees as live computes size, and net of fees, slippage and funding. "Sharpe" is computed from daily R, annualized.
 
-## 3. Kết quả luật live (in-sample, toàn bộ 2 năm)
+## 3. Live rule results (in-sample, full 2 years)
 
-### 3a. Từng coin độc lập (không giới hạn slot, để mẫu đủ lớn)
+### 3a. Per coin, independent (no slot limit, so the sample is large enough)
 
-| Nhóm | Lệnh | Thắng | TB R | PF | Sharpe |
+| Group | Trades | Win | Avg R | PF | Sharpe |
 |---|---|---|---|---|---|
-| Tất cả | 11.837 | 41% | −0.187 | 0.70 | −7.1 |
-| CORE | 3.224 | 42% | −0.263 | 0.59 | −7.3 |
-| CORE / RETEST | 3.070 | 42% | −0.277 | 0.57 | −7.5 |
+| All | 11,837 | 41% | −0.187 | 0.70 | −7.1 |
+| CORE | 3,224 | 42% | −0.263 | 0.59 | −7.3 |
+| CORE / RETEST | 3,070 | 42% | −0.277 | 0.57 | −7.5 |
 | CORE / BREAKOUT | 154 | 44% | +0.008 | 1.01 | 0.0 |
-| MẠO HIỂM | 8.613 | 41% | −0.159 | 0.74 | −5.6 |
-| MẠO HIỂM / RETEST | 6.806 | 40% | −0.209 | 0.67 | −7.4 |
-| MẠO HIỂM / BREAKOUT | 1.801 | 44% | +0.032 | 1.06 | 0.5 |
-| MẠO HIỂM / MOMENTUM | 6 | 33% | −0.451 | 0.34 | – |
+| HIGH | 8,613 | 41% | −0.159 | 0.74 | −5.6 |
+| HIGH / RETEST | 6,806 | 40% | −0.209 | 0.67 | −7.4 |
+| HIGH / BREAKOUT | 1,801 | 44% | +0.032 | 1.06 | 0.5 |
+| HIGH / MOMENTUM | 6 | 33% | −0.451 | 0.34 | – |
 
-Chi phí theo setup:
-- RETEST: trước phí −0.083R, phí 0.146R, SL trung bình 0.81% (0.67×ATR).
-- BREAKOUT: trước phí +0.077R, phí 0.044R, SL 3.2% (1.86×ATR).
+Cost by setup:
+- RETEST: before fees −0.083R, fees 0.146R, average SL 0.81% (0.67×ATR).
+- BREAKOUT: before fees +0.077R, fees 0.044R, SL 3.2% (1.86×ATR).
 
-Độ nhạy:
-- Trượt giá 0: −0.125R.
-- Trượt giá 0.1%: −0.258R.
-- Phí thật 0.05%: −0.178R.
+Sensitivity:
+- Zero slippage: −0.125R.
+- 0.1% slippage: −0.258R.
+- Real fee 0.05%: −0.178R.
 
-Bỏ toàn bộ lessons (luật gốc ngày 10/11) cũng không khá hơn: −0.169R.
+Dropping all lessons (the original rules from 10/11) is no better: −0.169R.
 
-### 3b. Danh mục đầy đủ, khối lượng cố định (CORE 2 USDT, MẠO HIỂM 6.75 USDT mỗi R)
+### 3b. Full portfolio, fixed size (CORE 2 USDT, HIGH 6.75 USDT per R)
 
-| Nhóm | Lệnh | Thắng | TB R | PF | Ghi chú |
+| Group | Trades | Win | Avg R | PF | Notes |
 |---|---|---|---|---|---|
-| Tất cả | 1.975 | 41% | −0.236 | 0.63 | −1.515 USDT, maxDD 467R, 3/25 tháng dương |
-| CORE | 1.174 | 41% | −0.291 | 0.56 | |
-| MẠO HIỂM | 801 | 41% | −0.154 | 0.75 | |
+| All | 1,975 | 41% | −0.236 | 0.63 | −1,515 USDT, maxDD 467R, 3/25 months positive |
+| CORE | 1,174 | 41% | −0.291 | 0.56 | |
+| HIGH | 801 | 41% | −0.154 | 0.75 | |
 
-Mô phỏng lãi kép từ 45 USDT: về 4.7 USDT vào ngày 15/01/2025. Biểu đồ: `results/equity_portfolio_usdt.png`, `results/equity_portfolio_fixed_usdt.png`.
+Compounded simulation from 45 USDT: falls to 4.7 USDT on 2025-01-15. Charts: `results/equity_portfolio_usdt.png`, `results/equity_portfolio_fixed_usdt.png`.
 
 ## 4. Walk-forward / out-of-sample
 
-Bộ tham số tối ưu có 972 tổ hợp:
-- Điểm tối thiểu: +0, +0.5 hoặc +1.0.
-- Hệ số ATR của SL: 0.3, 0.4 hoặc 0.6.
-- TP1: 1.0, 1.5 hoặc 2.0R.
-- Khoảng retest: 0.4% hoặc 0.8%.
-- Tuổi break: 3, 5 hoặc 8h.
-- Chặn vào lại cùng mức: có hoặc không.
-- SL tối thiểu: 0, 0.75 hoặc 1.0×ATR.
+The optimized parameter set has 972 combinations:
+- Minimum score: +0, +0.5 or +1.0.
+- SL ATR multiplier: 0.3, 0.4 or 0.6.
+- TP1: 1.0, 1.5 or 2.0R.
+- Retest distance: 0.4% or 0.8%.
+- Break age: 3, 5 or 8h.
+- Block re-entry at the same level: yes or no.
+- Minimum SL: 0, 0.75 or 1.0×ATR.
 
-Tối ưu trên 6 tháng (mục tiêu là tổng R, cần ít nhất 40 lệnh), kiểm tra trên 2 tháng kế tiếp, lặp 9 lần.
+Optimize on 6 months (objective is total R, at least 40 trades), test on the next 2 months, repeated 9 times.
 
-| | Lệnh | TB R | Khoảng tin cậy 95% |
+| | Trades | Avg R | 95% confidence interval |
 |---|---|---|---|
-| In-sample (các cửa sổ train) | 5.104 | +0.071 | +0.036..+0.106 |
-| **Out-of-sample (ghép 9 cửa sổ test)** | 1.597 | **−0.001** | −0.062..+0.061 |
-| OOS: CORE / BREAKOUT | 62 | +0.383 | +0.06..+0.71 (mẫu nhỏ, có thể may mắn) |
+| In-sample (train windows) | 5,104 | +0.071 | +0.036..+0.106 |
+| **Out-of-sample (9 test windows combined)** | 1,597 | **−0.001** | −0.062..+0.061 |
+| OOS: CORE / BREAKOUT | 62 | +0.383 | +0.06..+0.71 (small sample, may be luck) |
 | OOS: CORE / RETEST | 27 | −0.175 | |
-| OOS: MẠO HIỂM / BREAKOUT | 1.334 | +0.019 | −0.05..+0.09 |
-| OOS: MẠO HIỂM / RETEST | 174 | −0.261 | −0.43..−0.09 |
-| Luật live trên cùng cửa sổ test | 8.961 | −0.212 | −0.235..−0.188 |
+| OOS: HIGH / BREAKOUT | 1,334 | +0.019 | −0.05..+0.09 |
+| OOS: HIGH / RETEST | 174 | −0.261 | −0.43..−0.09 |
+| Live rules on the same test windows | 8,961 | −0.212 | −0.235..−0.188 |
 
-- Có 5/9 cửa sổ test dương.
-- Tham số được chọn khá ổn định giữa các cửa sổ:
-  - SL tối thiểu 1.0×ATR: chọn 9/9 lần.
-  - Tuổi break 3h: 9/9.
+- 5/9 test windows are positive.
+- The chosen parameters are fairly stable across windows:
+  - Minimum SL 1.0×ATR: chosen 9/9 times.
+  - Break age 3h: 9/9.
   - TP1 2.0R: 8/9.
-  - Điểm +0.5 hoặc +1.0: 9/9.
-- Cả SL tối thiểu lẫn tuổi break đều được chọn ở biên của lưới. Nghĩa là "lọc càng nhiều càng đỡ lỗ", chứ không phải đã tìm ra điểm tối ưu có lãi.
-- Danh mục OOS khối lượng cố định cho +0.004R (381 lệnh, −25 USDT). Bản lãi kép cho 45 → 96.5 USDT, nhưng chỉ có 93 lệnh và khoảng tin cậy chứa 0, nên không đáng tin.
-- **Cờ overfit:** in-sample +0.07R nhưng OOS ≈ 0. Top 10 tổ hợp tốt nhất toàn kỳ (in-sample) chỉ đạt +0.048R.
+  - Score +0.5 or +1.0: 9/9.
+- Both the minimum SL and the break age are chosen at the edge of the grid. This means "the more you filter, the less you lose", not that a profitable optimum was found.
+- The fixed-size OOS portfolio gives +0.004R (381 trades, −25 USDT). The compounded version gives 45 → 96.5 USDT, but with only 93 trades and a confidence interval containing 0, it is not reliable.
+- **Overfit flag:** in-sample +0.07R but OOS ≈ 0. The top 10 combinations over the full period (in-sample) only reach +0.048R.
 
-Biểu đồ: `results/equity_walkforward_oos_usdt.png`.
+Chart: `results/equity_walkforward_oos_usdt.png`.
 
-## 5. Các giả thuyết rút từ lệnh thua thật (từng coin độc lập, 2 năm)
+## 5. Hypotheses drawn from real losing trades (per coin, independent, 2 years)
 
-| Luật thử | Lệnh | TB R | Năm 1 | Năm 2 | Danh mục cố định (USDT/2 năm) |
+| Rule tried | Trades | Avg R | Year 1 | Year 2 | Fixed portfolio (USDT/2 years) |
 |---|---|---|---|---|---|
-| Luật live | 11.837 | −0.187 | −0.162 | −0.213 | −1.515 |
-| (a) Không retest lại cùng mức | 10.304 | −0.183 | −0.158 | −0.208 | −1.512 |
-| (b) Break không quá 0h / 1h / 2h / 3h | 6.453 / 8.489 / 9.617 / 10.336 | −0.153 / −0.170 / −0.175 / −0.179 | | | −792 / −1.088 / −1.359 / −1.382 |
-| (c) SL ≥ 0.75×ATR | 5.445 | −0.118 | −0.078 | −0.158 | −795 |
-| (c) SL ≥ 1.0×ATR | 3.413 | −0.054 | −0.011 | −0.100 | −247 |
-| (c) SL ≥ 1.25×ATR | 2.455 | +0.010 | +0.031 | −0.017 | +35 |
-| Bỏ RETEST (chỉ BREAKOUT) | 2.196 | +0.031 | +0.032 | +0.030 | +73 |
-| **Chỉ BREAKOUT + SL ≥ 1×ATR** | 2.128 | **+0.052** | +0.051 | +0.054 | **+140** (maxDD 21R, 14/25 tháng dương) |
-| Chỉ BREAKOUT + SL 1–2×ATR (chọn sau khi xem dữ liệu) | 1.498 | +0.098 | +0.132 | +0.051 | +236 |
+| Live rules | 11,837 | −0.187 | −0.162 | −0.213 | −1,515 |
+| (a) No re-retest at the same level | 10,304 | −0.183 | −0.158 | −0.208 | −1,512 |
+| (b) Break no older than 0h / 1h / 2h / 3h | 6,453 / 8,489 / 9,617 / 10,336 | −0.153 / −0.170 / −0.175 / −0.179 | | | −792 / −1,088 / −1,359 / −1,382 |
+| (c) SL ≥ 0.75×ATR | 5,445 | −0.118 | −0.078 | −0.158 | −795 |
+| (c) SL ≥ 1.0×ATR | 3,413 | −0.054 | −0.011 | −0.100 | −247 |
+| (c) SL ≥ 1.25×ATR | 2,455 | +0.010 | +0.031 | −0.017 | +35 |
+| Drop RETEST (BREAKOUT only) | 2,196 | +0.031 | +0.032 | +0.030 | +73 |
+| **BREAKOUT only + SL ≥ 1×ATR** | 2,128 | **+0.052** | +0.051 | +0.054 | **+140** (maxDD 21R, 14/25 months positive) |
+| BREAKOUT only + SL 1–2×ATR (chosen after seeing the data) | 1,498 | +0.098 | +0.132 | +0.051 | +236 |
 
-Kết luận cho từng giả thuyết:
-- **(a)** và **(b)** gần như không đổi được kỳ vọng lệnh. Chúng chỉ bớt số lệnh lỗ chứ không biến RETEST thành có lãi.
-- **(c)** là giả thuyết đúng nhất: SL quá sát so với nhiễu chính là vấn đề. Nhưng RETEST có SL ≥ 1.25×ATR vẫn −0.15R.
+Conclusion for each hypothesis:
+- **(a)** and **(b)** barely change the per-trade expectancy. They only remove some losing trades and do not turn RETEST profitable.
+- **(c)** is the most correct hypothesis: an SL that is too tight relative to noise is the problem. But RETEST with SL ≥ 1.25×ATR is still −0.15R.
 
-Biểu đồ: `results/equity_variants_R.png`, `results/equity_portfolio_fixed_compare_usdt.png`.
+Charts: `results/equity_variants_R.png`, `results/equity_portfolio_fixed_compare_usdt.png`.
 
-## 6. Tương quan
+## 6. Correlation
 
-- Tương quan 30 ngày trung bình giữa 19 coin là **0.72**. Cặp thấp nhất cũng 0.60 (BNB–WLD). Có 31% số cặp và ngày vượt 0.8.
-- Các cặp cao nhất: ETH–LINK 0.84, ARB–OP 0.84, BTC–ETH 0.84, LINK–AVAX 0.82, DOGE–PEPE 0.82.
-- Trong danh mục mô phỏng có 951 lần CORE và MẠO HIỂM mở lệnh chồng thời gian:
-  - 748 lần cùng chiều (tương quan trung bình 0.68).
-  - 200 lần cả hai cùng thua khi cùng chiều, so với 48 lần khi ngược chiều.
-- Luật "chặn lệnh cùng chiều nếu tương quan > 0.8" **không cải thiện kết quả**. Luật live đi từ −0.236 xuống −0.243R. BREAKOUT + SL 1×ATR đi từ +0.041 xuống +0.027R. Nhóm tĩnh hiện tại cũng không đổi gì.
-- Thực tế là 2 lệnh cùng chiều gần như luôn là một cược gấp đôi. Cách kiểm soát đúng là giảm rủi ro mỗi lệnh, chứ không phải một ngưỡng tương quan.
+- The average 30-day correlation across the 19 coins is **0.72**. Even the lowest pair is 0.60 (BNB–WLD). 31% of pair-days exceed 0.8.
+- The highest pairs: ETH–LINK 0.84, ARB–OP 0.84, BTC–ETH 0.84, LINK–AVAX 0.82, DOGE–PEPE 0.82.
+- In the simulated portfolio there are 951 times when CORE and HIGH had overlapping open trades:
+  - 748 times in the same direction (average correlation 0.68).
+  - 200 times both lost when in the same direction, versus 48 times when in opposite directions.
+- The rule "block same-direction trades if correlation > 0.8" **does not improve results**. The live rules go from −0.236 to −0.243R. BREAKOUT + SL 1×ATR goes from +0.041 to +0.027R. The current static groups also change nothing.
+- In practice 2 same-direction trades are almost always one double-size bet. The right control is to reduce the risk per trade, not a correlation threshold.
 
-Biểu đồ: `results/correlation_heatmap.png`, `results/correlation_over_time.png`.
+Charts: `results/correlation_heatmap.png`, `results/correlation_over_time.png`.
 
-## 7. Học từ lịch sử thật (từ 02/11)
+## 7. Lessons from real history (since 02/11)
 
-- **Tài khoản:** realized −2.36 USDT, phí −1.96, funding −0.02. Tổng giao dịch **−4.34 USDT**. Phí bằng khoảng 83% số lỗ realized.
-- **Phí thật:** taker 0.050%, maker 0.020%. Mức 0.055% trong lessons là thận trọng, giữ nguyên.
-- **Trượt giá vào lệnh market:** lệnh khớp 2–3 phút sau lúc quét. Lệch so với giá dự tính từ −0.18% (thuận lợi) tới +0.07% (bất lợi), trung bình thuận 0.07%. Nhưng độ dao động ±0.13% tương đương 0.2–0.3R khi SL chỉ 0.4–0.6%.
-- **Trượt giá SL:** gần 0 (−0.02% tới +0.04%). Có một lệnh limit (BNB) khớp sau 157 phút, tức là live để lệnh chờ tới khoảng 3h chứ không phải 2h.
-- **Bảng 7 lệnh:**
+- **Account:** realized −2.36 USDT, fees −1.96, funding −0.02. Total trading **−4.34 USDT**. Fees are about 83% of the realized loss.
+- **Real fees:** taker 0.050%, maker 0.020%. The 0.055% in lessons is conservative and stays.
+- **Market entry slippage:** orders fill 2–3 minutes after the scan. The deviation from the planned price ranges from −0.18% (favorable) to +0.07% (adverse), on average 0.07% favorable. But the ±0.13% variability equals 0.2–0.3R when the SL is only 0.4–0.6%.
+- **SL slippage:** close to 0 (−0.02% to +0.04%). One limit order (BNB) filled after 157 minutes, so live leaves pending orders up to about 3h rather than 2h.
+- **Table of 7 trades:**
 
-| Lệnh | Setup | SL/ATR | MFE | Kết quả | (a) | (b ≤ 3h) | (c ≥ 1 ATR) | Bỏ RETEST |
+| Trade | Setup | SL/ATR | MFE | Result | (a) | (b ≤ 3h) | (c ≥ 1 ATR) | Drop RETEST |
 |---|---|---|---|---|---|---|---|---|
-| ARB long 06/11 | BREAKOUT | 0.41 | 1.69R | −8.46 | | | chặn | |
-| XRP short 07/11 | pullback cũ | 0.70 | 0.52R | −1.72 | | | chặn | |
-| SOL short 10/11 | RETEST | ~0.49 | 3.3% | +3.96 | | | chặn | chặn |
-| BTC short 10/11 | RETEST | 0.70 | 1.23R | +0.76 | | | chặn | chặn |
-| BTC short 11/11 | RETEST (vào lại mức 73368) | 0.69 | 0.63R | −1.49 | chặn | | chặn | chặn |
-| BNB short 11/11 | RETEST (break 5h) | 0.47 | 0.54R | −1.63 | | chặn | chặn | chặn |
-| ARB short 10/11 (đang mở) | BREAKOUT | 2.57 | 2.10R | +4.29 đã chốt, phần còn lại SL ở hòa vốn | | | | |
+| ARB long 06/11 | BREAKOUT | 0.41 | 1.69R | −8.46 | | | blocked | |
+| XRP short 07/11 | old pullback | 0.70 | 0.52R | −1.72 | | | blocked | |
+| SOL short 10/11 | RETEST | ~0.49 | 3.3% | +3.96 | | | blocked | blocked |
+| BTC short 10/11 | RETEST | 0.70 | 1.23R | +0.76 | | | blocked | blocked |
+| BTC short 11/11 | RETEST (re-entry at level 73368) | 0.69 | 0.63R | −1.49 | blocked | | blocked | blocked |
+| BNB short 11/11 | RETEST (break 5h) | 0.47 | 0.54R | −1.63 | | blocked | blocked | blocked |
+| ARB short 10/11 (open) | BREAKOUT | 2.57 | 2.10R | +4.29 taken, remainder SL at breakeven | | | | |
 
-- **Nhìn từ bảng:**
-  - Cả 4 lệnh thua đều có SL < 0.75×ATR. Lệnh thắng lớn nhất (ARB short) có SL 2.57×ATR.
-  - Nếu áp luật (c) SL ≥ 1×ATR: tránh được −13.30 USDT lỗ nhưng mất +4.72 lãi, ròng +8.58 USDT.
-  - Bỏ RETEST trên 7 lệnh này thì ròng −1.60, vì SOL thắng đẹp.
-  - 7 lệnh là quá ít để kết luận. Con số đáng tin là 2 năm backtest, và nó nói RETEST −0.23R.
-- **Lệnh thật so với mô phỏng:** chạy engine trên đúng kế hoạch của từng lệnh thật cho cùng kết quả ở cả 5 lệnh có SL rõ (SL / SL / TP1→BE / SL / SL). Riêng ARB long 06/11, MFE trong mô phỏng thấp hơn journal, do mô phỏng tính từ nến 15m sau lúc vào. Điều này cho thấy engine phản ánh đúng cách lệnh thật chạy.
+- **Reading the table:**
+  - All 4 losing trades had SL < 0.75×ATR. The biggest winner (ARB short) had SL 2.57×ATR.
+  - Applying rule (c) SL ≥ 1×ATR: avoids −13.30 USDT of losses but loses +4.72 of gains, net +8.58 USDT.
+  - Dropping RETEST on these 7 trades gives net −1.60, because SOL was a nice win.
+  - 7 trades are far too few to conclude. The number to trust is the 2-year backtest, and it says RETEST is −0.23R.
+- **Real trades vs simulation:** running the engine on the exact plan of each real trade gives the same result in all 5 trades with a clear SL (SL / SL / TP1→BE / SL / SL). For ARB long 06/11 only, the simulated MFE is lower than the journal, because the simulation counts from the 15m candle after entry. This shows the engine reflects how real trades play out.
 
-## 8. Đề xuất (chi tiết trong `proposed_changes.json`)
+## 8. Recommendations (details in `proposed_changes.json`)
 
-### A. Chỉ làm luật chặt hơn (được tự áp dụng theo chính sách của bạn; mình CHƯA áp dụng)
+### A. Tighten-only rules (can be auto-applied under your policy; I have NOT applied them)
 
-| | Thay đổi | Bằng chứng | Tác động dự kiến |
+| | Change | Evidence | Expected impact |
 |---|---|---|---|
-| A1 | Chặn RETEST ở cả 2 book (`score_penalty.RETEST = 99`, không cần sửa code) | −0.23R trên 9.876 lệnh, âm 25/25 tháng, OOS vẫn âm | Danh mục 2 năm từ −1.515 lên +73 USDT. Còn khoảng 5 lệnh/tuần |
-| A2 | Chặn MOMENTUM (`score_penalty.MOMENTUM = 99`) | n nhỏ, toàn âm | Nhỏ, giảm rủi ro |
-| A3 | Bỏ lệnh có SL < 1×ATR(1h,14) (cần thêm 1 bộ lọc trong script) | Cả 4 lệnh thua thật đều SL hẹp. BREAKOUT +0.031 lên +0.052R, dương cả 2 năm | Từ +73 lên +140 USDT/2 năm, maxDD 29R xuống 21R |
-| A4 | Giảm rủi ro xuống ≤1% ví mỗi lệnh (khoảng 0.45 USDT) cho cả 2 book, thay cho 2 USDT / 15% ví | Ngay cả phương án tốt nhất cũng có maxDD khoảng 21R. Với mức hiện tại thì 21R lớn hơn cả ví. 13/18 biến thể chạy ví về dưới 5 USDT | Không đổi R/lệnh, giảm 4–15 lần mức lỗ tối đa |
-| A5 | Không vào lại cùng một mức lần 2 | Vô hại nhưng tác động gần 0 ở quy mô lớn | Nhỏ |
-| A6 (tùy chọn, độ tin thấp) | Trần SL ≤ 2×ATR cho BREAKOUT | Ngưỡng được chọn sau khi xem dữ liệu, năm 2 yếu | Có thể từ +140 lên +236 USDT, nhưng dễ là may mắn |
-| A7 (tùy chọn) | Hạ daily stop về khoảng −3× rủi ro mỗi lệnh | Tỉ lệ thuận với A4 | – |
+| A1 | Block RETEST in both books (`score_penalty.RETEST = 99`, no code change needed) | −0.23R over 9,876 trades, negative in 25/25 months, OOS still negative | 2-year portfolio from −1,515 to +73 USDT. About 5 trades/week remain |
+| A2 | Block MOMENTUM (`score_penalty.MOMENTUM = 99`) | small n, all negative | Small, reduces risk |
+| A3 | Skip trades with SL < 1×ATR(1h,14) (needs one more filter in the script) | All 4 real losing trades had a tight SL. BREAKOUT +0.031 to +0.052R, positive in both years | From +73 to +140 USDT/2 years, maxDD 29R down to 21R |
+| A4 | Reduce risk to ≤1% of wallet per trade (about 0.45 USDT) for both books, instead of 2 USDT / 15% of wallet | Even the best variant has maxDD of about 21R. At the current level 21R is larger than the whole wallet. 13/18 variants run the wallet below 5 USDT | No change in R/trade, cuts the maximum loss by 4–15x |
+| A5 | Do not re-enter the same level a second time | Harmless but almost no effect at scale | Small |
+| A6 (optional, low confidence) | SL cap ≤ 2×ATR for BREAKOUT | Threshold chosen after seeing the data, weak in year 2 | Could go from +140 to +236 USDT, but likely luck |
+| A7 (optional) | Lower the daily stop to about −3× risk per trade | Proportional to A4 | – |
 
-### B. Nới lỏng hoặc đổi hành vi (cần bạn duyệt)
+### B. Loosen or change behavior (needs your approval)
 
-| | Thay đổi | Ý kiến |
+| | Change | Opinion |
 |---|---|---|
-| B1 | Tạm dừng giao dịch thật hoặc chạy `--dry-run` cho tới khi bộ A1+A3 có ít nhất 50 lệnh dương | Khuyên cân nhắc, vì chưa chứng minh được edge |
-| B2 | Nâng trần TP1 từ 1.5R lên 2.0R | Không đáng: walk-forward chọn 2.0 nhưng tác động khoảng 0 |
-| B3 | Đổi tham số quét theo walk-forward | Không nên: OOS ≈ 0, chủ yếu tác động RETEST |
-| B4 | Luật tương quan động > 0.8 | Không nên: đã thử, không cải thiện |
-| B5 | Nghiên cứu vào BREAKOUT bằng limit (maker 0.02%) | Đáng thử tiếp, vì phí là đòn bẩy lớn nhất còn lại |
+| B1 | Pause live trading or run `--dry-run` until the A1+A3 set has at least 50 positive trades | Recommend considering it, since no edge has been proven |
+| B2 | Raise the TP1 cap from 1.5R to 2.0R | Not worth it: walk-forward picks 2.0 but the effect is about 0 |
+| B3 | Change scan parameters per walk-forward | Not advised: OOS ≈ 0, mostly affects RETEST |
+| B4 | Dynamic correlation rule > 0.8 | Not advised: tried, no improvement |
+| B5 | Research entering BREAKOUT with limit (maker 0.02%) | Worth pursuing, since fees are the biggest lever left |
 
-## 9. Thật lòng
+## 9. Honestly
 
-- Bot hiện tại thua là do cấu trúc luật, không phải do xui. Cơ chế "học" hiện tại (trừ điểm sau chuỗi thua) không sửa được một setup có kỳ vọng âm.
-- Phiên bản tốt nhất tìm được (chỉ BREAKOUT, SL ≥ 1×ATR) chỉ quanh hòa vốn đến dương nhẹ, chưa đủ để gọi là edge. Nếu tiếp tục chạy thật, nên chạy với rủi ro rất nhỏ (A4) và coi đó là giai đoạn thu dữ liệu.
+- The current bot loses because of the structure of the rules, not bad luck. The current "learning" mechanism (deducting score after a losing streak) cannot fix a setup with negative expectancy.
+- The best version found (BREAKOUT only, SL ≥ 1×ATR) is only around breakeven to slightly positive, not enough to call an edge. If live trading continues, it should run with very small risk (A4) and be treated as a data-collection phase.
 
-## 10. Nghiên cứu B5: vào lệnh bằng limit (maker) thay vì market (11/11/2026)
+## 10. B5 research: entering with limit (maker) instead of market (2026-11-11)
 
-**Cấu hình được thử:** đúng cấu hình đang chạy live, tức chỉ BREAKOUT, SL ≥ 1×ATR, TP1 1.5R chốt 50% rồi dời SL về hòa vốn, phần còn lại chạy tới TP2. Phí thật: taker 0.050%, maker 0.020%.
+**Configuration tested:** exactly the configuration running live, i.e. BREAKOUT only, SL ≥ 1×ATR, TP1 1.5R closing 50% then moving SL to breakeven, the remainder running to TP2. Real fees: taker 0.050%, maker 0.020%.
 
-**Cách mô phỏng:**
-- Vào market: trượt giá 0.05%.
-- Vào limit: chỉ tính là khớp nếu một nến 15m sau đó **đi xuyên qua** giá limit ít nhất 0.01%. Nếu sau N nến 15m vẫn chưa khớp thì hủy và coi như mất lệnh.
-- Vị trí đặt limit:
-  - "level": đặt đúng mức vừa bị phá.
-  - "pbX": đặt cách giá đóng nến breakout X%, với X = 0, 0.1, 0.2, 0.3%.
-  - Không bao giờ đặt ở phía sai của giá hiện tại (post-only).
-- SL và TP được tính lại theo giá vào thật, và vẫn phải qua A3 cùng điều kiện R:R ≥ 2.
-- TP có hai cách: TAKE_PROFIT_MARKET (taker), hoặc lệnh limit reduce-only (maker, cũng phải đi xuyên qua giá 0.01%).
-- SL và BE luôn là lệnh taker, trượt thêm 0.02%.
+**How it is simulated:**
+- Market entry: 0.05% slippage.
+- Limit entry: counts as filled only if a later 15m candle **trades through** the limit price by at least 0.01%. If it is still unfilled after N 15m candles it is cancelled and the trade is lost.
+- Limit placement:
+  - "level": placed exactly at the level that was just broken.
+  - "pbX": placed X% away from the breakout candle close, with X = 0, 0.1, 0.2, 0.3%.
+  - Never placed on the wrong side of the current price (post-only).
+- SL and TP are recomputed from the real entry price and still have to pass A3 plus the R:R ≥ 2 condition.
+- TP has two modes: TAKE_PROFIT_MARKET (taker), or a reduce-only limit order (maker, which must also trade through the price by 0.01%).
+- SL and BE are always taker orders, with an extra 0.02% slippage.
 
-### 10a. Từng coin độc lập, 2 năm (in-sample)
+### 10a. Per coin, independent, 2 years (in-sample)
 
-| Biến thể | Tỉ lệ khớp | Lệnh | TB R | Khoảng tin cậy 95% | PF | R của market trên các lệnh bị lỡ |
+| Variant | Fill rate | Trades | Avg R | 95% confidence interval | PF | Market R on the missed trades |
 |---|---|---|---|---|---|---|
-| Market (đang chạy) | 100% | 2.128 | +0.056 | +0.001..+0.110 | 1.10 | – |
-| level, N=4 | 74% | 1.786 | +0.073 | +0.013..+0.134 | 1.13 | +0.24 |
-| level, N=8, TP maker | 81% | 1.858 | +0.081 | +0.021..+0.140 | 1.14 | +0.38 |
-| **pb0, N=4 (1h), TP maker** | **91%** | 2.004 | **+0.081** | +0.024..+0.137 | 1.15 | +0.40 |
-| pb0.1, N=8, TP maker | 92% | 2.010 | +0.079 | +0.023..+0.136 | 1.14 | +0.58 |
-| pb0.2, N=8, TP maker | 88% | 1.955 | +0.073 | +0.016..+0.131 | 1.13 | +0.52 |
-| pb0.3, N=4, TP maker | 79% | 1.848 | +0.085 | +0.025..+0.145 | 1.15 | +0.28 |
+| Market (running) | 100% | 2,128 | +0.056 | +0.001..+0.110 | 1.10 | – |
+| level, N=4 | 74% | 1,786 | +0.073 | +0.013..+0.134 | 1.13 | +0.24 |
+| level, N=8, maker TP | 81% | 1,858 | +0.081 | +0.021..+0.140 | 1.14 | +0.38 |
+| **pb0, N=4 (1h), maker TP** | **91%** | 2,004 | **+0.081** | +0.024..+0.137 | 1.15 | +0.40 |
+| pb0.1, N=8, maker TP | 92% | 2,010 | +0.079 | +0.023..+0.136 | 1.14 | +0.58 |
+| pb0.2, N=8, maker TP | 88% | 1,955 | +0.073 | +0.016..+0.131 | 1.13 | +0.52 |
+| pb0.3, N=4, maker TP | 79% | 1,848 | +0.085 | +0.025..+0.145 | 1.15 | +0.28 |
 
-- Cả 30 biến thể maker đều nằm trong khoảng +0.066..+0.085R, đều cao hơn market (+0.056R) khoảng +0.01..+0.03R. Cải thiện này đến từ phí rẻ hơn và giá vào tốt hơn.
-- **Có chọn lọc bất lợi rõ rệt:** những lệnh limit không khớp đều là lệnh thắng chạy luôn. Nếu vào market, các lệnh đó trung bình được +0.24 đến +0.67R. Ngược lại, những lệnh limit khớp được thì nếu vào market chỉ quanh 0R.
-- Phí và giá vào tốt hơn bù được phần bị lỡ, nhưng chỉ dư ra một chút.
-- TP maker thêm khoảng +0.003R mỗi lệnh. Rất nhỏ.
+- All 30 maker variants lie in +0.066..+0.085R, all higher than market (+0.056R) by about +0.01..+0.03R. The improvement comes from cheaper fees and a better entry price.
+- **There is clear adverse selection:** the limit orders that do not fill are winners that ran away. Had they entered at market, those trades would have averaged +0.24 to +0.67R. Conversely, the limit orders that do fill would have been around 0R at market.
+- Fees and the better entry price make up for the missed part, but only leave a little extra.
+- Maker TP adds about +0.003R per trade. Very small.
 
 ### 10b. Walk-forward
 
-Dùng đúng 9 cửa sổ như mục 4: mỗi cửa sổ chọn biến thể maker tốt nhất trên 6 tháng train, rồi kiểm tra trên 2 tháng sau.
+Using exactly the same 9 windows as section 4: in each window choose the best maker variant on the 6-month train, then test on the following 2 months.
 
-| | Lệnh | TB R | Khoảng tin cậy 95% |
+| | Trades | Avg R | 95% confidence interval |
 |---|---|---|---|
-| Maker, in-sample | 4.409 | +0.114 | +0.076..+0.153 |
-| **Maker, out-of-sample** | 1.333 | **+0.039** | −0.028..+0.106 |
-| Market, in-sample (cùng cửa sổ) | 4.947 | +0.065 | +0.029..+0.100 |
-| Market, out-of-sample (cùng cửa sổ) | 1.497 | +0.017 | −0.046..+0.080 |
+| Maker, in-sample | 4,409 | +0.114 | +0.076..+0.153 |
+| **Maker, out-of-sample** | 1,333 | **+0.039** | −0.028..+0.106 |
+| Market, in-sample (same windows) | 4,947 | +0.065 | +0.029..+0.100 |
+| Market, out-of-sample (same windows) | 1,497 | +0.017 | −0.046..+0.080 |
 
-- Biến thể được chọn thay đổi theo từng cửa sổ (pb0.3/N4 được chọn 3 lần, level 2 lần, các loại khác 1 lần), nghĩa là không có tham số nào thật sự nổi trội.
-- Out-of-sample, maker hơn market khoảng **+0.02R mỗi lệnh**. Cả hai khoảng tin cậy vẫn chứa 0.
+- The chosen variant changes from window to window (pb0.3/N4 chosen 3 times, level 2 times, other types 1 time each), meaning no single parameter really stands out.
+- Out-of-sample, maker beats market by about **+0.02R per trade**. Both confidence intervals still contain 0.
 
-### 10c. Danh mục lãi kép từ 45 USDT
+### 10c. Compounded portfolio from 45 USDT
 
-Mô phỏng có daily stop A7 và áp đúng minQty/MIN_NOTIONAL thật của sàn. Maker ở đây là "pb0, N4, TP maker": đặt limit tại giá đóng nến breakout, hủy sau 1h.
+The simulation includes the A7 daily stop and applies the exchange's real minQty/MIN_NOTIONAL. Maker here is "pb0, N4, maker TP": limit placed at the breakout candle close, cancelled after 1h.
 
-| Biến thể / rủi ro | Ví cuối | Max DD | Lệnh/tuần | MC: ví cuối trung vị (5%..95%) | MC: % kết thúc < 20 | MC: % từng chạm < 20 |
+| Variant / risk | Final wallet | Max DD | Trades/week | MC: median final wallet (5%..95%) | MC: % ending < 20 | MC: % ever touching < 20 |
 |---|---|---|---|---|---|---|
 | Market 1% | 49.6 | 12.0 USDT (19.7%) | 5.7 | 51.6 (30.8..86.5) | 0% | 0% |
 | Market 2% | 49.4 | 26.4 (35.6%) | 5.8 | 52.0 (19.1..140) | 5.6% | 11.4% |
@@ -253,10 +253,10 @@ Mô phỏng có daily stop A7 và áp đúng minQty/MIN_NOTIONAL thật của s�
 | Maker 2% | 76.0 | 22.1 (28.9%) | 5.5 | 78.0 (30.5..226) | 0.6% | 3.7% |
 | Maker 3% | 84.4 | 39.9 (43.2%) | 5.5 | 85.7 (19.9..386) | 5.1% | 14.5% |
 
-- MC là bootstrap 1.000 đường, lấy mẫu lại có hoàn lại từ chính các lệnh trong backtest. Vì vậy nó **giả định edge trong backtest là thật**.
-- Kiểm tra căng hơn: dùng cùng độ biến động nhưng gán kỳ vọng bằng mức out-of-sample (+0.039R), hoặc bằng 0.
+- MC is a 1,000-path bootstrap, resampling with replacement from the backtest's own trades. It therefore **assumes the backtest edge is real**.
+- A harsher check: use the same volatility but set the expectancy to the out-of-sample level (+0.039R), or to 0.
 
-| Kỳ vọng | Rủi ro | % kết thúc < 20 USDT | % từng chạm < 20 USDT | Ví cuối trung vị |
+| Expectancy | Risk | % ending < 20 USDT | % ever touching < 20 USDT | Median final wallet |
 |---|---|---|---|---|
 | OOS +0.039R | 1% | 0% | 0.1% | 52.8 |
 | OOS +0.039R | 2% | 4% | 10% | 56.5 |
@@ -265,23 +265,23 @@ Mô phỏng có daily stop A7 và áp đúng minQty/MIN_NOTIONAL thật của s�
 | 0R | 2% | 16% | 29% | 36.1 |
 | 0R | 3% | 37% | 55% | 28.1 |
 
-**Bị bỏ vì không đủ min-notional** (2 năm, maker):
-- Rủi ro 1%: AVAX 35 lần (stepSize 1, khó chia đôi TP), BTC 11, ETH 8, LINK 5, NEAR 4, các coin khác 1–2.
-- Rủi ro 2%: AVAX 20, BTC 8, ETH 1.
-- Rủi ro 3%: AVAX 11, BTC 7.
-- Bản market cũng tương tự.
-- Hiện tại BTC cần rủi ro ít nhất khoảng 0.51 USDT mỗi lệnh với SL 1×ATR, tức ví khoảng 51 USDT ở mức 1%.
+**Skipped for insufficient min-notional** (2 years, maker):
+- Risk 1%: AVAX 35 times (stepSize 1, hard to split the TP in half), BTC 11, ETH 8, LINK 5, NEAR 4, other coins 1–2.
+- Risk 2%: AVAX 20, BTC 8, ETH 1.
+- Risk 3%: AVAX 11, BTC 7.
+- The market version is similar.
+- Currently BTC needs a risk of at least about 0.51 USDT per trade with SL 1×ATR, i.e. a wallet of about 51 USDT at 1%.
 
-### 10d. Kết luận B5
+### 10d. B5 conclusion
 
-- **Vào lệnh bằng limit maker là cải thiện thật nhưng nhỏ:** khoảng +0.02R mỗi lệnh, ổn định ở mọi biến thể và vẫn giữ được ở out-of-sample. Nó chưa biến chiến lược thành có edge chắc chắn, vì OOS +0.04R với khoảng tin cậy vẫn chứa 0.
-- Nếu áp dụng thì nên chọn cách đơn giản và khớp nhiều: limit post-only tại giá đóng nến breakout, hủy sau 1h, TP đặt bằng limit reduce-only. Mất khoảng 9% số lệnh, phần lớn là lệnh thắng chạy luôn.
-- **Mức rủi ro: giữ 1%.**
-  - Ở 1%, xác suất ví từng xuống dưới 20 USDT gần như bằng 0, kể cả khi chiến lược không có edge.
-  - Ở 2%, nếu edge thật chỉ bằng mức OOS thì khoảng 10% khả năng ví từng chạm 20 USDT. Nếu không có edge thì khoảng 29%.
-  - Ở 3%, rủi ro này lên 30–55%.
-- **Có nên áp dụng luật này với ví lớn hơn không?** Ví lớn giúp ở hai điểm:
-  - Bỏ được giới hạn min-notional, nên trade được BTC, AVAX, ETH/LINK khi SL rộng.
-  - Lệnh dễ chia đôi TP hơn.
+- **Entering with a limit maker order is a real but small improvement:** about +0.02R per trade, stable across all variants and still present out-of-sample. It does not turn the strategy into one with a solid edge, because OOS +0.04R has a confidence interval that still contains 0.
+- If applied, choose the simple option with many fills: a post-only limit at the breakout candle close, cancelled after 1h, with TP placed as a reduce-only limit. This loses about 9% of trades, mostly winners that ran away.
+- **Risk level: keep 1%.**
+  - At 1%, the probability that the wallet ever falls below 20 USDT is almost 0, even if the strategy has no edge.
+  - At 2%, if the real edge is only the OOS level then there is about a 10% chance the wallet ever touches 20 USDT. With no edge it is about 29%.
+  - At 3%, this risk rises to 30–55%.
+- **Should this rule be applied with a larger wallet?** A larger wallet helps in two ways:
+  - It removes the min-notional limit, so BTC, AVAX, ETH/LINK can be traded when the SL is wide.
+  - Trades are easier to split in half for TP.
 
-  Nhưng ví lớn **không làm edge lớn hơn**, vì R mỗi lệnh tính theo phần trăm là như nhau. Nên tăng vốn chỉ sau khi có khoảng 100 lệnh thật cho kết quả giống backtest, và giữ rủi ro theo phần trăm (1%), không tăng theo số tiền.
+  But a larger wallet **does not make the edge bigger**, since R per trade in percentage terms is the same. Increase capital only after about 100 real trades give results like the backtest, and keep risk as a percentage (1%), not growing with the amount.

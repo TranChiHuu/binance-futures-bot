@@ -49,6 +49,6 @@ if __name__ == '__main__':
     plt.figure(figsize=(9, 8)); plt.imshow(avg_roll, vmin=0, vmax=1, cmap='viridis'); plt.colorbar()
     lab = [s.replace('USDT', '') for s in SYMS]
     plt.xticks(range(len(SYMS)), lab, rotation=90); plt.yticks(range(len(SYMS)), lab)
-    plt.title('Tuong quan trung binh (cua so 30 ngay, loi nhuan 1h)'); plt.tight_layout(); plt.savefig(f'{R}/correlation_heatmap.png', dpi=100); plt.close()
-    plt.figure(figsize=(11, 3.5)); mean_pair_series.plot(); plt.title('Tuong quan trung binh giua cac cap theo thoi gian (30 ngay)'); plt.grid(alpha=.3); plt.tight_layout(); plt.savefig(f'{R}/correlation_over_time.png', dpi=100); plt.close()
+    plt.title('Average correlation (30-day window, 1h returns)'); plt.tight_layout(); plt.savefig(f'{R}/correlation_heatmap.png', dpi=100); plt.close()
+    plt.figure(figsize=(11, 3.5)); mean_pair_series.plot(); plt.title('Average pairwise correlation over time (30 days)'); plt.grid(alpha=.3); plt.tight_layout(); plt.savefig(f'{R}/correlation_over_time.png', dpi=100); plt.close()
     print(json.dumps(out, indent=1)[:2500])

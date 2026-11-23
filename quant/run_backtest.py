@@ -54,12 +54,12 @@ if __name__ == '__main__':
             ser = {}
             for bk in ('CORE', 'HIGH'):
                 tb = sorted([t for t in st if t['book'] == bk], key=lambda t: t['t_exit'])
-                ser[f'{bk} (moi coin doc lap)'] = ([t['t_exit'] for t in tb], np.cumsum([t['R'] for t in tb]))
-            plot_equity(ser, f'{R}/equity_symbol_level_R.png', 'Luat live hien tai - tung coin doc lap (R tich luy, sau phi)', 'R')
-            plot_equity({'Vi (USDT)': ([e[0] for e in eq], [e[1] for e in eq])}, f'{R}/equity_portfolio_usdt.png',
-                        'Luat live hien tai - mo phong danh muc day du, von 45 USDT (lai kep)', 'USDT')
-            plot_equity({'Lai/lo tich luy (USDT)': ([e[0] for e in eqf], [e[1] - 1e6 for e in eqf])}, f'{R}/equity_portfolio_fixed_usdt.png',
-                        'Luat live hien tai - khoi luong co dinh (CORE 2 / MAO HIEM 6.75 USDT rui ro), 2 nam', 'USDT')
+                ser[f'{bk} (each coin independent)'] = ([t['t_exit'] for t in tb], np.cumsum([t['R'] for t in tb]))
+            plot_equity(ser, f'{R}/equity_symbol_level_R.png', 'Current live rules - each coin independent (cumulative R, after fees)', 'R')
+            plot_equity({'Wallet (USDT)': ([e[0] for e in eq], [e[1] for e in eq])}, f'{R}/equity_portfolio_usdt.png',
+                        'Current live rules - full portfolio simulation, 45 USDT capital (compounded)', 'USDT')
+            plot_equity({'Cumulative P&L (USDT)': ([e[0] for e in eqf], [e[1] - 1e6 for e in eqf])}, f'{R}/equity_portfolio_fixed_usdt.png',
+                        'Current live rules - fixed size (CORE 2 / HIGH 6.75 USDT risk), 2 years', 'USDT')
     # sensitivity: real fees (taker 0.05%) and zero slippage, 0.1% slippage
     for nm, kw, p in [('real_fee_0.05', {}, P(fee=0.0005)), ('slip_0', dict(slip_mkt=0.0, slip_sl=0.0), LIVE),
                       ('slip_0.1', dict(slip_mkt=0.001, slip_sl=0.0005), LIVE)]:

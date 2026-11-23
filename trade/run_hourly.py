@@ -2,7 +2,8 @@
 """One-shot hourly crypto futures scan + position check for holic coder."""
 import os, sys, json, time, math, datetime
 from urllib.error import HTTPError
-sys.path.insert(0, '/workspace')
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)
 from bn import call, pub, BASE
 
 CORE = ['BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT','XRPUSDT','LINKUSDT']
@@ -40,7 +41,7 @@ HIGH_CHASE_ATR = 1.5       # HIGH: skip breakout only if > 1.5 ATR past level
 MIN_BREAKOUT_PAST_ATR = 1.0
 BREAKOUT_FALLBACK_TP2_R = 4.0
 DRY = '--dry-run' in sys.argv
-sys.path.insert(0, '/workspace/trade')
+sys.path.insert(0, ROOT+'/trade')
 import pos_manage as pm
 import slots as _slots
 import breakout_rules as _br
@@ -133,8 +134,8 @@ if _pre_ban:
     print(json.dumps(out, ensure_ascii=False, indent=2))
     if DRY:
         sys.exit(0)
-    open('/workspace/trade/last_run.json','w').write(json.dumps(out, ensure_ascii=False, indent=2))
-    with open('/workspace/trade/hourly_log.jsonl','a') as f:
+    open(ROOT+'/trade/last_run.json','w').write(json.dumps(out, ensure_ascii=False, indent=2))
+    with open(ROOT+'/trade/hourly_log.jsonl','a') as f:
         f.write(json.dumps(out, ensure_ascii=False)+'\n')
     sys.exit(0)
 
@@ -155,11 +156,11 @@ if isinstance(acct, dict) and ('err' in acct or 'http' in acct or 'code' in acct
         if not _ban_until:
             _mark_ban(acct)
         until_s = _ipban.format_until(_ban_until)
-        msg = (f"Binance chan IP may bot (qua nhieu request), den {until_s}.\n"
-               f"Khong phai loi API key. Tam dung quet/dat lenh cho den khi het cam.")
+        msg = (f"Binance banned the bot IP (too many requests), until {until_s}.\n"
+               f"Not an API key error. Scanning/ordering paused until the ban ends.")
         already_tg = bool((_ipban.load_active(NOW) or {}).get('telegram_sent'))
     else:
-        msg = f"LOI API Binance\n{auth_error}\nKhong quet/dat lenh. Kiem tra key."
+        msg = f"Binance API ERROR\n{auth_error}\nNo scan/orders. Check the key."
         already_tg = False
     if DRY:
         print(json.dumps(out, ensure_ascii=False, indent=2)); sys.exit(1)
@@ -170,7 +171,7 @@ if isinstance(acct, dict) and ('err' in acct or 'http' in acct or 'code' in acct
     else:
         try:
             import subprocess
-            p = subprocess.run(['python3','/workspace/tg_trade.py'], input=msg.encode('utf-8'),
+            p = subprocess.run(['python3',ROOT+'/tg_trade.py'], input=msg.encode('utf-8'),
                                capture_output=True, timeout=20)
             out['telegram_sent'] = b'True' in p.stdout or p.stdout.strip()==b'true' or 'true' in p.stdout.decode().lower()
             telegram_sent = out['telegram_sent']
@@ -178,8 +179,8 @@ if isinstance(acct, dict) and ('err' in acct or 'http' in acct or 'code' in acct
                 _ipban.mark_telegram_sent()
         except Exception as e:
             out['telegram_error'] = str(e)
-    open('/workspace/trade/last_run.json','w').write(json.dumps(out, ensure_ascii=False, indent=2))
-    with open('/workspace/trade/hourly_log.jsonl','a') as f:
+    open(ROOT+'/trade/last_run.json','w').write(json.dumps(out, ensure_ascii=False, indent=2))
+    with open(ROOT+'/trade/hourly_log.jsonl','a') as f:
         f.write(json.dumps(out, ensure_ascii=False)+'\n')
     print(json.dumps(out, ensure_ascii=False, indent=2))
     sys.exit(1)
@@ -387,7 +388,7 @@ if not positions and not orders and not algos:
 
 # Watchers
 import subprocess
-watch_check = subprocess.run(['bash','-lc',"ps aux | grep -E '/workspace/(xrp|arb|sol|inj|arb_tp)_watch' | grep -v grep || true"],
+watch_check = subprocess.run(['bash','-lc',"ps aux | grep -E '(xrp|arb|sol|inj|arb_tp)_watch' | grep -v grep || true"],
                              capture_output=True, text=True)
 watchers_running = bool(watch_check.stdout.strip())
 if watchers_running:
@@ -934,8 +935,8 @@ else:
                     'past_atr': cand.get('past_atr'), 'atr': cand.get('atr'),
                     **({'expire_ms': int(time.time()*1000) + MAKER_EXPIRE_MIN*60000, 'entry_order_id': order.get('orderId')} if plan['entry_type'] == 'LIMIT_GTX' else {})}
                 pm.save_state(st_)
-                if not subprocess.run(['pgrep','-f','/workspace/trade/pos_watch.py'], capture_output=True).stdout.strip():
-                    subprocess.Popen(['nohup','python3','/workspace/trade/pos_watch.py'], stdout=open('/workspace/trade/pos_watch.out','a'),
+                if not subprocess.run(['pgrep','-f',ROOT+'/trade/pos_watch.py'], capture_output=True).stdout.strip():
+                    subprocess.Popen(['nohup','python3',ROOT+'/trade/pos_watch.py'], stdout=open(ROOT+'/trade/pos_watch.out','a'),
                                      stderr=subprocess.STDOUT, start_new_session=True)
                     entered['watcher'] = 'started'
             # more entries allowed this run until per-book / combined caps are full
@@ -977,28 +978,28 @@ if entered_list:
 if changed:
     lines = []
     for entered in entered_list:
-        label = 'CORE' if entered['port']=='CORE' else 'MAO HIEM'
-        lines.append(f"VAO LENH {label}")
-        lines.append(f"{entered['sym']} {entered['side']} {'LIMIT maker (huy sau 60 phut neu chua khop)' if entered['entry']=='LIMIT_GTX' else entered['entry']}")
+        label = 'CORE' if entered['port']=='CORE' else 'HIGH'
+        lines.append(f"ENTRY {label}")
+        lines.append(f"{entered['sym']} {entered['side']} {'LIMIT maker (cancels after 60 min if unfilled)' if entered['entry']=='LIMIT_GTX' else entered['entry']}")
         lines.append(f"qty={entered['qty']} lev={entered['lev']}x isolated")
         lines.append(f"entry~{entered['mark']} SL={entered['sl']} TP1={entered['tp1']} TP2={entered['tp2']}")
-        lines.append(f"risk={entered['risk_usdt']} USDT ({entered['risk_pct_wallet']}% vi) R:R={entered['rr']}")
-        lines.append(f"vi={wallet:.2f} PnL hom nay={realized:.2f}")
+        lines.append(f"risk={entered['risk_usdt']} USDT ({entered['risk_pct_wallet']}% of wallet) R:R={entered['rr']}")
+        lines.append(f"wallet={wallet:.2f} PnL today={realized:.2f}")
     for a in actions:
         if a.get('action','').startswith('cancel'):
-            lines.append(f"Huy pending {a.get('sym')} ({a.get('action')})")
+            lines.append(f"Cancelled pending {a.get('sym')} ({a.get('action')})")
         if a.get('action')=='enter_failed':
-            lines.append(f"Loi dat lenh {a.get('sym')}: {a.get('res','')[:120]}")
+            lines.append(f"Order failed {a.get('sym')}: {a.get('res','')[:120]}")
     if auth_error:
-        lines.append(f"Loi API: {auth_error[:200]}")
+        lines.append(f"API error: {auth_error[:200]}")
     if not lines:
-        lines.append(f"Thay doi trang thai vi={wallet:.2f}")
+        lines.append(f"Status changed wallet={wallet:.2f}")
     telegram_message = '\n'.join(lines)
     if DRY:
         telegram_error = 'dry-run: telegram not sent'
     try:
         if DRY: raise RuntimeError('dry-run: telegram not sent')
-        p = subprocess.run(['python3','/workspace/tg_trade.py'], input=telegram_message.encode('utf-8'),
+        p = subprocess.run(['python3',ROOT+'/tg_trade.py'], input=telegram_message.encode('utf-8'),
                            capture_output=True, timeout=20)
         out_tg = p.stdout.decode().strip()
         telegram_sent = out_tg.lower() in ('true','1') or 'true' in out_tg.lower()
@@ -1082,12 +1083,12 @@ scan_now = {
 if DRY:
     result['dry_run'] = True
     result['dry_writes'] = dry_writes
-    open('/workspace/trade/_dry_run.json','w').write(json.dumps(result, ensure_ascii=False, indent=2))
+    open(ROOT+'/trade/_dry_run.json','w').write(json.dumps(result, ensure_ascii=False, indent=2))
 else:
-    open('/workspace/trade/last_run.json','w').write(json.dumps(result, ensure_ascii=False, indent=2))
-    with open('/workspace/trade/hourly_log.jsonl','a') as f:
+    open(ROOT+'/trade/last_run.json','w').write(json.dumps(result, ensure_ascii=False, indent=2))
+    with open(ROOT+'/trade/hourly_log.jsonl','a') as f:
         f.write(json.dumps(result, ensure_ascii=False)+'\n')
-    open('/workspace/trade/_scan_now.json','w').write(json.dumps(scan_now, ensure_ascii=False, indent=2))
+    open(ROOT+'/trade/_scan_now.json','w').write(json.dumps(scan_now, ensure_ascii=False, indent=2))
 print(json.dumps({
     'ok': True,
     'ts': TS,
