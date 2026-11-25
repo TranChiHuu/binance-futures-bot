@@ -180,6 +180,9 @@ def manage_positions(sc, dry=False, log=print):
         s.pop('pending_limit', None)
         s['entry'] = entry
         if not s.get('qty'): s['qty'] = abs(amt)
+        # User-placed MANUAL trades: do not adopt/modify SL, TP, or flatten.
+        if s.get('setup') == 'MANUAL':
+            continue
         sa = [a for a in algos if a.get('symbol') == sym]
         sls = [a for a in sa if 'STOP' in str(a.get('orderType', '')).upper() and 'TAKE' not in str(a.get('orderType','')).upper()]
         tps = [a for a in sa if 'TAKE_PROFIT' in str(a.get('orderType', '')).upper()]
@@ -371,7 +374,8 @@ def update_lessons():
     except Exception:
         J = []
     # 2026-11-20: off-rule TEST trades (user-requested) are journaled but never drive lessons
-    J = [r for r in J if r.get('setup') != 'TEST']
+    # 2026-11-25: user manual trades (setup MANUAL) are journaled but never drive lessons
+    J = [r for r in J if r.get('setup') not in ('TEST', 'MANUAL')]
     J.sort(key=lambda r: r['ts_close'])
     try: old = json.load(open(LESSONS))
     except Exception: old = {}

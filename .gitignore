@@ -19,3 +19,5 @@ quant/*.log
 trade/risk_state.json
 ip_ban.json
 trade/ip_ban.json
+trade/transfers_cache.json
+trade/_fetch_*.json

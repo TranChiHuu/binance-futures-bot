@@ -4,6 +4,8 @@
 trade; user accepted the risk of blowing up the account. Drawdown multipliers
 still apply (x0.75 / x0.5) but cannot push risk ABOVE 25%. Daily stop is -50%
 of the Saigon start-of-day wallet (replaces max(-7.5, -3x risk)).
+Deposits and withdrawals (Binance TRANSFER income) are excluded from drawdown
+and from the start-of-day wallet used for the daily stop.
 
 Older small-wallet 2.5%/4% and >=100 1–2% scale-up paths are retired; aliases
 remain so older comments/imports still resolve, all pointing at 25%.
@@ -11,11 +13,14 @@ remain so older comments/imports still resolve, all pointing at 25%.
 import json, os, time, datetime
 from decimal import Decimal, ROUND_FLOOR
 
+SAIGON = datetime.timezone(datetime.timedelta(hours=7))
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 D = ROOT+'/trade'
 STATE = f'{D}/risk_state.json'
 JOURNAL = f'{D}/trade_journal.jsonl'
+XFER_CACHE = f'{D}/transfers_cache.json'
 SINCE = '2026-11-11T11:30+07:00'   # trades opened after the maker/adaptive change
+ACCOUNT_START_MS = int(datetime.datetime(2026, 11, 2, tzinfo=SAIGON).timestamp() * 1000)
 
 # user 2026-11-20: 25% both books, hard ceiling 25%
 BASE, CEIL = 0.25, 0.25
@@ -59,27 +64,164 @@ def daily_stop_usdt(start_wallet, pct=DAILY_STOP_PCT):
     return -abs(float(pct)) * float(start_wallet)
 
 
-def start_of_day_wallet(st, wallet, day, realized=0.0, commission=0.0):
-    """Reuse today's snapshot, or back out realized+commission on the first run of the day."""
+def net_transfers(transfers, start_ms=None, end_ms=None):
+    """Sum TRANSFER income (deposit > 0, withdrawal < 0) in [start_ms, end_ms)."""
+    total = 0.0
+    for t in transfers or []:
+        try:
+            ts = int(t.get('time') or 0)
+        except (TypeError, ValueError):
+            continue
+        if start_ms is not None and ts < start_ms:
+            continue
+        if end_ms is not None and ts >= end_ms:
+            continue
+        try:
+            total += float(t.get('income') or 0)
+        except (TypeError, ValueError):
+            continue
+    return total
+
+
+def trading_equity(wallet, transfers, end_ms=None):
+    """Wallet with deposits/withdrawals removed (end_ms exclusive)."""
+    return float(wallet) - net_transfers(transfers, end_ms=end_ms)
+
+
+def load_transfers(path=XFER_CACHE):
+    try:
+        d = json.load(open(path))
+        if isinstance(d, list):
+            return d
+        return d.get('transfers') or []
+    except Exception:
+        return []
+
+
+def save_transfers(transfers, path=XFER_CACHE, fetched_at=None):
+    seen = set()
+    out = []
+    for t in sorted(transfers or [], key=lambda x: int(x.get('time') or 0)):
+        try:
+            key = (int(t.get('time') or 0), round(float(t.get('income') or 0), 8), str(t.get('tranId') or ''))
+        except (TypeError, ValueError):
+            continue
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append({'time': int(t['time']), 'income': float(t['income']),
+                    'asset': t.get('asset') or 'USDT', 'tranId': t.get('tranId') or ''})
+    payload = {
+        'fetched_at': fetched_at or datetime.datetime.now(SAIGON).strftime('%Y-%m-%dT%H:%M:%S+07:00'),
+        'transfers': out,
+    }
+    tmp = path + '.tmp'
+    json.dump(payload, open(tmp, 'w'), indent=2)
+    os.replace(tmp, path)
+    return out
+
+
+def day_start_ms(day):
+    """Epoch ms of 00:00 Asia/Saigon for YYYY-MM-DD."""
+    y, m, d = map(int, str(day).split('-'))
+    return int(datetime.datetime(y, m, d, tzinfo=SAIGON).timestamp() * 1000)
+
+
+def refresh_transfers(sc, start_ms=None, now_ms=None, cache_path=XFER_CACHE):
+    """Merge new TRANSFER income into the cache. On API failure, keep the cache.
+
+    sc(path, params, method='GET') should return a list of income rows or an error dict.
+    """
+    cached = load_transfers(cache_path)
+    now_ms = int(now_ms or time.time() * 1000)
+    if start_ms is None:
+        start_ms = (max(int(t['time']) for t in cached) + 1) if cached else ACCOUNT_START_MS
+    start_ms = int(start_ms)
+    rows = list(cached)
+    cur = start_ms
+    ok = True
+    while cur <= now_ms:
+        end = min(cur + 7 * 86400 * 1000 - 1, now_ms)
+        try:
+            r = sc('/fapi/v1/income', {'incomeType': 'TRANSFER', 'startTime': cur, 'endTime': end, 'limit': 1000}, 'GET')
+        except TypeError:
+            r = sc('/fapi/v1/income', {'incomeType': 'TRANSFER', 'startTime': cur, 'endTime': end, 'limit': 1000})
+        if not isinstance(r, list):
+            ok = False
+            break
+        rows.extend(r)
+        if len(r) < 1000:
+            cur = end + 1
+        else:
+            cur = int(r[-1]['time']) + 1
+    cleaned = save_transfers(rows, path=cache_path) if (rows or cached) else []
+    return cleaned, ok
+
+
+def adj_peak(st, adj, transfers, now_ms=None):
+    """Transfer-adjusted equity peak. Migrates a legacy raw-wallet peak.
+
+    Legacy peak is a raw wallet high (deposits included, withdrawals not subtracted).
+    If peak_ts_ms is set, transfers up to that time are removed from the raw peak.
+    If it is missing, deposits are assumed to already be in the raw peak and
+    withdrawals are assumed to have happened after it (the usual stale-peak case).
+    """
     st = st or {}
-    if st.get('day_start_date') == day and st.get('day_start_wallet') not in (None, ''):
+    now_ms = int(now_ms or time.time() * 1000)
+    adj = float(adj)
+    if st.get('peak_basis') == 'adj':
+        prev = float(st.get('peak') or 0)
+        if adj > prev:
+            return adj, now_ms
+        return prev, st.get('peak_ts_ms')
+    raw = float(st.get('peak') or 0)
+    peak_ts = st.get('peak_ts_ms')
+    if peak_ts in (None, ''):
+        net_at = sum(float(t.get('income') or 0) for t in (transfers or []) if float(t.get('income') or 0) > 0)
+    else:
+        net_at = net_transfers(transfers, end_ms=int(peak_ts) + 1)
+    prev_adj = raw - net_at
+    if adj >= prev_adj:
+        return (adj if adj > 0 else raw), now_ms
+    return (prev_adj if prev_adj > 0 else raw), (int(peak_ts) if peak_ts not in (None, '') else None)
+
+
+def start_of_day_wallet(st, wallet, day, realized=0.0, commission=0.0, transfers_today=0.0):
+    """Reuse today's snapshot, or back out realized+commission+transfers on the first run of the day.
+
+    A legacy snapshot that did not exclude transfers is recomputed.
+    """
+    st = st or {}
+    if (st.get('day_start_date') == day and st.get('day_start_wallet') not in (None, '')
+            and st.get('day_start_excludes_transfers')):
         try:
             sow = float(st['day_start_wallet'])
             if sow > 0:
                 return sow
         except (TypeError, ValueError):
             pass
-    sow = float(wallet) - float(realized or 0) - float(commission or 0)
+    sow = float(wallet) - float(realized or 0) - float(commission or 0) - float(transfers_today or 0)
     if sow <= 0:
-        sow = float(wallet)
+        sow = float(wallet) - float(transfers_today or 0)
+        if sow <= 0:
+            sow = float(wallet)
     return sow
 
 
-def compute(wallet, st=None, js=None, day=None, realized=0.0, commission=0.0):
+def compute(wallet, st=None, js=None, day=None, realized=0.0, commission=0.0,
+            transfers=None, now_ms=None):
     st = dict(st or {}); js = js or journal_stats()
     wallet = float(wallet)
-    peak = max(float(st.get('peak') or 0), wallet)
-    dd = ((peak - wallet) / peak) if peak > 0 else 0.0
+    now_ms = int(now_ms or time.time() * 1000)
+    xfers = list(transfers) if transfers is not None else []
+    net_all = net_transfers(xfers)
+    adj = trading_equity(wallet, xfers)
+    peak, peak_ts = adj_peak(st, adj, xfers, now_ms=now_ms)
+    if peak <= 0:
+        peak = adj if adj > 0 else wallet
+    dd = ((peak - adj) / peak) if peak > 0 else 0.0
+    if dd < 0:
+        dd = 0.0
     prev_dd_mult = float(st.get('dd_mult', 1.0))
     need = 0.5 if dd >= 0.20 else (0.75 if dd >= 0.10 else 1.0)
     if dd < 0.05: dd_mult = need                      # recovered: back to normal
@@ -98,11 +240,18 @@ def compute(wallet, st=None, js=None, day=None, realized=0.0, commission=0.0):
                risk_usdt=round(wallet*pct, 6),
                risk_usdt_core=round(wallet*pct_core, 6), risk_usdt_high=round(wallet*pct_high, 6),
                tier=tier, journal=js, since=SINCE,
-               updated=datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=7))).strftime('%Y-%m-%dT%H:%M:%S+07:00'))
-    sow = start_of_day_wallet(st, wallet, day, realized, commission) if day else float(wallet)
+               updated=datetime.datetime.now(SAIGON).strftime('%Y-%m-%dT%H:%M:%S+07:00'))
+    transfers_today = net_transfers(xfers, start_ms=day_start_ms(day)) if day else 0.0
+    sow = start_of_day_wallet(st, wallet, day, realized, commission, transfers_today) if day else adj
+    out['peak_basis'] = 'adj'
+    out['peak_ts_ms'] = peak_ts
+    out['adj_wallet'] = round(adj, 8)
+    out['net_transfers'] = round(net_all, 8)
     if day:
         out['day_start_date'] = day
         out['day_start_wallet'] = round(sow, 8)
+        out['day_start_excludes_transfers'] = True
+        out['transfers_today'] = round(transfers_today, 8)
     out['daily_stop'] = round(daily_stop_usdt(sow), 6)
     return out
 

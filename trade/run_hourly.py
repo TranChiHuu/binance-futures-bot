@@ -226,7 +226,12 @@ realized = sum(fnum(i.get('income')) for i in inc) if isinstance(inc, list) else
 commission = sum(fnum(i.get('income')) for i in comm) if isinstance(comm, list) else 0.0
 
 import risk_tier as _rt
-RISK_STATE = _rt.compute(wallet, _rt.load_state(), day=DAY, realized=realized, commission=commission)
+# TRANSFER income (deposits/withdrawals) is excluded from drawdown and the daily-stop base.
+_xfers, _xfer_ok = _rt.refresh_transfers(safe_call)
+if not _xfer_ok and not _xfers:
+    _xfers = _rt.load_transfers()
+RISK_STATE = _rt.compute(wallet, _rt.load_state(), day=DAY, realized=realized, commission=commission,
+                         transfers=_xfers)
 if not DRY:
     _rt.save(RISK_STATE)
 RISK_PCT_CORE = RISK_STATE['risk_pct_core']
