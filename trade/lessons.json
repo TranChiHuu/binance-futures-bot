@@ -1,14 +1,15 @@
 {
-  "updated": "2026-11-11T10:12:32+07:00",
-  "trades": 7,
-  "wins": 3,
-  "losses": 4,
-  "net_pnl": -4.2965,
+  "updated": "2026-11-21T13:17:23+07:00",
+  "trades": 10,
+  "wins": 4,
+  "losses": 6,
+  "net_pnl": -3.3659,
   "adjust": {
     "score_penalty": {
       "RETEST": 99.0,
-      "MOMENTUM": 99.0,
-      "*": 0.25
+      "BREAKOUT": 0.5,
+      "*": 0.25,
+      "MOMENTUM": 99.0
     },
     "max_sl_pct": {},
     "fee_rate": 0.00055,
@@ -33,5 +34,30 @@
       "adjust": "TP1 at most 1.5R"
     }
   ],
-  "last_change": "score -0.5 for RETEST; FEE_RATE per side 0.00055 (was 0.0004); TP1 at most 1.5R"
+  "daily_reviews": [
+    {
+      "date": "2026-11-20",
+      "regime": "BTC -3.4% 24h (64030->61155 range), broad downtrend, shorts favored",
+      "near_misses": 17,
+      "lessons": [
+        "breakout_shallow (<1.0 ATR) skipped 15 shorts: 2 reached TP1 (NEAR past 0.97ATR, ARB 0.04ATR), 1 SL (AVAX long, counter-trend), 12 still open with MFE 0.2-1.5R below TP1 1.5R. One trend day is not enough to loosen; 2026-11-19 backtest: 1.0ATR PF 1.39 maxDD 8.5R vs 0.75ATR PF 1.31 maxDD 14.2R. Keep 1.0.",
+        "RETEST block confirmed: ETHUSDT RETEST short (09:19) would have hit SL.",
+        "Counter-trend longs in a down day fail: AVAXUSDT LONG (score 1.05) would have hit SL."
+      ],
+      "changes": "none to entry rules; pos_manage keeps daily_reviews key when rewriting lessons.json"
+    },
+    {
+      "date": "2026-11-25",
+      "regime": "BTC -3.7% 24h (60676->57876, last 58054), ETH -3.9%; 5th down day of 8, daily range shrinking (3.3%) and volume low (8.2B vs 12-25B); shorts favored",
+      "near_misses": 6,
+      "lessons": [
+        "breakout_shallow skipped 6 shorts (ARB 0.01ATR, LINK 0.14, INJ 0.30, TIA 0.49, OP 0.03, WIF 0.07): after 1-3h none hit TP1 or SL; MFE 0.53-0.84R, MAE 0.18-0.42R. Same as 2026-11-20: shallow breaks drift but do not reach TP1 fast. Keep min break 1.0 ATR.",
+        "Data gap: hourly_log has no runs from 2026-11-21 14:20 to 2026-11-25 18:18 (box restored), but the account traded INJ LONG (maker 6.395, TP1 half at 6.759, rest closed 6.346 below entry: SL was NOT moved to BE after TP1), SUI LONG (taker 0.6713 -> 0.6649 in 47 min, -3.74 net) and WIF SHORT (taker 0.1206, 2026-11-24 20:33, still open, meta_missing). None are in trade_journal.jsonl. Lesson: when the manager is not running, BE-after-TP1 does not happen; check the scheduler is alive every review.",
+        "Withdrawal of 30 USDT (2026-11-25 14:56) is counted as drawdown by risk_tier.compute (peak 69.36 vs wallet 46.18 = DD 33%), so per-trade risk is halved to 12.5%. Without the transfer wallet would be 76.18 (above peak). Fix would raise risk -> proposal only, needs user yes."
+      ],
+      "changes": "none to code; lessons only"
+    }
+  ],
+  "last_change": null,
+  "last_review": "2026-11-25T21:10+07:00"
 }
