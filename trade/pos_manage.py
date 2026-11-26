@@ -1,7 +1,7 @@
 """Shared position management for run_hourly.py and pos_watch.py.
 - file lock so the two never act at the same time
 - pos_state.json: per-symbol trade meta (written at entry)
-- SL->breakeven after TP1, never moves SL farther away
+- SL->breakeven after +1R (before TP1) and after TP1, never moves SL farther away
 - journal + lessons on close
 - BREAKOUT: flatten if a closed 1h candle closes back through the breakout level
 """
@@ -20,6 +20,9 @@ LESSONS = f'{D}/lessons.json'
 SAIGON = datetime.timezone(datetime.timedelta(hours=7))
 CORE = ['BTCUSDT','ETHUSDT','SOLUSDT','BNBUSDT','XRPUSDT','LINKUSDT']
 BE_FEE_BUF = 0.0010  # entry + ~round-trip taker fees (0.05%/side measured)
+# If mark has already retraced through BE after +1R, place SL this far beyond mark
+# so Binance does not reject the stop as immediately triggering (-2021).
+NEAR_MARK_BUF = 0.003
 
 def now_s():
     return datetime.datetime.now(SAIGON).strftime('%Y-%m-%dT%H:%M:%S+07:00')
@@ -85,6 +88,142 @@ def sym_filters(sym):
     except Exception:
         pass
     return 0.0, 0.0, 3
+
+
+# ---------------- 1R / breakeven helpers ----------------
+def r_abs(entry, sl):
+    """Initial risk distance R = |entry - initial SL|, or None."""
+    try:
+        r = abs(float(entry) - float(sl))
+    except (TypeError, ValueError):
+        return None
+    return r if r > 0 else None
+
+def be_trigger(entry, long_, tick, fee_buf=BE_FEE_BUF):
+    """Break-even trigger: entry plus fee buffer in the profitable direction, tick-rounded."""
+    be = entry * (1 + fee_buf) if long_ else entry * (1 - fee_buf)
+    return tick_round(be, tick, up=bool(long_))
+
+def reached_1r(side, entry, sl, fav_px):
+    """True if the favorable extreme has reached entry +/- 1R (R = |entry - initial SL|)."""
+    r = r_abs(entry, sl)
+    if r is None or fav_px is None:
+        return False
+    if side == 'LONG':
+        return fav_px >= entry + r - 1e-12
+    return fav_px <= entry - r + 1e-12
+
+def near_mark_sl(long_, mark, tick, mark_buf=NEAR_MARK_BUF):
+    """SL just beyond mark so a MARK_PRICE stop will not trigger immediately."""
+    if mark is None or mark <= 0:
+        return None
+    if long_:
+        px = tick_round(mark * (1 - mark_buf), tick, up=False)
+        if px >= mark:
+            px = tick_round(mark - (tick or 0), tick, up=False)
+        return px if px < mark else None
+    px = tick_round(mark * (1 + mark_buf), tick, up=True)
+    if px <= mark:
+        px = tick_round(mark + (tick or 0), tick, up=True)
+    return px if px > mark else None
+
+def sl_tighter(long_, new_px, cur_sl):
+    """True if new_px tightens the stop (or there is no current SL). Never loosens."""
+    if new_px is None:
+        return False
+    if cur_sl is None:
+        return True
+    if long_:
+        return new_px > cur_sl + 1e-12
+    return new_px < cur_sl - 1e-12
+
+def sl_at_or_beyond_be(long_, cur_sl, be):
+    if cur_sl is None or be is None:
+        return False
+    return (long_ and cur_sl >= be) or ((not long_) and cur_sl <= be)
+
+def plan_1r_sl(side, entry, sl, fav_px, mark, cur_sl, tick,
+               fee_buf=BE_FEE_BUF, mark_buf=NEAR_MARK_BUF):
+    """Decide a +1R break-even SL move. Pure function, no I/O.
+
+    Returns dict with action 'skip' | 'already' | 'move', plus be / trigger /
+    fallback / kind / reason. kind is 'be' or 'near_mark'.
+    """
+    long_ = (side == 'LONG')
+    be = be_trigger(entry, long_, tick, fee_buf=fee_buf) if entry else None
+    out = {'action': 'skip', 'reason': '', 'be': be, 'trigger': None,
+           'fallback': None, 'kind': None}
+    if not reached_1r(side, entry, sl, fav_px):
+        out['reason'] = 'not_1r'
+        return out
+    if sl_at_or_beyond_be(long_, cur_sl, be):
+        out['action'] = 'already'
+        out['reason'] = 'sl_already_be'
+        return out
+    mark_ok_for_be = (mark is not None and
+                      ((long_ and mark > be) or ((not long_) and mark < be)))
+    near = near_mark_sl(long_, mark, tick, mark_buf=mark_buf)
+    if mark_ok_for_be and sl_tighter(long_, be, cur_sl):
+        out['action'] = 'move'
+        out['trigger'] = be
+        out['kind'] = 'be'
+        out['reason'] = 'be'
+        if sl_tighter(long_, near, cur_sl):
+            out['fallback'] = near
+        return out
+    if sl_tighter(long_, near, cur_sl):
+        out['action'] = 'move'
+        out['trigger'] = near
+        out['kind'] = 'near_mark'
+        out['reason'] = 'near_mark'
+        return out
+    out['reason'] = 'cannot_tighten'
+    return out
+
+def favorable_extreme(sym, side, opened_ms, mark):
+    """Best favorable price since open: current mark, plus 1m (and 1h if needed) high/low."""
+    px = mark
+    t0 = int(opened_ms or 0)
+    now = int(time.time() * 1000)
+
+    def _apply(kl, cur):
+        if not isinstance(kl, list) or not kl:
+            return cur
+        if side == 'LONG':
+            return max(cur, max(fnum(x[2]) for x in kl))
+        return min(cur, min(fnum(x[3]) for x in kl))
+
+    try:
+        params = {'symbol': sym, 'interval': '1m', 'limit': 1000}
+        if t0 > 0:
+            params['startTime'] = t0
+        px = _apply(pub('/fapi/v1/klines', params), px)
+        if t0 and (now - t0) > 1000 * 60 * 1000:
+            params = {'symbol': sym, 'interval': '1h', 'limit': 1000, 'startTime': t0}
+            px = _apply(pub('/fapi/v1/klines', params), px)
+    except Exception:
+        pass
+    return px
+
+def _immediate_trigger(r):
+    blob = str(r).lower()
+    if isinstance(r, dict) and r.get('code') == -2021:
+        return True
+    return 'immediately trigger' in blob or '-2021' in blob
+
+def _place_sl_algo(sc, sym, long_, trigger, amt, close_position=False):
+    params = {
+        'algoType': 'CONDITIONAL', 'symbol': sym,
+        'side': 'SELL' if long_ else 'BUY',
+        'type': 'STOP_MARKET', 'triggerPrice': trigger,
+        'workingType': 'MARK_PRICE',
+    }
+    if close_position:
+        params['closePosition'] = 'true'
+    else:
+        params['quantity'] = abs(amt)
+        params['reduceOnly'] = 'true'
+    return sc('/fapi/v1/algoOrder', params, 'POST')
 
 # ---------------- breakeven ----------------
 def last_closed_1h(sym):
@@ -218,6 +357,46 @@ def manage_positions(sc, dry=False, log=print):
                     tg(f"{label(sym)} {sym}: SL moved to breakeven {be} for the remaining {abs(amt)}.", dry)
                 else:
                     events.append({'event': 'BE_failed', 'sym': sym, 'res': str(r)[:200]})
+        # +1R -> BE (2026-11-26, after SEI TEST gave back 1.3R before TP1). Not MANUAL.
+        if (not s.get('be_1r_done') and not s.get('tp1_done') and not s.get('be_done')
+                and s.get('sl') is not None):
+            tick, step, qp = sym_filters(sym)
+            init_sl = fnum(s.get('sl'))
+            cur = [fnum(a.get('triggerPrice')) for a in sls]
+            cur_best = (max(cur) if long_ else min(cur)) if cur else None
+            fav = favorable_extreme(sym, s.get('side') or ('LONG' if long_ else 'SHORT'),
+                                    s.get('opened_ms'), mark)
+            plan = plan_1r_sl(s.get('side') or ('LONG' if long_ else 'SHORT'),
+                              entry, init_sl, fav, mark, cur_best, tick)
+            if plan['action'] == 'already':
+                s['be_1r_done'] = True
+                events.append({'event': 'BE_1R_already', 'sym': sym, 'sl': cur_best, 'be': plan['be']})
+            elif plan['action'] == 'move':
+                trigger = plan['trigger']
+                # reduceOnly+qty, not closePosition: Binance -4130 rejects a second closePosition stop,
+                # so we place the new SL first (position stays protected) then cancel the old one.
+                r = _place_sl_algo(sc, sym, long_, trigger, amt, close_position=False)
+                if _err(r) and _immediate_trigger(r) and plan.get('fallback') is not None:
+                    trigger = plan['fallback']
+                    r = _place_sl_algo(sc, sym, long_, trigger, amt, close_position=False)
+                    plan = dict(plan, kind='near_mark', reason='be_rejected_2021')
+                if not _err(r):
+                    for a in sls:
+                        sc('/fapi/v1/algoOrder', {'symbol': sym, 'algoId': a['algoId']}, 'DELETE')
+                    s['be_1r_done'] = True
+                    s['sl_be'] = trigger
+                    if r.get('algoId') is not None:
+                        s['sl_algo'] = r.get('algoId')
+                    ev = {'event': 'BE_1R_moved', 'sym': sym, 'sl': trigger,
+                          'be': plan['be'], 'kind': plan['kind'], 'old': cur, 'fav': fav}
+                    events.append(ev)
+                    if plan['kind'] == 'be':
+                        tg(f"{label(sym)} {sym}: SL moved to breakeven {trigger} after price reached 1R.", dry)
+                    else:
+                        tg(f"{label(sym)} {sym}: SL tightened to {trigger} (near mark, not yet breakeven) after price reached 1R.", dry)
+                else:
+                    events.append({'event': 'BE_1R_failed', 'sym': sym, 'res': str(r)[:200],
+                                   'trigger': trigger, 'be': plan['be']})
     # BREAKOUT invalidation: closed 1h back through the breakout level (2026-11-12, AVAX/TIA)
     for sym, p in list(open_pos.items()):
         s = st.get(sym) or {}
@@ -445,6 +624,11 @@ def update_lessons():
             adj['fee_rate'] = max(float(o['fee_rate']), float(adj.get('fee_rate') or 0))
         if o.get('tp1_max_r'):
             adj['tp1_max_r'] = min(float(o['tp1_max_r']), float(adj.get('tp1_max_r') or 99))
+    kept = [l for l in (old.get('lessons') or []) if l.get('keep')]
+    have = {l.get('rule') for l in lessons}
+    for l in kept:
+        if l.get('rule') not in have:
+            lessons.append(l)
     prev = json.dumps(old.get('adjust'), sort_keys=True)
     out = {'updated': now_s(), 'trades': len(J),
            'wins': sum(1 for r in J if r['pnl_net'] > 0), 'losses': sum(1 for r in J if r['pnl_net'] < 0),

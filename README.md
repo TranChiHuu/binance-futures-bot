@@ -9,7 +9,7 @@ Automated trading bot for **Binance USDT-M Futures**. It scans 19 coins every ho
 ```
 every hour                          every 60 s
 run_hourly.py                       pos_watch.py
-  scan 19 coins (CORE + HIGH)         TP1 filled?  ->  pos_manage.py
+  scan 19 coins (CORE + HIGH)         +1R or TP1?  ->  pos_manage.py
   pick a BREAKOUT candidate                              move SL to breakeven
   size by risk, set leverage                             cancel stale maker entries
   entry + SL + TP1 + TP2                                 journal closed trades
@@ -27,7 +27,7 @@ run_hourly.py                       pos_watch.py
 - **BREAKOUT** is the only setup that can open a trade. RETEST and MOMENTUM are blocked by `trade/lessons_locked.json` after the backtest.
 - The break candle must go at least **1.0 ATR** past the 20h level, and the SL must be at least **1.0 ATR** from entry.
 - Entry is a post-only (GTX) **maker limit** at the breakout candle close. It is cancelled with its SL/TP after 60 minutes if unfilled.
-- TP1 closes 50% and moves the SL to breakeven. TP2 is the structure target, or a 4R fallback. Required R:R to TP2 is at least 2.
+- After price reaches +1R (mark or 1m/1h high/low since entry; R = |entry - initial SL|), the SL moves to breakeven (entry plus a 0.1% fee buffer) before TP1. If mark has already retraced through BE, the SL tightens to just beyond mark (~0.3%). MANUAL trades are not managed. TP1 still closes 50% and then moves the SL to breakeven. TP2 is the structure target, or a 4R fallback. Required R:R to TP2 is at least 2.
 - Close-back rule: if a 1h candle closes back through the breakout level, the position is flattened and any unfilled entry is cancelled.
 
 ### Risk
@@ -84,7 +84,7 @@ for t in trade/test_*.py; do python3 $t; done
 | `trade/breakout_rules.py` | Shallow-break filter and level-invalidation rule |
 | `trade/slots.py` | Concurrent-trade slot accounting |
 | `trade/ip_ban.py` | Detects and honors Binance IP bans |
-| `trade/pos_manage.py` | Breakeven move, maker-entry expiry, journal, lessons |
+| `trade/pos_manage.py` | Breakeven after +1R and after TP1, maker-entry expiry, journal, lessons |
 | `trade/pos_watch.py` | 60 s watcher around `pos_manage` |
 | `trade/lessons.json` | Lessons learned from closed trades (rules can only tighten) |
 | `trade/lessons_locked.json` | Rules locked in by the backtest |

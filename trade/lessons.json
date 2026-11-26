@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-21T13:17:23+07:00",
+  "updated": "2026-11-26T20:35:00+07:00",
   "trades": 10,
   "wins": 4,
   "losses": 6,
@@ -32,6 +32,13 @@
         "ARBUSDT mfe 1.69R tp1 plan 2.0R"
       ],
       "adjust": "TP1 at most 1.5R"
+    },
+    {
+      "rule": "be_at_1r",
+      "keep": true,
+      "date": "2026-11-26",
+      "source": "SEIUSDT LONG TEST, hit +1.3R at 0.03785 then fell back near entry 0.03576",
+      "adjust": "When a bot-managed position (not MANUAL) reaches +1R, move SL to breakeven (entry +/- 0.1% fee buffer) before TP1. If mark has already retraced through BE, tighten SL to just beyond mark (~0.3%) so the stop does not trigger immediately."
     }
   ],
   "daily_reviews": [
@@ -56,8 +63,17 @@
         "Withdrawal of 30 USDT (2026-11-25 14:56) is counted as drawdown by risk_tier.compute (peak 69.36 vs wallet 46.18 = DD 33%), so per-trade risk is halved to 12.5%. Without the transfer wallet would be 76.18 (above peak). Fix would raise risk -> proposal only, needs user yes."
       ],
       "changes": "none to code; lessons only"
+    },
+    {
+      "date": "2026-11-26",
+      "regime": "intraday: SEI TEST long ran to +1.3R then gave back almost to entry",
+      "near_misses": 0,
+      "lessons": [
+        "SEIUSDT LONG TEST (entry 0.03576, SL 0.03416) reached 0.03785 (~1.3R) around 19:00+07 then fell back near entry. No rule existed to lock BE before TP1 (0.03816). New tightening rule: after +1R, move SL to BE (entry + 0.1% fee buffer) for all bot-managed positions except MANUAL."
+      ],
+      "changes": "pos_manage: BE at +1R (be_1r_done), user-approved 2026-11-26"
     }
   ],
   "last_change": null,
-  "last_review": "2026-11-25T21:10+07:00"
+  "last_review": "2026-11-26T20:45:00+07:00"
 }
