@@ -8,8 +8,15 @@ def _tunnel():
     a=a.replace('http://','')
     h,_,pt=a.partition(':')
     try:
-        socket.create_connection((h,int(pt or 80)),timeout=2).close(); return 'http://'+a
+        socket.create_connection((h,int(pt or 80)),timeout=2).close()
     except Exception: return None
+    # 2026-11-28: the port stays open even when the Mac is offline and then exits via the shared box IP. Check real egress.
+    try:
+        op=urllib.request.build_opener(urllib.request.ProxyHandler({'https':'http://'+a,'http':'http://'+a}))
+        ip=op.open('https://api.ipify.org',timeout=6).read().decode().strip()
+    except Exception: return None
+    if ip.startswith('104.28.'): return None
+    return 'http://'+a
 PROXY=_tunnel()
 TUNNEL_DOWN = PROXY is None
 if PROXY:

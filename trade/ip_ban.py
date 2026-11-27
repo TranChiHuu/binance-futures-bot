@@ -31,6 +31,15 @@ def _banned_ip(d):
     return m.group(1) if m else None
 
 def _tunnel_up():
+    import sys
+    sys.path.insert(0, '/workspace')
+    try:
+        import bn
+        return bn.PROXY is not None
+    except Exception:
+        return False
+
+def _tunnel_port_open():
     import socket, os
     a = (os.environ.get('BN_PROXY') or os.environ.get('SAND_EGRESS_TUNNEL_PROXY_ADDR') or '127.0.0.1:8791').replace('http://', '')
     h, _, pt = a.partition(':')
