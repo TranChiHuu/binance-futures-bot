@@ -6,13 +6,12 @@
 - BREAKOUT: flatten if a closed 1h candle closes back through the breakout level
 """
 import os, sys, json, time, math, fcntl, datetime, subprocess
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, ROOT)
-sys.path.insert(0, ROOT+'/trade')
+sys.path.insert(0, '/workspace')
+sys.path.insert(0, '/workspace/trade')
 from bn import call, pub, BASE
 import breakout_rules as br
 
-D = ROOT+'/trade'
+D = '/workspace/trade'
 STATE = f'{D}/pos_state.json'
 LOCK = f'{D}/.pos.lock'
 JOURNAL = f'{D}/trade_journal.jsonl'
@@ -57,16 +56,18 @@ def save_state(st):
     json.dump(st, open(tmp, 'w'), indent=2, ensure_ascii=False); os.replace(tmp, STATE)
 
 def tg(msg, dry=False):
+    # Telegram disabled by user; reports go to Grok Bot chat
+    return 'tg_off'
     if dry: return 'dry'
     try:
-        p = subprocess.run(['python3', ROOT+'/tg_trade.py'], input=msg.encode('utf-8'),
+        p = subprocess.run(['python3', '/workspace/tg_trade.py'], input=msg.encode('utf-8'),
                            capture_output=True, timeout=20)
         return p.stdout.decode().strip()
     except Exception as e:
         return f'err {e}'
 
 def label(sym):
-    return 'CORE' if sym in CORE else 'HIGH'
+    return 'CORE' if sym in CORE else 'MAO HIEM'
 
 def _err(r):
     return not isinstance(r, (dict, list)) or (isinstance(r, dict) and ('err' in r or 'http' in r or ('code' in r and r.get('code') not in (200, 0))))
@@ -306,7 +307,7 @@ def manage_positions(sc, dry=False, log=print):
             s.pop('pending_limit', None)
             continue
         events.append({'event': 'MAKER_CANCELLED_' + why, 'sym': sym, 'cancelled_entry': len(ents)})
-        tg(f"{label(sym)} {sym}: cancelled unfilled maker limit order ({'over 60 min' if why == 'expired_60m' else 'price already past TP1'}), attached SL/TP cancelled too.", dry)
+        tg(f"{label(sym)} {sym}: huy lenh limit maker chua khop ({'qua 60 phut' if why == 'expired_60m' else 'gia da vuot TP1'}), da huy SL/TP kem theo.", dry)
         del st[sym]
     for sym, p in open_pos.items():
         amt = fnum(p['positionAmt']); entry = fnum(p['entryPrice']); mark = fnum(p['markPrice'])
@@ -331,7 +332,7 @@ def manage_positions(sc, dry=False, log=print):
         if not s.get('tp1_done') and not tp1_alive and half_left:
             s['tp1_done'] = True; s['tp1_ms'] = int(time.time()*1000)
             events.append({'event': 'TP1', 'sym': sym, 'remaining': abs(amt)})
-            tg(f"{label(sym)} {sym} TP1 filled (~{tp1}). Remaining {abs(amt)}.", dry)
+            tg(f"{label(sym)} {sym} TP1 da khop (~{tp1}). Con lai {abs(amt)}.", dry)
         if s.get('tp1_done') and not s.get('be_done'):
             tick, step, qp = sym_filters(sym)
             be = entry * (1 + BE_FEE_BUF) if long_ else entry * (1 - BE_FEE_BUF)
@@ -354,7 +355,7 @@ def manage_positions(sc, dry=False, log=print):
                         sc('/fapi/v1/algoOrder', {'symbol': sym, 'algoId': a['algoId']}, 'DELETE')
                     s['be_done'] = True; s['sl_be'] = be
                     events.append({'event': 'BE_moved', 'sym': sym, 'be': be, 'old': cur})
-                    tg(f"{label(sym)} {sym}: SL moved to breakeven {be} for the remaining {abs(amt)}.", dry)
+                    tg(f"{label(sym)} {sym}: SL da doi ve hoa von {be} cho {abs(amt)} con lai.", dry)
                 else:
                     events.append({'event': 'BE_failed', 'sym': sym, 'res': str(r)[:200]})
         # +1R -> BE (2026-11-26, after SEI TEST gave back 1.3R before TP1). Not MANUAL.
@@ -391,9 +392,9 @@ def manage_positions(sc, dry=False, log=print):
                           'be': plan['be'], 'kind': plan['kind'], 'old': cur, 'fav': fav}
                     events.append(ev)
                     if plan['kind'] == 'be':
-                        tg(f"{label(sym)} {sym}: SL moved to breakeven {trigger} after price reached 1R.", dry)
+                        tg(f"{label(sym)} {sym}: SL da doi ve hoa von {trigger} sau khi gia cham 1R.", dry)
                     else:
-                        tg(f"{label(sym)} {sym}: SL tightened to {trigger} (near mark, not yet breakeven) after price reached 1R.", dry)
+                        tg(f"{label(sym)} {sym}: SL da doi len {trigger} (sat gia, chua toi hoa von) sau khi gia cham 1R.", dry)
                 else:
                     events.append({'event': 'BE_1R_failed', 'sym': sym, 'res': str(r)[:200],
                                    'trigger': trigger, 'be': plan['be']})
@@ -460,7 +461,7 @@ def manage_positions(sc, dry=False, log=print):
         for a_ in [a_ for a_ in algos if a_.get('symbol') == sym]:
             sc('/fapi/v1/algoOrder', {'symbol': sym, 'algoId': a_['algoId']}, 'DELETE')
         events.append({'event': 'MAKER_CANCELLED_invalid_level', 'sym': sym, 'lvl': lvl, 'close': last_c, 'cancelled_entry': len(ents)})
-        tg(f"{label(sym)} {sym}: cancelled maker limit order because a 1h candle closed back through the break level {lvl}.", dry)
+        tg(f"{label(sym)} {sym}: huy lenh limit maker vi nen 1h da dong thung moc break {lvl}.", dry)
         del st[sym]
 
     # closed trades
@@ -509,8 +510,8 @@ def close_trade(sc, s, dry=False, log=print):
         f.write(json.dumps(rec, ensure_ascii=False) + '\n')
     les = update_lessons()
     why = rec['exit_reason']
-    tg(f"{label(sym)} {sym} {rec['side']} closed ({why}). Exit~{rec['exit']} PnL={rec['pnl_net']:+.2f} USDT "
-       f"(held {rec['held_min']:.0f} min). New lesson: {les.get('last_change') or 'none'}", dry)
+    tg(f"{label(sym)} {sym} {rec['side']} da dong ({why}). Exit~{rec['exit']} PnL={rec['pnl_net']:+.2f} USDT "
+       f"(giu {rec['held_min']:.0f} phut). Bai hoc moi: {les.get('last_change') or 'khong'}", dry)
     return {'event': 'CLOSED', **rec}
 
 def build_record(s, tr):
