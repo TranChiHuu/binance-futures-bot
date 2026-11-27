@@ -1,5 +1,5 @@
 {
-  "updated": "2026-11-26T20:35:00+07:00",
+  "updated": "2026-11-27T00:18:51+07:00",
   "trades": 10,
   "wins": 4,
   "losses": 6,
@@ -72,8 +72,36 @@
         "SEIUSDT LONG TEST (entry 0.03576, SL 0.03416) reached 0.03785 (~1.3R) around 19:00+07 then fell back near entry. No rule existed to lock BE before TP1 (0.03816). New tightening rule: after +1R, move SL to BE (entry + 0.1% fee buffer) for all bot-managed positions except MANUAL."
       ],
       "changes": "pos_manage: BE at +1R (be_1r_done), user-approved 2026-11-26"
+    },
+    {
+      "date": "2026-11-26",
+      "kind": "daily_self_review",
+      "regime": "BTC +4.8% 24h (58057->60844, range 57257-61603, 14.2B quote vol), ETH +4.4%: sharp reversal UP after 5 down days; flipped shorts to longs around 00:00+07",
+      "near_misses": 24,
+      "lessons": [
+        "21:20+07 (25/11) six HIGH BREAKOUT shorts fired in the same scan (DOGE 1.10ATR skipped only by maker_would_cross; WIF 0.92, TIA 0.74, INJ 0.61, SEI 0.44, NEAR 0.37ATR shallow). All 6 hit SL by 00:00-01:00+07 when BTC reversed (MFE 0.28-0.73R). Shallow filter saved 5 losses; even the valid 1.10ATR DOGE lost. Observation: a same-side breakout cluster across >=5 alts at the end of a multi-day trend was exhaustion, not continuation. One sample only (2026-11-20 had a 15-short cluster that mostly drifted, 1 SL) -> no code rule yet; recheck if it repeats.",
+        "After the flip, 17 shallow long breakouts (0.09-0.67ATR): 3 reached TP1 (all SEI: 08:15 score 1.95 rr 1.72, 09:21 score 1.45, 11:16 score 4.45 0.22ATR), 0 hit SL so far, rest open with MFE 0.08-1.47R (TIA twice 1.42-1.47R, just short of TP1 1.5R). Mixed result; together with 2026-11-20 and 2026-11-25 shallow breaks still do not reach TP1 reliably. Keep min break 1.0 ATR, no loosening proposal.",
+        "NEAR LONG 04:22 (1.21ATR, score 2.45 < 2.5 counter-4h) skipped by score: MFE 0.74R, no TP1/SL yet -> score floor fine.",
+        "SEI LONG 19:22 was a valid CANDIDATE (1.11ATR, score 4.45, maker 0.03693) but SEI was already held by the user TEST position; MFE 0.47R / MAE 0.47R so far.",
+        "IP ban (418) from 00:21 to 03:40+07 left no hourly runs 00:21-04:22; WIF manual SL hit at 02:22 during the gap (manual, excluded from lessons)."
+      ],
+      "changes": "none to code or entry rules; lessons only"
+    },
+    {
+      "date": "2026-11-27",
+      "kind": "daily_self_review",
+      "regime": "BTC slow grind UP: ~60.7k -> 61.46k over 24h (+1.2%), today's range 60444-62207 (2.9%); ETH 1689->1725 (+2.1%); very low volume (BTC 8.1B on 26/11, 6.1B so far on 27/11 vs 14-20B on 23-25/11); 4h trend UP on almost all pairs, longs favored",
+      "near_misses": 20,
+      "lessons": [
+        "No bot trades opened or closed in the window; the 3 closes (SEI 22:24, ZEC 22:54 on 26/11, INIT 00:18 on 27/11) were user TEST trades and are excluded. Realized PnL Saigon day 27/11 = -0.363 (INIT TEST remainder at BE) and commission -0.029; wallet 45.85, flat, no orders.",
+        "breakout_shallow (<1.0 ATR) skipped 18 longs (0.06-0.87 ATR, scores 2.75-4.45): after 1-22h none hit TP1 (1.5R); best MFE SEI 23:25 (0.67ATR) 1.24R, XRP 13:16 0.95R, rest 0-0.87R. Only SOL 05:19 (0.07ATR) hit its plan SL, but that SL was 0.4 ATR and A3 would have blocked it anyway. 4th review in a row (20/11, 25/11, 26/11, 27/11) where shallow breaks drift without reaching TP1 -> keep min break 1.0 ATR, no loosening proposal.",
+        "10:22 scan fired 6 same-side BREAKOUT longs at once (BTC 0.65, ETH 0.72, SOL 0.87, LINK 0.48, DOGE 0.43, WLD 0.44 ATR), all shallow. After 11h: no TP1, no SL, MFE 0.46-0.76R, MAE 0.11-0.34R. Unlike the 25/11 exhaustion cluster (6 shorts, all SL) this was a low-volume grind: alts move together but only ~0.5-0.75R. Second cluster sample, different outcome -> still no code rule.",
+        "WIFUSDT LONG 02:18 was a valid 1.24 ATR breakout skipped by maker_would_cross (price already back through the close): MFE 0.20R, MAE 0.67R after 19h -> no-chase rule correct.",
+        "LINKUSDT RETEST LONG 13:16 (blocked by RETEST penalty, score -94.75) hit its plan SL in the next hour (MAE 1.66R on a 0.45 ATR stop) -> RETEST block confirmed again.",
+        "Ops: Binance IP ban (418) 16:23-18:50 +07 left no scans at 17:xx and 18:xx (bot was flat, no harm); second ban in two days (also 00:21-03:40 on 26/11). Duplicate runs at 19:21 and 19:22. Scheduler otherwise ran every hour."
+      ],
+      "changes": "none to code or entry rules; lessons only"
     }
   ],
-  "last_change": null,
-  "last_review": "2026-11-26T20:45:00+07:00"
+  "last_change": null
 }
