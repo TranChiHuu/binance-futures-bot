@@ -55,9 +55,14 @@ def load_active(now=None):
     except Exception:
         return None
     # 2026-11-27: a ban on the shared box IP (104.28.x) does not apply while traffic goes through the user's Mac tunnel.
+    # Ban is per IP: a shared-IP (104.28.x) ban does not apply while the Mac tunnel is the egress, and vice versa.
     ip = _banned_ip(d)
-    if ip and ip.startswith('104.28.') and _tunnel_up():
-        return None
+    if ip:
+        up = _tunnel_up()
+        if ip.startswith('104.28.') and up:
+            return None
+        if not ip.startswith('104.28.') and not up:
+            return None
     until = None
     if d.get('until_ms'):
         until = datetime.datetime.fromtimestamp(int(d['until_ms']) / 1000.0, SAIGON)

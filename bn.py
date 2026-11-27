@@ -3,6 +3,7 @@ K=os.environ.get('BINANCE_API_KEY');S=os.environ.get('BINANCE_API_SECRET')
 BASE='https://fapi.binance.com'
 # Route Binance traffic through the user's computer tunnel (own IP) when available.
 import socket
+EGRESS_IP=None
 def _tunnel():
     a=os.environ.get('BN_PROXY') or os.environ.get('SAND_EGRESS_TUNNEL_PROXY_ADDR') or '127.0.0.1:8791'
     a=a.replace('http://','')
@@ -15,16 +16,17 @@ def _tunnel():
         op=urllib.request.build_opener(urllib.request.ProxyHandler({'https':'http://'+a,'http':'http://'+a}))
         ip=op.open('https://api.ipify.org',timeout=6).read().decode().strip()
     except Exception: return None
+    global EGRESS_IP
+    EGRESS_IP=ip
     if ip.startswith('104.28.'): return None
     return 'http://'+a
 PROXY=_tunnel()
 TUNNEL_DOWN = PROXY is None
 if PROXY:
     urllib.request.install_opener(urllib.request.build_opener(urllib.request.ProxyHandler({'https':PROXY,'http':PROXY})))
-elif os.environ.get('BN_ALLOW_DIRECT')!='1':
-    # 2026-11-27: never fall back to the shared box IP (104.28.x), it gets banned. Fail fast instead.
-    _dead='http://127.0.0.1:9'
-    urllib.request.install_opener(urllib.request.build_opener(urllib.request.ProxyHandler({'https':_dead,'http':_dead})))
+else:
+    # 2026-11-28 (user): prefer the Mac tunnel; when the Mac is off, fall back to the shared box IP (direct).
+    EGRESS_IP = EGRESS_IP or 'shared'
 def call(base,path,params=None,method='GET'):
     p=dict(params or {});p['timestamp']=int(time.time()*1000);p['recvWindow']=10000
     q=urllib.parse.urlencode(p);sig=hmac.new(S.encode(),q.encode(),hashlib.sha256).hexdigest()
