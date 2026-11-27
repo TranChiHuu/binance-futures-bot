@@ -11,8 +11,13 @@ def _tunnel():
         socket.create_connection((h,int(pt or 80)),timeout=2).close(); return 'http://'+a
     except Exception: return None
 PROXY=_tunnel()
+TUNNEL_DOWN = PROXY is None
 if PROXY:
     urllib.request.install_opener(urllib.request.build_opener(urllib.request.ProxyHandler({'https':PROXY,'http':PROXY})))
+elif os.environ.get('BN_ALLOW_DIRECT')!='1':
+    # 2026-11-27: never fall back to the shared box IP (104.28.x), it gets banned. Fail fast instead.
+    _dead='http://127.0.0.1:9'
+    urllib.request.install_opener(urllib.request.build_opener(urllib.request.ProxyHandler({'https':_dead,'http':_dead})))
 def call(base,path,params=None,method='GET'):
     p=dict(params or {});p['timestamp']=int(time.time()*1000);p['recvWindow']=10000
     q=urllib.parse.urlencode(p);sig=hmac.new(S.encode(),q.encode(),hashlib.sha256).hexdigest()

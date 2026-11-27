@@ -2,8 +2,7 @@
 import json, os, re, datetime
 
 SAIGON = datetime.timezone(datetime.timedelta(hours=7))
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-FILE = ROOT+'/trade/ip_ban.json'
+FILE = '/workspace/trade/ip_ban.json'
 # If the 418 body has no timestamp, stay dark this long.
 FALLBACK_MIN = 15
 
@@ -26,11 +25,29 @@ def is_ban(r):
             return True
     return 'banned until' in blob.lower() or 'way too many requests' in blob.lower() or 'too many requests' in blob.lower()
 
+def _banned_ip(d):
+    import re
+    m = re.search(r'IP\(([0-9.]+)\)', str(d.get('raw') or ''))
+    return m.group(1) if m else None
+
+def _tunnel_up():
+    import socket, os
+    a = (os.environ.get('BN_PROXY') or os.environ.get('SAND_EGRESS_TUNNEL_PROXY_ADDR') or '127.0.0.1:8791').replace('http://', '')
+    h, _, pt = a.partition(':')
+    try:
+        socket.create_connection((h, int(pt or 80)), timeout=2).close(); return True
+    except Exception:
+        return False
+
 def load_active(now=None):
     now = now or datetime.datetime.now(SAIGON)
     try:
         d = json.load(open(FILE))
     except Exception:
+        return None
+    # 2026-11-27: a ban on the shared box IP (104.28.x) does not apply while traffic goes through the user's Mac tunnel.
+    ip = _banned_ip(d)
+    if ip and ip.startswith('104.28.') and _tunnel_up():
         return None
     until = None
     if d.get('until_ms'):
@@ -94,5 +111,5 @@ def mark_telegram_sent():
 
 def format_until(until):
     if not until:
-        return 'unknown'
-    return until.strftime('%H:%M %d/%m') + ' VN time'
+        return 'chua ro'
+    return until.strftime('%H:%M %d/%m') + ' gio VN'
