@@ -101,7 +101,26 @@
         "Ops: Binance IP ban (418) 16:23-18:50 +07 left no scans at 17:xx and 18:xx (bot was flat, no harm); second ban in two days (also 00:21-03:40 on 26/11). Duplicate runs at 19:21 and 19:22. Scheduler otherwise ran every hour."
       ],
       "changes": "none to code or entry rules; lessons only"
+    },
+    {
+      "date": "2026-11-28",
+      "kind": "daily_self_review",
+      "regime": "BTC turned DOWN: 61608 -> 59099 over 24h (-4.1%), range 58750-61608; ETH 1724 -> 1642 (-4.8%). Drop came 27/11 ~20:00-22:00+07, then slow bleed. Volume low (BTC 14.0B on 27/11, 3.9B so far on Saturday 28/11). 4h trend DN on most pairs by 20:19.",
+      "near_misses": 3,
+      "lessons": [
+        "No bot or manual trades opened or closed in the window (journal unchanged since 27/11 00:18; income API empty for 26h). Realized PnL Saigon day 28/11 = 0, wallet 45.854 USDT, flat, no orders.",
+        "Follow-up of the 27/11 10:22 cluster (6 shallow BREAKOUT longs BTC/ETH/SOL/LINK/DOGE/WLD, 0.43-0.87 ATR): ALL 6 hit plan SL (5 at 27/11 21:00 on the BTC drop, DOGE at 28/11 20:00); MFE only 0.46-0.79R, never TP1. Together with 25/11 21:20 (6 shorts, all SL incl. the valid 1.10 ATR DOGE) the same-side cluster pattern is now 12/12 SL on 2 samples. Tighten: when >=5 pairs show a same-side BREAKOUT in one scan, skip new BREAKOUT entries on that side (SKIP_breakout_cluster). Checked history: no past bot entry came from such a scan, so it would not have blocked any winner (ARB 19/11 +2.76R was not in a cluster).",
+        "WIFUSDT LONG 07:18 (score 3.95, 0.17 ATR, rr 1.58) skipped as shallow (rr also < 2): hit plan SL at 12:00, MFE ~0.13R, MAE 1.24R -> shallow filter right again.",
+        "TIAUSDT SHORT 20:19 (score 4.05, 0.23 ATR, rr 2.74) and 1000PEPEUSDT SHORT 20:19 (score 3.05, 0.06 ATR, rr 2.82) skipped as shallow: only ~35 min of data, so far MFE ~0.45R, MAE ~0.17R, no TP1/SL yet; recheck next review.",
+        "Shallow-break question: 5th review in a row with no shallow break reaching TP1 (today 0/1 resolved, 1 SL). Keep min break 1.0 ATR, no loosening proposal.",
+        "Ops: shared box IP (104.28.205.73/.74) got 418 bans at 22:24 (27/11), 01:24, 09:19, 16:23 and rate-limit errors in pos_manage at 00:20, 12:22, 18:23; scans at 00:20, 01:24, 12:22, 18:23 had max score 0.0 (klines likely failed). No runs at 23:xx (27/11), 10:xx, 13:xx, 14:xx, 15:xx; duplicate runs 00:20 x2 and 01:02/01:24. Bot was flat so no harm, but the shared-IP fallback keeps getting banned; Mac tunnel (42.116.x) was up at review time and no ban active."
+      ],
+      "changes": "tighten: breakout_rules.CLUSTER_MIN_SAME_SIDE=5 + run_hourly SKIP_breakout_cluster; test added"
     }
   ],
-  "last_change": null
+  "last_change": {
+    "date": "2026-11-28",
+    "what": "breakout cluster guard (>=5 same-side BREAKOUT in one scan -> skip that side)",
+    "kind": "tighten"
+  }
 }

@@ -698,6 +698,14 @@ for s_ in scan_results:
         if sl_atr_ < MIN_SL_ATR:
             s_['decision'] = 'SKIP_sl_lt_1atr'
             s_['note'] = (s_.get('note') or '') + f' sl={sl_atr_:.2f}ATR'
+# --- 2026-11-28 tighten: same-side breakout cluster (>= CLUSTER_MIN_SAME_SIDE pairs) = likely exhaustion, skip ---
+_clu = _br.breakout_cluster_sides(scan_results)
+for s_ in scan_results:
+    if s_['decision'] == 'CANDIDATE' and s_.get('setup') == 'BREAKOUT' and s_.get('side') in _clu:
+        s_['decision'] = 'SKIP_breakout_cluster'
+        s_['note'] = (s_.get('note') or '') + f" cluster={_clu[s_['side']]}"
+if _clu:
+    skips.append(f"Breakout cluster {_clu} (>= {_br.CLUSTER_MIN_SAME_SIDE} same-side) -> no new BREAKOUT on that side")
 scan_results.sort(key=lambda x: -x['score'])
 top = scan_results[:8]
 max_score = top[0]['score'] if top else 0

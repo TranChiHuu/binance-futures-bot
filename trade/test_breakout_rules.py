@@ -26,6 +26,15 @@ def main():
     check('missing ATR does not skip', not B.is_shallow_breakout(0.1, 0))
     check('None ATR does not skip', not B.is_shallow_breakout(0.1, None))
 
+    # 2026-11-28 cluster guard
+    six = [{'setup': 'BREAKOUT', 'side': 'LONG'} for _ in range(6)] + [{'setup': None, 'side': 'SHORT'}]
+    check('6 same-side breakouts is a cluster', B.breakout_cluster_sides(six) == {'LONG': 6})
+    four = [{'setup': 'BREAKOUT', 'side': 'SHORT'} for _ in range(4)] + [{'setup': 'BREAKOUT', 'side': 'LONG'}]
+    check('4 same-side breakouts is not a cluster', B.breakout_cluster_sides(four) == {})
+    check('exactly 5 is a cluster', B.breakout_cluster_sides([{'setup': 'BREAKOUT', 'side': 'SHORT'}] * 5) == {'SHORT': 5})
+    check('RETEST/MOMENTUM do not count', B.breakout_cluster_sides([{'setup': 'RETEST', 'side': 'LONG'}] * 6) == {})
+    check('empty/None ok', B.breakout_cluster_sides(None) == {})
+
     # LONG: close back under the level
     check('LONG close below level is invalid', B.level_invalidated('LONG', 8.50, 8.546, atr=0.2))
     check('LONG close still above level is valid', not B.level_invalidated('LONG', 8.58, 8.546, atr=0.2))

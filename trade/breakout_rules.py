@@ -15,6 +15,9 @@ MIN_BREAKOUT_PAST_ATR = 1.0
 INVALID_CLOSE_ATR = 0.05
 # Fallback when ATR is missing: 0.05% of the level.
 INVALID_CLOSE_PCT = 0.0005
+# 2026-11-28 (tighten, daily review): when this many pairs show a same-side BREAKOUT in one scan,
+# skip new BREAKOUT entries on that side. 25/11 21:20 six shorts -> all SL; 27/11 10:22 six longs -> all SL.
+CLUSTER_MIN_SAME_SIDE = 5
 
 _LVL_RE = re.compile(r'lvl=([0-9]+(?:\.[0-9]+)?)')
 
@@ -36,6 +39,18 @@ def is_shallow_breakout(past, atr, min_mult=MIN_BREAKOUT_PAST_ATR):
     if atr <= 0:
         return False
     return past < min_mult * atr
+
+
+def breakout_cluster_sides(results, min_n=CLUSTER_MIN_SAME_SIDE):
+    """Return {side: count} for sides with >= min_n BREAKOUT setups in one scan (any decision)."""
+    counts = {}
+    for r in results or []:
+        if not isinstance(r, dict) or r.get('setup') != 'BREAKOUT':
+            continue
+        side = r.get('side')
+        if side in ('LONG', 'SHORT'):
+            counts[side] = counts.get(side, 0) + 1
+    return {k: v for k, v in counts.items() if v >= min_n}
 
 
 def _tol(level, atr):
